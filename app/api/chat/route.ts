@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Message as VercelChatMessage, StreamingTextResponse } from "ai";
 
-import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { HttpResponseOutputParser } from "langchain/output_parsers";
+import { ChatOllama } from "@langchain/ollama";
 
 export const runtime = "edge";
 
@@ -42,11 +42,13 @@ export async function POST(req: NextRequest) {
      * See a full list of supported models at:
      * https://js.langchain.com/docs/modules/model_io/models/
      */
-    const model = new ChatOpenAI({
-      temperature: 0.8,
-      model: "gpt-4o-mini",
-    });
 
+    const model = new ChatOllama({
+      model: "phi:latest",
+      temperature: 0,
+      maxRetries: 2,
+      // other params...
+    });
     /**
      * Chat models stream message chunks rather than bytes, so this
      * output parser handles serialization and byte-encoding.

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Message as VercelChatMessage, StreamingTextResponse } from "ai";
 
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import { ChatOpenAI } from "@langchain/openai";
+
 import { SerpAPI } from "@langchain/community/tools/serpapi";
 import { Calculator } from "@langchain/community/tools/calculator";
 import {
@@ -12,6 +12,7 @@ import {
   HumanMessage,
   SystemMessage,
 } from "@langchain/core/messages";
+import { ChatOllama } from "@langchain/ollama";
 
 export const runtime = "edge";
 
@@ -65,11 +66,13 @@ export async function POST(req: NextRequest) {
     // Requires process.env.SERPAPI_API_KEY to be set: https://serpapi.com/
     // You can remove this or use a different tool instead.
     const tools = [new Calculator(), new SerpAPI()];
-    const chat = new ChatOpenAI({
-      model: "gpt-4o-mini",
-      temperature: 0,
-    });
 
+    const chat = new ChatOllama({
+      model: "phi:latest",
+      temperature: 0,
+      maxRetries: 2,
+      // other params...
+    });
     /**
      * Use a prebuilt LangGraph agent.
      */

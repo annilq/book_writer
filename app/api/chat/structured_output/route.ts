@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { z } from "zod";
 
-import { ChatOpenAI } from "@langchain/openai";
+import { ChatOllama } from "@langchain/ollama";
 import { PromptTemplate } from "@langchain/core/prompts";
 
 export const runtime = "edge";
@@ -31,11 +31,13 @@ export async function POST(req: NextRequest) {
     /**
      * Function calling is currently only supported with ChatOpenAI models
      */
-    const model = new ChatOpenAI({
-      temperature: 0.8,
-      model: "gpt-4o-mini",
-    });
 
+    const model = new ChatOllama({
+      model: "phi:latest",
+      temperature: 0,
+      maxRetries: 2,
+      // other params...
+    });
     /**
      * We use Zod (https://zod.dev) to define our schema for convenience,
      * but you can pass JSON schema if desired.
