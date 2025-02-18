@@ -1,20 +1,14 @@
 "use client"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import BookOutlineForm from "@/components/BookOutlineForm"
+import BookOutlineForm, { BookMeta } from "@/components/BookOutlineForm"
 
 export default function Home() {
   const [bookTitle, setBookTitle] = useState("")
   const [bookDescription, setBookDescription] = useState("")
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (data: BookMeta) => {
     // This would call an API route to generate the outline using the AI SDK
     // For now, we'll just set a dummy outline
     router.push(
