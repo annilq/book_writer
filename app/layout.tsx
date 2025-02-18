@@ -2,8 +2,10 @@ import "./globals.css";
 import { Public_Sans } from "next/font/google";
 import { ActiveLink } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
-import { GithubIcon } from "lucide-react";
+import { Github, GithubIcon, User, User2 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
+import Link from "next/link";
+import { cn } from "@/utils";
 
 const publicSans = Public_Sans({ subsets: ["latin"] });
 
@@ -57,49 +59,53 @@ export default function RootLayout({
         />
         <meta name="twitter:image" content="/images/og-image.png" />
       </head>
-      <body className={publicSans.className}>
-        <div className="bg-secondary grid grid-rows-[auto,1fr] h-[100dvh]">
-          <div className="grid grid-cols-[1fr,auto] gap-2 p-4">
-            <div className="flex gap-4 flex-col md:flex-row md:items-center">
+      <body className={cn(publicSans.className, "flex flex-col bg-gradient-to-r from-purple-500 to-indigo-600 text-white min-h-screen")}>
+        <div className="flex justify-between gap-2 p-4">
+          <div className="flex gap-4 flex-col md:flex-row md:items-center">
+            <a
+              href="https://js.langchain.com"
+              rel="noopener noreferrer"
+              target="_blank"
+              className="flex items-center gap-2"
+            >
+              <Logo />
+            </a>
+            <nav className="flex gap-1 flex-col md:flex-row">
+              <ActiveLink href="/">🏴‍☠️ Chat</ActiveLink>
+              <ActiveLink href="/structured_output">
+                🧱 Structured Output
+              </ActiveLink>
+              <ActiveLink href="/agents">🦜 Agents</ActiveLink>
+              <ActiveLink href="/retrieval">🐶 Retrieval</ActiveLink>
+              <ActiveLink href="/retrieval_agents">
+                🤖 Retrieval Agents
+              </ActiveLink>
+              <ActiveLink href="/ai_sdk">
+                🌊 LangChain x AI SDK RSC
+              </ActiveLink>
+            </nav>
+          </div>
+          <div className="flex justify-center gap-2">
+            <Button asChild variant="secondary" size="default">
               <a
-                href="https://js.langchain.com"
-                rel="noopener noreferrer"
+                href="https://github.com/langchain-ai/langchain-nextjs-template"
                 target="_blank"
-                className="flex items-center gap-2"
               >
-                <Logo />
+                <GithubIcon className="size-3" />
+                <span>Open in GitHub</span>
               </a>
-              <nav className="flex gap-1 flex-col md:flex-row">
-                <ActiveLink href="/">🏴‍☠️ Chat</ActiveLink>
-                <ActiveLink href="/structured_output">
-                  🧱 Structured Output
-                </ActiveLink>
-                <ActiveLink href="/agents">🦜 Agents</ActiveLink>
-                <ActiveLink href="/retrieval">🐶 Retrieval</ActiveLink>
-                <ActiveLink href="/retrieval_agents">
-                  🤖 Retrieval Agents
-                </ActiveLink>
-                <ActiveLink href="/ai_sdk">
-                  🌊 LangChain x AI SDK RSC
-                </ActiveLink>
-              </nav>
-            </div>
-
-            <div className="flex justify-center">
-              <Button asChild variant="outline" size="default">
-                <a
-                  href="https://github.com/langchain-ai/langchain-nextjs-template"
-                  target="_blank"
-                >
-                  <GithubIcon className="size-3" />
-                  <span>Open in GitHub</span>
-                </a>
-              </Button>
-            </div>
+            </Button>
+            <Button asChild variant="secondary" size="default">
+              <Link
+                href="/books"
+              >
+                <User2 className="size-3" />
+              </Link>
+            </Button>
           </div>
-          <div className="bg-background mx-4 relative grid rounded-t-2xl border border-input border-b-0">
-            <div className="absolute inset-0">{children}</div>
-          </div>
+        </div>
+        <div className="flex-1 relative">
+          <div className="absolute inset-0">{children}</div>
         </div>
         <Toaster />
       </body>

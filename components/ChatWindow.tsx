@@ -57,7 +57,7 @@ function ScrollToBottom(props: { className?: string }) {
   if (isAtBottom) return null;
   return (
     <Button
-      variant="outline"
+      variant="secondary"
       className={props.className}
       onClick={() => scrollToBottom()}
     >
