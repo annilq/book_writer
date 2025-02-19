@@ -1,24 +1,23 @@
-"use client"
+"use client";
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import BookOutlineForm, { BookMeta } from "@/components/BookOutlineForm"
 
 export default function Home() {
-  const [bookTitle, setBookTitle] = useState("")
-  const [bookDescription, setBookDescription] = useState("")
   const router = useRouter()
 
   const handleSubmit = async (data: BookMeta) => {
     // This would call an API route to generate the outline using the AI SDK
     // For now, we'll just set a dummy outline
     router.push(
-      `/create?title=${encodeURIComponent(bookTitle)}&description=${encodeURIComponent(bookDescription)}`,
+      `/create?title=${encodeURIComponent(data.title)}&description=${encodeURIComponent(data.title)}`,
     )
   }
 
   return (
-    <div className="flex flex-col items-center justify-center py-20">
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
+    <div className="absolute inset-0 overflow-auto flex flex-col items-center">
+      <main className="flex flex-col items-center justify-center w-full flex-1 text-center">
         <h1 className="text-6xl font-bold">
           Welcome toAI Book Writer
         </h1>
