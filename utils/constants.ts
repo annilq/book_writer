@@ -1,38 +1,18 @@
 
 export const SUGGESTED_PROMPTS = [
   {
-    title: "Quiz app",
+    title: "透过地理看历史",
     description:
-      "Make me a quiz app about American history. Make sure to give the user an explanation on each question whether they got it right or wrong and keep a score going",
+      "中国的史书卷帙浩繁，对于历史爱好者而言，要读通几千年的史书，是一项巨大的工程。而本书使我们认识到，不管朝代如何更迭， 风云如何变幻，地理因素的作用始终至关重要。 本书以地理单元为轴心，通过纵向讲史的方式，对各个地理单元的形成及其对历史发展的影响进行了深入浅出的讲解，同时，还穿插了许多历史事件和典故。通读本书，读者可轻松了解中国历史发展的脉络。",
   },
   {
-    title: "SaaS Landing page",
+    title: "美妙的数学",
     description:
-      "A landing page for a SaaS business that includes a clear value proposition in a prominent hero section, concise feature overviews, testimonials, pricing, and a clear call-to-action button leading to a free trial or demo.",
+      "数字是全人类的通用语言，语言不通的商人得以依靠数学建立互利贸易。数学也是燃料，助力人类实现从自由市场到登月的一系列抱负。 我们的生活方式、制度和基础设施均建立在数字之上。无论商业、住房、医药、政治、战争、农业，还是艺术、旅行、科技，几乎我们存在的每一个方面都以数学为基础被建立起来。人类的故事与数学密切交织，我们永远可以从数学中找到快乐和意义。",
   },
   {
-    title: "Pomodoro Timer",
+    title: "毛泽东传",
     description:
-      "Make a beautiful pomodoro timer where I can adjust the lengths of the focus time and the break and it will beep when done.",
-  },
-  {
-    title: "Blog app",
-    description:
-      "Make me a blog app that has a few blogs there for people to read. Users can click into the blogs and read them, then go back to the homepage to see more.",
-  },
-  // {
-  //   title: "Recipe site",
-  //   description:
-  //     "Make me a site that has easy to make recipes in a grid that you can click into and see the full recipe. Also make it possible for me to add my own",
-  // },
-  {
-    title: "Flashcard app",
-    description:
-      "Build me a flashcard app about llamas. Have some flash cards and also have the ability for users to add their own. Show one side of a card at first and reveal the answer on button click, keeping track of correct guesses to measure progress.",
-  },
-  {
-    title: "Timezone dashboard",
-    description:
-      "Make me a time zone dashboard that shows me the time zone in the top 6 most popular time zones and gives me a dropdown to add others",
+      "本书的主要依据是中央档案馆保存的毛泽东同志的文稿、电报、书信、讲话记录和他所参加会议的大量记录；同时，参考了同毛泽东同志有过直接接触的同志的访问记录、回忆录和当时的报刊资料。力求根据丰富而可靠的第一手资料，写出比较翔实的信史。",
   },
 ];

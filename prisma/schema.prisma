@@ -1,5 +1,5 @@
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
   // previewFeatures = ["driverAdapters"]
 }
 
@@ -8,7 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
- 
 model User {
   id            String          @id @default(cuid())
   name          String?
@@ -19,11 +18,11 @@ model User {
   sessions      Session[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
- 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  books         Book[]          @relation("BookAuthors")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }
- 
+
 model Account {
   userId            String
   type              String
@@ -36,33 +35,33 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([provider, providerAccountId])
 }
- 
+
 model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@id([identifier, token])
 }
- 
+
 // Optional for WebAuthn support
 model Authenticator {
   credentialID         String  @unique
@@ -73,33 +72,42 @@ model Authenticator {
   credentialDeviceType String
   credentialBackedUp   Boolean
   transports           String?
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([userId, credentialID])
 }
 
 // business
-model GeneratedApp {
-  id        String   @id @default(nanoid(5))
-  model     String
-  prompt    String
-  code      String
-  createdAt DateTime @default(now())
-
-  @@index([id])
+enum BookStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  DELETED
+  UNPUBLISHED
+  PENDINGREVIEW
 }
 
 model Book {
-  id                String    @id @default(nanoid(16))
-  model             String
-  quality           String
-  prompt            String
-  title             String
-  bookVersion String    @default("v2")
-  shadcn            Boolean
-  messages          Message[]
-  createdAt         DateTime  @default(now())
+  id              String     @id @default(nanoid(16))
+  title           String
+  model           String
+  quality         String
+  prompt          String
+  description     String
+  publicationDate DateTime
+  isbn            String     @unique
+  coverImage      String?
+  chapters        Chapter[]
+  messages        Message[]
+  authors         User[]     @relation("BookAuthors")
+  tags            Tag[]      @relation("BookTags")
+  reviews         Review[]
+  publisherId     Int
+  publisher       Publisher? @relation(fields: [publisherId], references: [id])
+  categories      Category[] @relation("BookCategories")
+  status          BookStatus
+  createdAt       DateTime   @default(now())
 }
 
 model Message {
@@ -112,4 +120,52 @@ model Message {
   createdAt DateTime @default(now())
 
   @@index([bookId])
+}
+
+model Chapter {
+  id          Int         @id @default(autoincrement())
+  title       String
+  content     String
+  order       Int
+  bookId      String
+  parentId    Int?
+  book        Book        @relation(fields: [bookId], references: [id])
+  parent      Chapter?    @relation("ChapterHierarchy", fields: [parentId], references: [id]) // 自引用，指向父章节
+  subChapters Chapter[]   @relation("ChapterHierarchy") // 子章节，与父章节建立关系
+  paragraphs  Paragraph[]
+}
+
+model Paragraph {
+  id        Int     @id @default(autoincrement())
+  content   String
+  chapterId Int
+  chapter   Chapter @relation(fields: [chapterId], references: [id])
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String
+  books Book[] @relation("BookTags")
+}
+
+model Review {
+  id      Int    @id @default(autoincrement())
+  rating  Int
+  comment String
+  bookId  String
+  book    Book   @relation(fields: [bookId], references: [id])
+}
+
+model Publisher {
+  id      Int    @id @default(autoincrement())
+  name    String
+  address String
+  books   Book[]
+}
+
+model Category {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  description String
+  books       Book[] @relation("BookCategories")
 }
