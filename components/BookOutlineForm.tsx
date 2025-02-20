@@ -29,7 +29,7 @@ export default function BookOutlineForm(props: { handleSubmit: (data: BookMeta) 
     <Card className="mx-auto mt-8" >
       <CardHeader>
         <CardTitle className="text-3xl font-bold text-center">Book Writer</CardTitle>
-        <CardDescription className="font-bold text-center mb-8">Enter your book's title and description to Create Your Book Outlin</CardDescription>
+        <CardDescription className="font-bold text-center mb-8">Enter your book's title and description to Create Your Book Outline</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-4 px-6 pb-6">
         <Input

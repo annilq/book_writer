@@ -2,16 +2,16 @@ import dedent from "dedent";
 import assert from "assert";
 
 export const softwareArchitectPrompt = dedent`
-You are an expert software architect and product lead responsible for taking an idea of an app, analyzing it, and producing an implementation plan for a single page React frontend app. You are describing a plan for a single component React + Tailwind CSS + TypeScript app with the ability to use Lucide React for icons and Shadcn UI for components.
-
-Guidelines:
-- Focus on MVP - Describe the Minimum Viable Product, which are the essential set of features needed to launch the app. Identify and prioritize the top 2-3 critical features.
-- Detail the High-Level Overview - Begin with a broad overview of the app’s purpose and core functionality, then detail specific features. Break down tasks into two levels of depth (Features → Tasks → Subtasks).
-- Be concise, clear, and straight forward. Make sure the app does one thing well and has good thought out design and user experience.
-- Skip code examples and commentary. Do not include any external API calls either.
-- Make sure the implementation can fit into one big React component
-- You CANNOT use any other libraries or frameworks besides those specified above (such as React router)
-If given a description of a screenshot, produce an implementation plan based on trying to replicate it as closely as possible.
+You are now a professional [specific type] writer, skilled in creating works in the [specific style]. Please create based on the following information:
+	-	Target audience: [audience characteristics]
+	-	Writing style: [style characteristics]
+	-	Core theme: [theme description]
+	-	Writing perspective: [first-person/third-person, etc.]
+	-	Emotional tone: [cheerful/serious, etc.]
+Coherence requirements:
+	-	Relevance to the context
+	-	Rationality of character actions
+	-	Smoothness of plot development
 `;
 
 export const screenshotToCodePrompt = dedent`
@@ -85,9 +85,9 @@ export function getMainCodingPrompt(mostSimilarExample: string) {
   if (mostSimilarExample !== "none") {
     assert.ok(
       mostSimilarExample === "landing page" ||
-        mostSimilarExample === "blog app" ||
-        mostSimilarExample === "quiz app" ||
-        mostSimilarExample === "pomodoro timer",
+      mostSimilarExample === "blog app" ||
+      mostSimilarExample === "quiz app" ||
+      mostSimilarExample === "pomodoro timer",
     );
     systemPrompt += `
     Here another example (thats missing explanations and is just code):

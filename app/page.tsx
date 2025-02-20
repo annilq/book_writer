@@ -19,7 +19,7 @@ export default function Home() {
     <div className="absolute inset-0 overflow-auto flex flex-col items-center">
       <main className="flex flex-col items-center justify-center w-full flex-1 text-center">
         <h1 className="text-6xl font-bold">
-          Welcome toAI Book Writer
+          Welcome to AI Book Writer
         </h1>
         <p className="mt-3 text-2xl">Create your next masterpiece with the help of AI</p>
         <BookOutlineForm handleSubmit={handleSubmit} />

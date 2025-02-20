@@ -32,11 +32,11 @@ function NavItem({ href, icon, children, active }: NavItemProps) {
 
 export default function BookManager() {
   return (
-    <div className="flex h-screen bg-white">
+    <div className="h-full flex bg-background">
       {/* Sidebar */}
-      <div className="w-64 border-r bg-white">
+      <div className="w-64 border-r bg-background">
         <div className="p-4">
-          <h1 className="text-xl font-bold text-background">Showpad</h1>
+          <h1 className="text-xl font-bold text-foreground">Showpad</h1>
         </div>
         <nav className="space-y-1 px-2">
           <NavItem href="#" icon={<LayoutGrid className="h-4 w-4" />} active>

@@ -21,7 +21,7 @@ export default function SignIn() {
     )
   } else {
     return (
-      <div className="mt-3 space-y-1">
+      <div className="space-y-1">
         <Button
           variant="secondary" size="default"
           onClick={() => signIn('github')}
