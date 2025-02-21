@@ -18,6 +18,7 @@
     "@hookform/resolvers": "^4.1.0",
     "@langchain/community": "^0.3.25",
     "@langchain/core": "^0.3.31",
+    "@langchain/deepseek": "^0.0.1",
     "@langchain/langgraph": "^0.2.41",
     "@langchain/ollama": "^0.2.0",
     "@langchain/openai": "^0.3.17",

@@ -3,7 +3,7 @@ import { Message as VercelChatMessage, StreamingTextResponse } from "ai";
 
 import { PromptTemplate } from "@langchain/core/prompts";
 import { HttpResponseOutputParser } from "langchain/output_parsers";
-import { ChatOllama } from "@langchain/ollama";
+import LLMProvider from "@/utils/llms_provider";
 
 export const runtime = "edge";
 
@@ -29,6 +29,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const messages = body.messages ?? [];
+    const provider = body.provider;
+    const model = body.model;
     const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage);
     const currentMessageContent = messages[messages.length - 1].content;
     const prompt = PromptTemplate.fromTemplate(TEMPLATE);
@@ -43,11 +45,12 @@ export async function POST(req: NextRequest) {
      * https://js.langchain.com/docs/modules/model_io/models/
      */
 
-    const model = new ChatOllama({
-      model: "phi:latest",
+    // Get model instance from provider
+
+    const llm = LLMProvider.getModel(provider, {
+      model,
       temperature: 0,
-      maxRetries: 2,
-      // other params...
+      maxRetries: 2
     });
     /**
      * Chat models stream message chunks rather than bytes, so this
@@ -61,7 +64,7 @@ export async function POST(req: NextRequest) {
      * import { RunnableSequence } from "@langchain/core/runnables";
      * const chain = RunnableSequence.from([prompt, model, outputParser]);
      */
-    const chain = prompt.pipe(model).pipe(outputParser);
+    const chain = prompt.pipe(llm).pipe(outputParser);
 
     const stream = await chain.stream({
       chat_history: formattedPreviousMessages.join("\n"),
