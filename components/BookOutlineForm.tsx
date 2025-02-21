@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { Book } from '@prisma/client';
+import { Book, Category } from '@prisma/client';
 
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -17,6 +17,7 @@ import { FormField, FormItem, FormControl, FormMessage, Form } from "./ui/form"
 import { toast } from "@/hooks/use-toast"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "./ui/select"
+import { Model } from "@/app/api/model/route";
 
 const FormSchema = z.object({
   title: z.string().min(2, {
@@ -25,7 +26,8 @@ const FormSchema = z.object({
   description: z.string().min(20, {
     message: "description must be at least 20 characters.",
   }),
-  categories: z.array(z.string()).min(1),
+  categories: z.string().min(1),
+  model: z.string().min(1),
 })
 
 function Example(props: { handleSubmit: (data: Partial<Book>) => void }) {
@@ -46,8 +48,8 @@ function Example(props: { handleSubmit: (data: Partial<Book>) => void }) {
   )
 }
 
-export default function BookOutlineForm(props: { handleSubmit: (data: Partial<Book>) => Promise<any> }) {
-
+export default function BookOutlineForm(props: { categories: Category[], models: Model[], handleSubmit: (data:typeof FormSchema) => Promise<any> }) {
+  const { categories, models, handleSubmit } = props
   const { t } = useTranslation()
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -55,9 +57,11 @@ export default function BookOutlineForm(props: { handleSubmit: (data: Partial<Bo
     defaultValues: {
       title: "",
       description: "",
-      categories: []
+      model: "",
+      categories: ""
     },
   })
+
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     toast({
@@ -68,8 +72,21 @@ export default function BookOutlineForm(props: { handleSubmit: (data: Partial<Bo
         </pre>
       ),
     })
-    props.handleSubmit(data)
+    handleSubmit(data)
   }
+
+  // useEffect(() => {
+  //   if (models?.[0]?.name) {
+  //     form.setValue("model", `${models?.[0]?.provider}/${models?.[0]?.name}`)
+  //   }
+  // }, [form, models])
+
+  // useEffect(() => {
+  //   if (categories?.[0]?.id) {
+  //     form.setValue("categories", categories[0].id)
+  //   }
+  // }, [categories, form])
+
   return (
     <Card className="mx-auto w-1/4 min-w-fit max-w-2xl mt-8" >
       <CardHeader>
@@ -112,16 +129,14 @@ export default function BookOutlineForm(props: { handleSubmit: (data: Partial<Bo
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Select onValueChange={field.onChange}>
+                  <Select {...field}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder={t("bookCate")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="m@example.com">m@example.com</SelectItem>
-                      <SelectItem value="m@google.com">m@google.com</SelectItem>
-                      <SelectItem value="m@support.com">m@support.com</SelectItem>
+                      {categories.map(cate => <SelectItem key={cate.id} value={cate.name}>{t(cate.name)}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </FormControl>
@@ -129,9 +144,32 @@ export default function BookOutlineForm(props: { handleSubmit: (data: Partial<Bo
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
-            {t("generateButton")}
-          </Button>
+          <div className="flex items-center gap-4">
+            <FormField
+              control={form.control}
+              name="model"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Select  {...field}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t("bookModel")} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {models.map(model => <SelectItem key={model.name} value={`${model.provider}/${model.name}`}>{model.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full">
+              {t("generateButton")}
+            </Button>
+          </div>
         </form>
       </Form>
       <Example handleSubmit={(data) => { form.reset(data) }} />

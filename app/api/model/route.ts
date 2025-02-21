@@ -1,10 +1,13 @@
 import { appResponse } from '@/utils/response';
-import ollama from 'ollama'
+import { getModels } from './models';
+
+export interface Model {
+  name: string
+  provider: string
+}
 
 export async function GET(request: Request) {
   return appResponse(async () => {
-    const res = await ollama.list();
-    const ollamaModels = res.models?.map(model => ({ ...model, provider: "ollama" }))
-    return [{ provider: "deepseek", name: "deepseek-reasoner" }].concat(ollamaModels);
+    return getModels()
   });
 }
