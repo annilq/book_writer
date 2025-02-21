@@ -3,8 +3,10 @@
 import React, { useEffect, useState } from "react";
 import { ThemeProvider } from 'next-themes'
 import { SessionProvider } from "next-auth/react"
+import "@/utils/i18n"; 
 
 const ClientContext = ({ children }: { children: React.ReactNode }) => {
+    
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {

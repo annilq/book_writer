@@ -1,24 +1,23 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import LanguageDetector from 'i18next-browser-languagedetector';
+
 import en from "./app_en.json";
 import zh from "./app_zh.json";
-// the translations
-// (tip move them in a JSON file and import them,
-// or even better, manage them separated from your code: https://react.i18next.com/guides/multiple-translation-files)
-const resources = {
-  en,
 
-  zh,
+const resources = {
+  en: { translation: en },
+  zh: { translation: zh },
 };
 
 i18n
+  .use(LanguageDetector)
   .use(initReactI18next) // passes i18n down to react-i18next
   .init({
     resources,
-    lng: "en", // language to use, more information here: https://www.i18next.com/overview/configuration-options#languages-namespaces-resources
-    // you can use the i18n.changeLanguage function to change the language manually: https://www.i18next.com/overview/api#changelanguage
+    // lng: "en",
     // if you're using a language detector, do not define the lng option
-
+    fallbackLng: "en",
     interpolation: {
       escapeValue: false // react already safes from xss
     }

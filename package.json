@@ -38,6 +38,7 @@
     "clsx": "^2.1.1",
     "dedent": "^1.5.3",
     "i18next": "^24.2.2",
+    "i18next-browser-languagedetector": "^8.0.4",
     "langchain": "^0.3.11",
     "lucide-react": "^0.473.0",
     "motion": "^12.4.7",
