@@ -1,8 +1,11 @@
 "use client"
 
 import type React from "react"
+import { Book } from '@prisma/client';
 
-import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -10,13 +13,22 @@ import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card"
 import { SUGGESTED_PROMPTS } from "@/utils/constants"
 import { useTranslation } from "react-i18next"
 
-export interface BookMeta {
-  title: string
-  description: string
-}
+import { FormField, FormItem, FormControl, FormMessage, Form } from "./ui/form"
+import { toast } from "@/hooks/use-toast"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "./ui/select"
 
-function Example(props: { handleSubmit: (data: BookMeta) => void }) {
+const FormSchema = z.object({
+  title: z.string().min(2, {
+    message: "bookName must be at least 2 characters.",
+  }),
+  description: z.string().min(20, {
+    message: "description must be at least 20 characters.",
+  }),
+  categories: z.array(z.string()).min(1),
+})
 
+function Example(props: { handleSubmit: (data: Partial<Book>) => void }) {
 
   return (
     <div className="px-6 pb-6 flex w-full flex-wrap justify-center gap-3">
@@ -34,49 +46,95 @@ function Example(props: { handleSubmit: (data: BookMeta) => void }) {
   )
 }
 
-export default function BookOutlineForm(props: { handleSubmit: (data: BookMeta) => Promise<any> }) {
-  const [bookName, setBookTitle] = useState("")
-  const [bookDescription, setBookDescription] = useState("")
+export default function BookOutlineForm(props: { handleSubmit: (data: Partial<Book>) => Promise<any> }) {
+
   const { t } = useTranslation()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would typically send the data to your backend or API
-    // For demonstration, we'll just set a mock outline
-    // props.handleSubmit(e)
-    props.handleSubmit({ title: bookName, description: bookDescription })
-  }
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      categories: []
+    },
+  })
 
+  function onSubmit(data: z.infer<typeof FormSchema>) {
+    toast({
+      title: "You submitted the following values:",
+      description: (
+        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+        </pre>
+      ),
+    })
+    props.handleSubmit(data)
+  }
   return (
     <Card className="mx-auto w-1/4 min-w-fit max-w-2xl mt-8" >
       <CardHeader>
         <CardTitle className="text-3xl font-bold text-center">{t("appName")}</CardTitle>
         <CardDescription className="font-bold text-center mb-8">{t("appTip")}</CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-4 px-6 pb-6">
-        <Input
-          type="text"
-          placeholder={t("bookName")}
-          value={bookName}
-          onChange={(e) => setBookTitle(e.target.value)}
-          required
-        />
-        <Textarea
-          placeholder={t("bookDesc")}
-          value={bookDescription}
-          rows={8}
-          onChange={(e) => setBookDescription(e.target.value)}
-          required
-        />
-        <Button type="submit" className="w-full">
-          {t("generateButton")}
-        </Button>
-      </form>
-      <Example
-        handleSubmit={(data) => {
-          setBookTitle(data.title)
-          setBookDescription(data.description)
-        }} />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-2xl mx-auto space-y-4 px-6 pb-6">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder={t("bookName")} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Textarea
+                    placeholder={t("bookDesc")}
+                    rows={8}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="categories"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Select onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("bookCate")} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="m@example.com">m@example.com</SelectItem>
+                      <SelectItem value="m@google.com">m@google.com</SelectItem>
+                      <SelectItem value="m@support.com">m@support.com</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="w-full">
+            {t("generateButton")}
+          </Button>
+        </form>
+      </Form>
+      <Example handleSubmit={(data) => { form.reset(data) }} />
     </Card>
   )
 }

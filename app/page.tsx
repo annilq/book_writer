@@ -1,18 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation"
-import BookOutlineForm, { BookMeta } from "@/components/BookOutlineForm"
+import { Book } from '@prisma/client';
+import BookOutlineForm from "@/components/BookOutlineForm"
 import { useTranslation } from "react-i18next";
 
 export default function Home() {
   const router = useRouter()
   const { t } = useTranslation()
-  
-  const handleSubmit = async (data: BookMeta) => {
+
+  const handleSubmit = async (data: Pick<Book, "id">) => {
     // This would call an API route to generate the outline using the AI SDK
     // For now, we'll just set a dummy outline
     router.push(
-      `/create?title=${encodeURIComponent(data.title)}&description=${encodeURIComponent(data.title)}`,
+      `/book/${data.id}`,
     )
   }
 
