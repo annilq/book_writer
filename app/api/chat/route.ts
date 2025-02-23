@@ -2,10 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { Message as VercelChatMessage, StreamingTextResponse } from "ai";
 
 import { PromptTemplate } from "@langchain/core/prompts";
-import { HttpResponseOutputParser } from "langchain/output_parsers";
+import { HttpResponseOutputParser, StructuredOutputParser } from "langchain/output_parsers";
 import LLMProvider from "@/utils/llms_provider";
+import { JsonOutputParser } from "@langchain/core/output_parsers";
+import { z } from "zod";
 
 export const runtime = "edge";
+
+interface OutLine {
+  name: string;
+  id: string;
+  children: OutLine[];
+}
+
+const parser = StructuredOutputParser.fromZodSchema(
+  z.object({
+    field1: z.string().describe("first field"),
+    field2: z.string().describe("second field")
+  })
+);
 
 const formatMessage = (message: VercelChatMessage) => {
   return `${message.role}: ${message.content}`;
@@ -34,6 +49,7 @@ export async function POST(req: NextRequest) {
     const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage);
     const currentMessageContent = messages[messages.length - 1].content;
     const prompt = PromptTemplate.fromTemplate(TEMPLATE);
+    const parser = new JsonOutputParser<OutLine>();
 
     /**
      * You can also try e.g.:
@@ -69,6 +85,7 @@ export async function POST(req: NextRequest) {
     const stream = await chain.stream({
       chat_history: formattedPreviousMessages.join("\n"),
       input: currentMessageContent,
+      parse: parser.getFormatInstructions()
     });
 
     return new StreamingTextResponse(stream);
