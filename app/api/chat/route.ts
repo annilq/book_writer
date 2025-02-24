@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { Message as VercelChatMessage, StreamingTextResponse } from "ai";
 
 import { PromptTemplate } from "@langchain/core/prompts";
-import { HttpResponseOutputParser, StructuredOutputParser } from "langchain/output_parsers";
+import { HttpResponseOutputParser } from "langchain/output_parsers";
 import LLMProvider from "@/utils/llms_provider";
 import { JsonOutputParser } from "@langchain/core/output_parsers";
-import { z } from "zod";
+import { createChat } from "./actions";
+import { appResponse } from "@/utils/response";
 
 export const runtime = "edge";
 
@@ -15,24 +16,23 @@ interface OutLine {
   children: OutLine[];
 }
 
-const parser = StructuredOutputParser.fromZodSchema(
-  z.object({
-    field1: z.string().describe("first field"),
-    field2: z.string().describe("second field")
-  })
-);
-
 const formatMessage = (message: VercelChatMessage) => {
   return `${message.role}: ${message.content}`;
 };
 
-const TEMPLATE = `You are a pirate named Patchy. All responses must be extremely verbose and in pirate dialect.
-
-Current conversation:
-{chat_history}
-
-User: {input}
-AI:`;
+const TEMPLATE = `
+  You are now a professional writer, skilled in creating works in the {categories} fields. Please create a book outline based on the following information:
+  Book Title:{title}
+  Book description:{description}
+  Coherence requirements:
+    -	Relevance to the context
+    -	Rationality of character actions
+    -	Smoothness of plot development
+    -	Keep the Emotional tone, Core theme, Writing style Consistency and Integrity
+  {chat_history}
+  {input}
+  AI:
+  `;
 
 /**
  * This handler initializes and calls a simple chain with a prompt,
@@ -41,15 +41,20 @@ AI:`;
  * https://js.langchain.com/docs/guides/expression_language/cookbook#prompttemplate--llm--outputparser
  */
 export async function POST(req: NextRequest) {
-  try {
+  return appResponse(async () => {
     const body = await req.json();
-    const messages = body.messages ?? [];
-    const provider = body.provider;
     const model = body.model;
-    const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage);
-    const currentMessageContent = messages[messages.length - 1].content;
-    const prompt = PromptTemplate.fromTemplate(TEMPLATE);
-    const parser = new JsonOutputParser<OutLine>();
+    const title = body.title;
+    const id = body.id;
+    const categories = body.categories;
+    const description = body.description;
+
+    const book = await createChat({ id, model, title, description, categories })
+
+    // const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage);
+    // const currentMessageContent = messages[messages.length - 1].content;
+    // const prompt = PromptTemplate.fromTemplate(TEMPLATE);
+    // const parser = new JsonOutputParser<OutLine>();
 
     /**
      * You can also try e.g.:
@@ -63,33 +68,36 @@ export async function POST(req: NextRequest) {
 
     // Get model instance from provider
 
-    const llm = LLMProvider.getModel(provider, {
-      model,
-      temperature: 0,
-      maxRetries: 2
-    });
+    // const llm = LLMProvider.getModel(provider, {
+    //   model,
+    //   temperature: 0,
+    //   maxRetries: 2
+    // });
     /**
      * Chat models stream message chunks rather than bytes, so this
      * output parser handles serialization and byte-encoding.
      */
-    const outputParser = new HttpResponseOutputParser();
+    // const outputParser = new HttpResponseOutputParser();
 
-    /**
-     * Can also initialize as:
-     *
-     * import { RunnableSequence } from "@langchain/core/runnables";
-     * const chain = RunnableSequence.from([prompt, model, outputParser]);
-     */
-    const chain = prompt.pipe(llm).pipe(outputParser);
+    // /**
+    //  * Can also initialize as:
+    //  *
+    //  * import { RunnableSequence } from "@langchain/core/runnables";
+    //  * const chain = RunnableSequence.from([prompt, model, outputParser]);
+    //  */
+    // const chain = prompt.pipe(llm).pipe(outputParser);
 
-    const stream = await chain.stream({
-      chat_history: formattedPreviousMessages.join("\n"),
-      input: currentMessageContent,
-      parse: parser.getFormatInstructions()
-    });
+    // const stream = await chain.stream({
+    //   title,
+    //   description,
+    //   categories,
+    //   chat_history: formattedPreviousMessages.join("\n"),
+    //   input: currentMessageContent,
+    //   parse: parser.getFormatInstructions()
+    // });
 
-    return new StreamingTextResponse(stream);
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
-  }
+    return book
+
+  });
+
 }

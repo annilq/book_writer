@@ -19,7 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "./ui/select"
 import { Model } from "@/app/api/model/route";
 
-const FormSchema = z.object({
+export const FormSchema = z.object({
   title: z.string().min(2, {
     message: "bookName must be at least 2 characters.",
   }),
@@ -48,7 +48,7 @@ function Example(props: { handleSubmit: (data: Partial<Book>) => void }) {
   )
 }
 
-export default function BookOutlineForm(props: { categories: Category[], models: Model[], handleSubmit: (data:typeof FormSchema) => Promise<any> }) {
+export default function BookOutlineForm(props: { categories: Category[], models: Model[], handleSubmit: (data: z.infer<typeof FormSchema>) => Promise<any> }) {
   const { categories, models, handleSubmit } = props
   const { t } = useTranslation()
 
@@ -74,18 +74,6 @@ export default function BookOutlineForm(props: { categories: Category[], models:
     })
     handleSubmit(data)
   }
-
-  // useEffect(() => {
-  //   if (models?.[0]?.name) {
-  //     form.setValue("model", `${models?.[0]?.provider}/${models?.[0]?.name}`)
-  //   }
-  // }, [form, models])
-
-  // useEffect(() => {
-  //   if (categories?.[0]?.id) {
-  //     form.setValue("categories", categories[0].id)
-  //   }
-  // }, [categories, form])
 
   return (
     <Card className="mx-auto w-1/4 min-w-fit max-w-2xl mt-8" >
@@ -129,7 +117,7 @@ export default function BookOutlineForm(props: { categories: Category[], models:
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Select {...field}>
+                  <Select {...field} onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder={t("bookCate")} />
@@ -151,7 +139,7 @@ export default function BookOutlineForm(props: { categories: Category[], models:
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Select  {...field}>
+                    <Select  {...field} onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder={t("bookModel")} />

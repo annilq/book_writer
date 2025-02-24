@@ -1,22 +1,43 @@
 "use client";
 
 import { useRouter } from "next/navigation"
-import { Book, Category } from '@prisma/client';
-import BookOutlineForm from "@/components/BookOutlineForm"
+import { Category } from '@prisma/client';
+import BookOutlineForm, { FormSchema } from "@/components/BookOutlineForm"
 import { useTranslation } from "react-i18next";
 import { Model } from "./api/model/route";
+import { useChat } from "ai/react";
+import { startTransition } from "react";
+import { createChat } from "./api/chat/actions";
+import { z } from "zod";
 
 export default function Home(props: { categories: Category[], models: Model[] }) {
   const { models, categories } = props
   const router = useRouter()
   const { t } = useTranslation()
+  const { id, setMessages } = useChat();
 
-  const handleSubmit = async (data: Partial<Book>) => {
+  const handleSubmit = async (data: z.infer<typeof FormSchema>) => {
     // This would call an API route to generate the outline using the AI SDK
     // For now, we'll just set a dummy outline
-    router.push(
-      `/book/${data.id}`,
-    )
+    startTransition(async () => {
+      const { model, categories, description, title } = data;
+
+      const { messages } = await createChat(
+        {
+          id,
+          title,
+          model,
+          description,
+          categories: [categories]
+        }
+      );
+
+      setMessages(messages);
+
+      startTransition(() => {
+        router.push(`/books/${id}`);
+      });
+    });
   }
 
   return (

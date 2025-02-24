@@ -92,21 +92,20 @@ model Book {
   id              String     @id @default(nanoid(16))
   title           String
   model           String
-  quality         String
   prompt          String
   description     String
-  publicationDate DateTime
-  isbn            String     @unique
+  publicationDate DateTime?
+  isbn            String?    @unique
   coverImage      String?
   chapters        Chapter[]
   messages        Message[]
   authors         User[]     @relation("BookAuthors")
   tags            Tag[]      @relation("BookTags")
   reviews         Review[]
-  publisherId     Int
+  publisherId     Int?
   publisher       Publisher? @relation(fields: [publisherId], references: [id])
   categories      Category[] @relation("BookCategories")
-  status          BookStatus
+  status          BookStatus @default(DRAFT)
   createdAt       DateTime   @default(now())
 }
 
@@ -123,16 +122,16 @@ model Message {
 }
 
 model Chapter {
-  id          Int         @id @default(autoincrement())
-  title       String
-  content     String
-  order       Int
-  bookId      String
-  parentId    Int?
-  book        Book        @relation(fields: [bookId], references: [id])
-  parent      Chapter?    @relation("ChapterHierarchy", fields: [parentId], references: [id]) // 自引用，指向父章节
-  subChapters Chapter[]   @relation("ChapterHierarchy") // 子章节，与父章节建立关系
-  paragraphs  Paragraph[]
+  id         Int         @id @default(autoincrement())
+  title      String
+  content    String
+  order      Int         @default(autoincrement())
+  bookId     String
+  parentId   Int?
+  book       Book        @relation(fields: [bookId], references: [id])
+  parent     Chapter?    @relation("ChapterHierarchy", fields: [parentId], references: [id])
+  children   Chapter[]   @relation("ChapterHierarchy")
+  paragraphs Paragraph[]
 }
 
 model Paragraph {
@@ -164,8 +163,8 @@ model Publisher {
 }
 
 model Category {
-  id          Int    @id @default(autoincrement())
-  name        String @unique
-  description String
-  books       Book[] @relation("BookCategories")
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  books       Book[]  @relation("BookCategories")
 }
