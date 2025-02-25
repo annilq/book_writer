@@ -3,10 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { ThemeProvider } from 'next-themes'
 import { SessionProvider } from "next-auth/react"
-import "@/utils/i18n"; 
+import { SWRConfig } from 'swr'
+
+import "@/utils/i18n";
 
 const ClientContext = ({ children }: { children: React.ReactNode }) => {
-    
+
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
@@ -22,11 +24,18 @@ const ClientContext = ({ children }: { children: React.ReactNode }) => {
 
     return (
         isMounted ? (
-            <ThemeProvider attribute="data-joy-color-scheme">
-                <SessionProvider>
-                    {children}
-                </SessionProvider>
-            </ThemeProvider>
+            <SWRConfig
+                value={{
+                    refreshInterval: 3000,
+                    fetcher: (resource, init) => fetch(resource, init).then(res => res.json()).then(data => data.data)
+                }}
+            >
+                <ThemeProvider attribute="data-joy-color-scheme">
+                    <SessionProvider>
+                        {children}
+                    </SessionProvider>
+                </ThemeProvider>
+            </SWRConfig>
         ) : <div>isMounting</div>
     );
 };

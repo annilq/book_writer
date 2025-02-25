@@ -2,14 +2,14 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/utils/cn"
-import { Bell, Grid, LayoutGrid, Plus, Search } from "lucide-react"
+import { AlarmClockPlus, ArchiveIcon, Bell, BookAIcon, Grid, LayoutGrid, Plus, Search, Upload } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import type React from "react" // Import React
+import type React from "react"
 import BookList from "./components/Books"
 import Tags from "./components/Tags"
+import { useTranslation } from "react-i18next";
 
 interface NavItemProps {
   href: string
@@ -31,45 +31,36 @@ function NavItem({ href, icon, children, active }: NavItemProps) {
 }
 
 export default function BookManager() {
+  const { t } = useTranslation()
+
   return (
     <div className="h-full flex bg-background">
       {/* Sidebar */}
       <div className="w-64 border-r bg-background">
         <div className="p-4">
-          <h1 className="text-xl font-bold text-foreground">Showpad</h1>
+          <h1 className="text-xl font-bold text-foreground">Bookshelf</h1>
         </div>
         <nav className="space-y-1 px-2">
-          <NavItem href="#" icon={<LayoutGrid className="h-4 w-4" />} active>
-            All content
+          <NavItem href="/books" icon={<LayoutGrid className="h-4 w-4" />} active>
+            {t("AllBooks")}
           </NavItem>
           <NavItem
             href="#"
-            icon={
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  d="M15 3v18M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            }
+            icon={<AlarmClockPlus className="h-4 w-4" />}
           >
-            Presentations
+            {t("DRAFT")}
           </NavItem>
           <NavItem
             href="#"
-            icon={
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6m-3 4v6m-3-3h6"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            }
+            icon={<ArchiveIcon className="h-4 w-4" />}
           >
-            Analytics
+            {t("PUBLISHED")}
+          </NavItem>
+          <NavItem
+            href="#"
+            icon={<BookAIcon className="h-4 w-4" />}
+          >
+            {t("UNPUBLISHED")}
           </NavItem>
           <Tags />
         </nav>
@@ -107,51 +98,8 @@ export default function BookManager() {
           <div className="mb-6 flex items-center gap-4">
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              Create
+              {t("create")}
             </Button>
-            <Button variant="outline" className="gap-2">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Upload
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Create folder
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  d="M12 18.5a6.5 6.5 0 100-13 6.5 6.5 0 000 13zM12 14a2 2 0 100-4 2 2 0 000 4z"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Record
-            </Button>
-          </div>
-
-          <div className="mb-6">
-            <Tabs defaultValue="recent">
-              <TabsList>
-                <TabsTrigger value="recent">Recent</TabsTrigger>
-                <TabsTrigger value="starred">Starred</TabsTrigger>
-                <TabsTrigger value="shared">Shared</TabsTrigger>
-              </TabsList>
-            </Tabs>
           </div>
           <BookList />
         </div>
