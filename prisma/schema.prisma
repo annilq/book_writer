@@ -92,7 +92,6 @@ model Book {
   id              String     @id @default(nanoid(16))
   title           String
   model           String
-  prompt          String
   description     String
   publicationDate DateTime?
   isbn            String?    @unique

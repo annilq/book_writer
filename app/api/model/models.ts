@@ -11,5 +11,5 @@ export const getModels = async () => {
     ollamaModels = res.models?.map(model => ({ ...model, provider: "ollama" }))
   } catch (error) {
   }
-  return [{ provider: "deepseek", name: "deepseek-reasoner" }].concat(ollamaModels);
+  return [{ provider: "deepseek", name: "deepseek-reasoner" }, { provider: "deepseek", name: "deepseek-chat" }].concat(ollamaModels);
 }

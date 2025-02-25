@@ -7,14 +7,14 @@ import { useTranslation } from "react-i18next";
 import { Model } from "./api/model/route";
 import { useChat } from "ai/react";
 import { startTransition } from "react";
-import { createChat } from "./api/chat/actions";
+import { createBook } from "./api/chat/actions";
 import { z } from "zod";
 
 export default function Home(props: { categories: Category[], models: Model[] }) {
   const { models, categories } = props
   const router = useRouter()
   const { t } = useTranslation()
-  const { id, setMessages } = useChat();
+  const { id } = useChat();
 
   const handleSubmit = async (data: z.infer<typeof FormSchema>) => {
     // This would call an API route to generate the outline using the AI SDK
@@ -22,7 +22,7 @@ export default function Home(props: { categories: Category[], models: Model[] })
     startTransition(async () => {
       const { model, categories, description, title } = data;
 
-      const { messages } = await createChat(
+      const chat = await createBook(
         {
           id,
           title,
@@ -31,12 +31,11 @@ export default function Home(props: { categories: Category[], models: Model[] })
           categories: [categories]
         }
       );
-
-      setMessages(messages);
-
-      startTransition(() => {
-        router.push(`/books/${id}`);
-      });
+      if (chat) {
+        startTransition(() => {
+          router.push(`/books/${chat?.id}`);
+        });
+      }
     });
   }
 
