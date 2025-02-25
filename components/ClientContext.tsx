@@ -26,7 +26,7 @@ const ClientContext = ({ children }: { children: React.ReactNode }) => {
         isMounted ? (
             <SWRConfig
                 value={{
-                    refreshInterval: 3000,
+                    refreshInterval: 10000,
                     fetcher: (resource, init) => fetch(resource, init).then(res => res.json()).then(data => data.data)
                 }}
             >

@@ -16,8 +16,7 @@ const TEMPLATE = `
     - Rationality of character actions
     - Smoothness of plot development
     - Keep the Emotional tone, Core theme, Writing style Consistency and Integrity
-    
-  {format_instructions}
+    - Return JSON response like this:{format_instructions}
 `;
 
 const Chapter = z.object({

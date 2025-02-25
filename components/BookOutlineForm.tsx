@@ -19,6 +19,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "./ui/select"
 import useSWR from "swr";
 import { Model } from "@/app/api/model/models";
+import { LoadingSpinner } from "./spinner";
+import { startTransition, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useChat } from "ai/react";
+import { createBook } from "@/app/api/chat/actions";
 
 export const FormSchema = z.object({
   title: z.string().min(2, {
@@ -49,11 +54,43 @@ function Example(props: { handleSubmit: (data: Partial<Book>) => void }) {
   )
 }
 
-export default function BookOutlineForm(props: { handleSubmit: (data: z.infer<typeof FormSchema>) => Promise<any> }) {
-  const { handleSubmit } = props
+export default function BookOutlineForm() {
+  const router = useRouter()
+  const { id } = useChat({
+    api: "/api/chat"
+  });
+
   const { t } = useTranslation()
   const { data: categories = [] } = useSWR<Category[]>('/api/categories')
   const { data: models = [] } = useSWR<Model[]>('/api/model')
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (data: z.infer<typeof FormSchema>) => {
+    // This would call an API route to generate the outline using the AI SDK
+    // For now, we'll just set a dummy outline
+    startTransition(async () => {
+      const { model, categories, description, title } = data;
+      setLoading(true)
+
+      const chat = await createBook(
+        {
+          id,
+          title,
+          model,
+          description,
+          categories: [categories]
+        }
+      );
+      setLoading(false)
+
+      if (chat) {
+        startTransition(() => {
+          router.push(`/books/${chat?.id}`);
+        });
+      }
+    });
+  }
+
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -66,7 +103,7 @@ export default function BookOutlineForm(props: { handleSubmit: (data: z.infer<ty
   })
 
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
     toast({
       title: "You submitted the following values:",
       description: (
@@ -75,11 +112,11 @@ export default function BookOutlineForm(props: { handleSubmit: (data: z.infer<ty
         </pre>
       ),
     })
-    handleSubmit(data)
+    await handleSubmit(data)
   }
 
   return (
-    <Card className="mx-auto w-1/4 min-w-fit max-w-2xl mt-8" >
+    <Card className="mx-auto w-1/4 min-w-fit max-w-2xl mt-8 relative" >
       <CardHeader>
         <CardTitle className="text-3xl font-bold text-center">{t("appName")}</CardTitle>
         <CardDescription className="font-bold text-center mb-8">{t("appTip")}</CardDescription>
@@ -164,6 +201,7 @@ export default function BookOutlineForm(props: { handleSubmit: (data: z.infer<ty
         </form>
       </Form>
       <Example handleSubmit={(data) => { form.reset(data) }} />
+      {loading && <LoadingSpinner />}
     </Card>
   )
 }
