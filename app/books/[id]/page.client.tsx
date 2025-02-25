@@ -27,6 +27,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
 
   const { messages, isLoading, append } = useChat({
     id: chat.id,
+    api: "/api/chat",
     initialMessages: chat.messages as Message[],
     body: {
       model: chat.model,

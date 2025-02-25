@@ -17,7 +17,8 @@ import { FormField, FormItem, FormControl, FormMessage, Form } from "./ui/form"
 import { toast } from "@/hooks/use-toast"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "./ui/select"
-import { Model } from "@/app/api/model/route";
+import useSWR from "swr";
+import { Model } from "@/app/api/model/models";
 
 export const FormSchema = z.object({
   title: z.string().min(2, {
@@ -48,9 +49,11 @@ function Example(props: { handleSubmit: (data: Partial<Book>) => void }) {
   )
 }
 
-export default function BookOutlineForm(props: { categories: Category[], models: Model[], handleSubmit: (data: z.infer<typeof FormSchema>) => Promise<any> }) {
-  const { categories, models, handleSubmit } = props
+export default function BookOutlineForm(props: { handleSubmit: (data: z.infer<typeof FormSchema>) => Promise<any> }) {
+  const { handleSubmit } = props
   const { t } = useTranslation()
+  const { data: categories = [] } = useSWR<Category[]>('/api/categories')
+  const { data: models = [] } = useSWR<Model[]>('/api/model')
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
