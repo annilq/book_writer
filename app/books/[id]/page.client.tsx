@@ -44,7 +44,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
 
   return (
     <div className="flex bg-background text-foreground">
-      <Sidebar />
+      <Sidebar bookId={chat.id} />
       <main className="flex flex-1 overflow-auto">
         <div className="flex w-full shrink-0 flex-col overflow-hidden lg:w-1/2">
           <ChatLog
