@@ -1,8 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Workflow, Folder, Layout } from "lucide-react";
-import { Tree } from "@/components/ui/tree";
+import { Tree } from "./tree";
 import { SettingsModal } from "./settingModal";
 
 const data = [
@@ -25,12 +24,12 @@ const data = [
         id: "d1",
         name: "Alice",
         children: [
-          { id: "d11", name: "Alice2", icon: Layout },
+          { id: "d11", name: "Alice2" },
           { id: "d12", name: "Bob2" },
           { id: "d13", name: "Charlie2" },
         ],
       },
-      { id: "d2", name: "Bob", icon: Layout },
+      { id: "d2", name: "Bob" },
       { id: "d3", name: "Charlie" },
     ],
   },
@@ -79,8 +78,6 @@ export default function Sidebar() {
         className="overflow-auto h-[calc(100vh-36px)]"
         expandAll
         onSelectChange={(item) => { }}
-        folderIcon={Folder}
-        itemIcon={Workflow}
       />
       <SettingsModal />
     </div>
