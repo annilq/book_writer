@@ -153,6 +153,7 @@ async function fetchBookOutline(
   });
 
   const chain = prompt.pipe(llm).pipe(parser);
+  console.log(parser.getFormatInstructions());
 
   try {
     const rawOutline = await chain.invoke({

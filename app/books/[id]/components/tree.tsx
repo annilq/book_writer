@@ -5,20 +5,15 @@ import React from "react";
 import { type LucideIcon } from "lucide-react";
 import { cn } from "@/utils";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../../../components/ui/accordion";
+import { Chapter } from "@prisma/client";
 
-interface TreeDataItem {
-  id: string;
-  name: string;
-  icon?: LucideIcon,
-  children?: TreeDataItem[];
-}
 
 type TreeProps =
   React.HTMLAttributes<HTMLDivElement> &
   {
-    data: TreeDataItem[] | TreeDataItem,
+    data: Chapter[],
     initialSlelectedItemId?: string,
-    onSelectChange?: (item: TreeDataItem | undefined) => void,
+    onSelectChange?: (item: Chapter | undefined) => void,
     expandAll?: boolean,
     folderIcon?: LucideIcon,
     itemIcon?: LucideIcon
@@ -33,9 +28,9 @@ const Tree = React.forwardRef<
   itemIcon,
   ...props
 }, ref) => {
-  const [selectedItemId, setSelectedItemId] = React.useState<string | undefined>(initialSlelectedItemId)
+  const [selectedItemId, setSelectedItemId] = React.useState<string | number | undefined>(initialSlelectedItemId)
 
-  const handleSelectChange = React.useCallback((item: TreeDataItem | undefined) => {
+  const handleSelectChange = React.useCallback((item: Chapter | undefined) => {
     setSelectedItemId(item?.id);
     if (onSelectChange) {
       onSelectChange(item)
@@ -49,9 +44,8 @@ const Tree = React.forwardRef<
 
     const ids: string[] = []
 
-    function walkTreeItems(items: TreeDataItem[] | TreeDataItem, targetId: string) {
+    function walkTreeItems(items: Chapter[] | Chapter, targetId: string) {
       if (items instanceof Array) {
-        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < items.length; i++) {
           ids.push(items[i]!.id);
           if (walkTreeItems(items[i]!, targetId) && !expandAll) {
@@ -68,7 +62,7 @@ const Tree = React.forwardRef<
 
     walkTreeItems(data, initialSlelectedItemId)
     return ids;
-  }, [data, initialSlelectedItemId])
+  }, [data, expandAll, initialSlelectedItemId])
 
 
   return (
@@ -90,7 +84,7 @@ type TreeItemProps =
   TreeProps &
   {
     selectedItemId?: string,
-    handleSelectChange: (item: TreeDataItem | undefined) => void,
+    handleSelectChange: (item: Chapter | undefined) => void,
     expandedItemIds: string[],
     FolderIcon?: LucideIcon,
     ItemIcon?: LucideIcon
@@ -104,7 +98,7 @@ const TreeItem = React.forwardRef<
   return (
     <div ref={ref} role="tree" className={className} {...props}>
       <ul>
-        {data instanceof Array ? (
+        {
           data.map((item, index) => (
             <li key={item.id}>
               {item.children ? (
@@ -118,26 +112,14 @@ const TreeItem = React.forwardRef<
                       onClick={() => handleSelectChange(item)}
                     >
                       <div className="flex items-center gap-1">
-                        {item.icon &&
-                          <item.icon
-                            className="h-4 w-4 shrink-0 mr-1 text-accent-foreground/50"
-                            aria-hidden="true"
-                          />
-                        }
-                        {!item.icon && FolderIcon &&
-                          <FolderIcon
-                            className="h-4 w-4 shrink-0 mr-1 text-accent-foreground/50"
-                            aria-hidden="true"
-                          />
-                        }
                         <span>{[...parentIndex, index + 1].join(".")}</span>
-                        <span className="text-sm truncate">{item.name}</span>
+                        <span className="text-sm truncate">{item.title}</span>
                       </div>
 
                     </AccordionTrigger>
                     <AccordionContent className="pl-2">
                       <TreeItem
-                        data={item.children ? item.children : item}
+                        data={item.children ? item.children : [item]}
                         parentIndex={[...parentIndex, index + 1]}
                         selectedItemId={selectedItemId}
                         handleSelectChange={handleSelectChange}
@@ -159,17 +141,7 @@ const TreeItem = React.forwardRef<
               )}
             </li>
           ))
-        ) : (
-          <li>
-            <Leaf
-              item={data}
-              index={[...parentIndex]}
-              isSelected={selectedItemId === data.id}
-              onClick={() => handleSelectChange(data)}
-              Icon={ItemIcon}
-            />
-          </li>
-        )}
+        }
       </ul>
     </div>
   );
@@ -178,7 +150,7 @@ const TreeItem = React.forwardRef<
 const Leaf = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
-    item: TreeDataItem, isSelected?: boolean,
+    item: Chapter, isSelected?: boolean,
     index: number[],
     Icon?: LucideIcon
   }
@@ -194,13 +166,11 @@ const Leaf = React.forwardRef<
       )}
       {...props}
     >
-      {item.icon && <item.icon className="h-4 w-4 shrink-0 text-accent-foreground/50" aria-hidden="true" />}
-      {!item.icon && Icon && <Icon className="h-4 w-4 shrink-0 text-accent-foreground/50" aria-hidden="true" />}
       <span>{index.join(".")}</span>
-      <span className="flex-grow text-sm truncate">{item.name}</span>
+      <span className="flex-grow text-sm truncate">{item.title}</span>
     </div>
   );
 })
 
 
-export { Tree, type TreeDataItem }
+export { Tree, type Chapter }
