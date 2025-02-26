@@ -9,6 +9,7 @@ import CodeViewerLayout from "./book-viewer-layout";
 import type { Chat } from "./page";
 import { CreateMessage, Message, useChat } from "ai/react";
 import { useRouter } from "next/navigation";
+import Sidebar from "./components/sidebar";
 
 let didPushToCode = false;
 let didPushToPreview = false;
@@ -42,9 +43,10 @@ export default function PageClient({ chat }: { chat: Chat }) {
 
 
   return (
-    <div className="h-dvh">
-      <div className="flex h-full">
-        <div className="mx-auto flex w-full shrink-0 flex-col overflow-hidden lg:w-1/2">
+    <div className="flex bg-background text-foreground">
+      <Sidebar />
+      <main className="flex flex-1 overflow-auto">
+        <div className="flex w-full shrink-0 flex-col overflow-hidden lg:w-1/2">
           <ChatLog
             chat={{ ...chat, messages }}
             activeMessage={activeMessage}
@@ -58,13 +60,11 @@ export default function PageClient({ chat }: { chat: Chat }) {
               }
             }}
           />
-
           <ChatBox
             onNewStreamPromise={(message: CreateMessage) => append(message, { body: { model: chat.model, chatId: chat.id } })}
             isStreaming={!!isLoading}
           />
         </div>
-
         <CodeViewerLayout
           isShowing={isShowingCodeViewer}
           onClose={() => {
@@ -102,7 +102,8 @@ export default function PageClient({ chat }: { chat: Chat }) {
             />
           )}
         </CodeViewerLayout>
-      </div>
+      </main>
+
     </div>
   );
 }

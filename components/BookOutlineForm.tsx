@@ -19,7 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "./ui/select"
 import useSWR from "swr";
 import { Model } from "@/app/api/model/models";
-import { LoadingSpinner } from "./spinner";
+import { Spinner } from "./spinner";
 import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useChat } from "ai/react";
@@ -201,7 +201,7 @@ export default function BookOutlineForm() {
         </form>
       </Form>
       <Example handleSubmit={(data) => { form.reset(data) }} />
-      {loading && <LoadingSpinner />}
+      {loading && <Spinner />}
     </Card>
   )
 }

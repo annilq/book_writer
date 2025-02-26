@@ -39,7 +39,7 @@ export default function RootLayout({
       </head>
       <body className={cn(publicSans.className, "flex flex-col bg-gradient-to-r from-purple-500 to-indigo-600 text-white min-h-screen overflow-y-scroll hide-scrollbar")}>
         <ClientContext>
-          <div className="h-screen flex flex-col">
+          <div className="h-screen flex flex-col overflow-hidden">
             <Header />
             <div className="flex-1 relative items-center">
               {children}
