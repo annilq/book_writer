@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
       }
     );
     for await (const event of stream) {
-
       const eventType = event.event;
       if (eventType === "on_llm_end") {
         console.log(`Chat model chunk: ${event.data.chunk.message.content}`);
@@ -36,5 +35,4 @@ export async function POST(req: NextRequest) {
     }
     return LangChainAdapter.toDataStreamResponse(stream);
   });
-
 }

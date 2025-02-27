@@ -84,7 +84,7 @@ export default function BookOutlineForm() {
 
       if (chat) {
         startTransition(() => {
-          router.push(`/books/chapter/${chat?.id}`);
+          router.push(`/chapter/${chat?.id}`);
         });
       }
     });

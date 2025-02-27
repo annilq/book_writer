@@ -1,3 +1,5 @@
+import { ChapterInput } from "@/app/api/chat/actions";
+
 export * from "./cn"
 
 
@@ -36,6 +38,25 @@ export function extractFirstCodeBlock(input: string) {
   }
   return null; // No code block found
 }
+
+export function extractJsonCodeFromMarkdown(markdown: string): any[] {
+  const codeBlockRegex = /```json\n([\s\S]*?)\n```/g;
+  let match;
+  const jsonCodes: any[] = [];
+
+  while ((match = codeBlockRegex.exec(markdown)) !== null) {
+    const jsonString = match[1].trim();
+    try {
+      const json = JSON.parse(jsonString);
+      jsonCodes.push(json);
+    } catch (error) {
+      console.error("Invalid JSON found:", jsonString);
+    }
+  }
+
+  return jsonCodes;
+}
+
 
 function parseFileName(fileName: string): { name: string; extension: string } {
   // Split the string at the last dot
@@ -169,3 +190,58 @@ export function splitByFirstCodeFence(markdown: string) {
   return result;
 }
 
+
+export function flattenChaptersWithPosition(
+  chapters: ChapterInput[],
+  parentPosition: string = ""
+): ChapterInput[] {
+  const result: ChapterInput[] = [];
+
+  chapters.forEach((chapter, index) => {
+    const currentPosition = parentPosition
+      ? `${parentPosition}.${index}`
+      : `${index}`;
+
+    const flatChapter = {
+      title: chapter.title,
+      content: chapter.content,
+      position: currentPosition,
+    };
+
+    result.push(flatChapter);
+
+    if (chapter.children && chapter.children.length > 0) {
+      result.push(...flattenChaptersWithPosition(chapter.children, currentPosition));
+    }
+  });
+
+  return result;
+}
+
+export function arrayToTree(items: ChapterInput[]): ChapterInput[] {
+  const result: ChapterInput[] = [];
+  const map: { [key: string]: ChapterInput } = {};
+
+  const sortedItems = [...items].sort((a, b) => a.position.localeCompare(b.position));
+
+  for (const item of sortedItems) {
+    const newItem: ChapterInput = { ...item };
+    map[item.position] = newItem;
+
+    const lastDotIndex = item.position.lastIndexOf('.');
+    if (lastDotIndex === -1) {
+      result.push(newItem);
+    } else {
+      const parentPosition = item.position.substring(0, lastDotIndex);
+      const parent = map[parentPosition];
+      if (parent) {
+        if (!parent.children) {
+          parent.children = [];
+        }
+        parent.children.push(newItem);
+      }
+    }
+  }
+
+  return result;
+}

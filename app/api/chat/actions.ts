@@ -7,7 +7,7 @@ import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { PromptTemplate } from "@langchain/core/prompts";
 import { z } from "zod";
 import { bookArchitectPrompt, chapterPrompt } from "@/utils/prompts";
-import { extractFirstCodeBlock } from "@/utils";
+import { extractJsonCodeFromMarkdown, flattenChaptersWithPosition } from "@/utils";
 
 const TEMPLATE = `
   You are now a professional writer, skilled in creating works in the {categories} fields.  Create a book outline based on the following information:
@@ -30,39 +30,13 @@ const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
 
 const ChaptersSchema = z.array(ChapterModel)
 
-interface ChapterInput {
+export interface ChapterInput {
   title: string;
   content: string;
   position: string;
   children?: ChapterInput[];
 }
 
-function flattenChaptersWithPosition(
-  chapters: ChapterInput[],
-  parentPosition: string = ""
-): ChapterInput[] {
-  const result: ChapterInput[] = [];
-
-  chapters.forEach((chapter, index) => {
-    const currentPosition = parentPosition
-      ? `${parentPosition}.${index}`
-      : `${index}`;
-
-    const flatChapter = {
-      title: chapter.title,
-      content: chapter.content,
-      position: currentPosition,
-    };
-
-    result.push(flatChapter);
-
-    if (chapter.children && chapter.children.length > 0) {
-      result.push(...flattenChaptersWithPosition(chapter.children, currentPosition));
-    }
-  });
-
-  return result;
-}
 
 export async function createBook(
   { id,
@@ -117,10 +91,7 @@ export async function createBook(
         data: {
           chapters: {
             createMany: {
-              data: flattenedChapters.map(({ children: _, ...chapter }) => ({
-                ...chapter,
-                bookId: book.id,
-              }))
+              data: flattenedChapters.map(({ children: _, ...chapter }) => chapter)
             }
           },
           messages: {
@@ -181,9 +152,8 @@ async function fetchBookOutline(
     });
     return rawOutline
   } catch (error: any) {
-    console.log("Error fetching book outline:", error);
-    const extraData = extractFirstCodeBlock(error.llmOutput)
-    return extraData?.code ? JSON.parse(extraData?.code) : [
+    const [extraData] = extractJsonCodeFromMarkdown(error.llmOutput)
+    return extraData ? extraData : [
       {
         title: title,
         content: `Introduction to ${title}`,
