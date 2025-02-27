@@ -1,17 +1,29 @@
 import dedent from "dedent";
 import { Book } from "@prisma/client";
 
-export function softwareArchitectPrompt(data: Partial<Book>, categories: string[]) {
-  const { } = data
+export function bookArchitectPrompt(data: Partial<Book>, chapters: string[]) {
   return dedent`
-  You are now a professional writer, skilled in creating works in the ${categories.join(',')} fields. Please create a book outline based on the following information:
+  You are now a professional writer, You are working on writing a book:
   Book Title:${data.title}
   Book description:${data.description}
+  Book chapters:${JSON.stringify(chapters)}
   Coherence requirements:
     -	Relevance to the context
     -	Rationality of character actions
     -	Smoothness of plot development
     -	Keep the Emotional tone, Core theme, Writing style Consistency and Integrity
+  `;
+}
+
+export function chapterPrompt(curChapter: string, preChapter?: string) {
+  if (preChapter) {
+    return dedent`
+    now you finished the Chapter:*${preChapter}*
+    continue to finish this Chapter:*${curChapter}*
+    `;
+  }
+  return dedent`
+  finished the Chapter:*${preChapter}*
   `;
 }
 

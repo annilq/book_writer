@@ -6,6 +6,7 @@ import LLMProvider from "@/utils/llms_provider";
 import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { PromptTemplate } from "@langchain/core/prompts";
 import { z } from "zod";
+import { bookArchitectPrompt, chapterPrompt } from "@/utils/prompts";
 
 const TEMPLATE = `
   You are now a professional writer, skilled in creating works in the {categories} fields.  Create a book outline based on the following information:
@@ -16,18 +17,20 @@ const TEMPLATE = `
     - Rationality of character actions
     - Smoothness of plot development
     - Keep the Emotional tone, Core theme, Writing style Consistency and Integrity
-    - Return JSON response like this:{format_instructions}
+  Format Instructions:
+  {format_instructions}
 `;
 
-const Chapter = z.object({
+const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
   title: z.string().min(3),
   content: z.string().min(20),
   order: z.number(),
   bookId: z.string(),
-  parentId: z.number().nullable().optional()
-});
+  parentId: z.number().optional(),
+  children: z.array(ChapterModel)
+}));
 
-const ChaptersSchema = z.array(Chapter);
+const ChaptersSchema = z.array(ChapterModel)
 
 interface RecursiveChapter {
   title: string;
@@ -118,6 +121,18 @@ export async function createBook(
         },
         data: {
           chapters: { createMany: { data: chapters } },
+          messages: {
+            createMany: {
+              data: [
+                {
+                  role: "system",
+                  content: bookArchitectPrompt(book, chapters),
+                  position: 0,
+                },
+                { role: "user", content: chapterPrompt(chapters[0].title), position: 1 },
+              ],
+            },
+          },
         },
         include: {
           chapters: true

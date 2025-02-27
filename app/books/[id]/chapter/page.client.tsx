@@ -2,14 +2,14 @@
 
 import { startTransition, useState } from "react";
 
-import ChatBox from "./components/chat-box";
-import ChatLog from "./components/chat-log";
-import CodeViewer from "./components/book-viewer";
-import CodeViewerLayout from "./components/book-viewer-layout";
-import type { Chat } from "./page";
-import { CreateMessage, Message, useChat } from "ai/react";
+import ChatBox from "../components/chat-box";
+import ChatLog from "../components/chat-log";
+import CodeViewer from "../components/book-viewer";
+import CodeViewerLayout from "../components/book-viewer-layout";
+import type { Chat } from "../page";
+import { CreateMessage, Message, useChat } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
-import Sidebar from "./components/sidebar";
+import Sidebar from "../components/sidebar";
 
 let didPushToCode = false;
 let didPushToPreview = false;

@@ -9,20 +9,20 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { SUGGESTED_PROMPTS } from "@/utils/constants"
 import { useTranslation } from "react-i18next"
 
-import { FormField, FormItem, FormControl, FormMessage, Form } from "./ui/form"
+import { FormField, FormItem, FormControl, FormMessage, Form } from "@/components/ui/form"
 import { toast } from "@/hooks/use-toast"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "./ui/select"
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 import useSWR from "swr";
 import { Model } from "@/app/api/model/models";
-import { Spinner } from "./spinner";
+import { Spinner } from "@/components/spinner";
 import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useChat } from "ai/react";
+import { useChat } from "@ai-sdk/react";
 import { createBook } from "@/app/api/chat/actions";
 
 export const FormSchema = z.object({
@@ -56,21 +56,19 @@ function Example(props: { handleSubmit: (data: Partial<Book>) => void }) {
 
 export default function BookOutlineForm() {
   const router = useRouter()
-  const { id } = useChat({
+  const { id, status, setMessages } = useChat({
     api: "/api/chat"
   });
 
   const { t } = useTranslation()
   const { data: categories = [] } = useSWR<Category[]>('/api/categories')
   const { data: models = [] } = useSWR<Model[]>('/api/model')
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (data: z.infer<typeof FormSchema>) => {
     // This would call an API route to generate the outline using the AI SDK
     // For now, we'll just set a dummy outline
     startTransition(async () => {
       const { model, categories, description, title } = data;
-      setLoading(true)
 
       const chat = await createBook(
         {
@@ -81,11 +79,12 @@ export default function BookOutlineForm() {
           categories: [categories]
         }
       );
-      setLoading(false)
+
+      setMessages(chat?.messages || [])
 
       if (chat) {
         startTransition(() => {
-          router.push(`/books/${chat?.id}`);
+          router.push(`/books/chapter/${chat?.id}`);
         });
       }
     });
@@ -201,7 +200,7 @@ export default function BookOutlineForm() {
         </form>
       </Form>
       <Example handleSubmit={(data) => { form.reset(data) }} />
-      {loading && <Spinner />}
+      {status === "streaming" && <Spinner />}
     </Card>
   )
 }

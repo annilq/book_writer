@@ -1,6 +1,6 @@
 "use client";
 
-import BookOutlineForm from "@/components/BookOutlineForm"
+import BookOutlineForm from "./components/BookOutlineForm"
 import { useTranslation } from "react-i18next";
 
 export default function Home() {

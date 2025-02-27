@@ -1,7 +1,7 @@
 "use client";
 
 
-import type { Chat, Message } from "./page";
+import type { Chat, Message } from "../page";
 import { StickToBottom } from "use-stick-to-bottom";
 import { extractFirstCodeBlock, splitByFirstCodeFence } from "@/utils";
 import { ChevronLeftIcon, ChevronRightIcon, CircleX } from "lucide-react";

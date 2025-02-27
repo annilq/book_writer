@@ -1,7 +1,7 @@
 "use client";
 
 import { splitByFirstCodeFence } from "@/utils";
-import type { Chat, Message } from "./page";
+import type { Chat, Message } from "../page";
 import { Fragment } from "react";
 import Markdown from "react-markdown";
 import { StickToBottom } from "use-stick-to-bottom";

@@ -113,8 +113,10 @@ model Message {
   id        String   @id @default(nanoid(16))
   role      String
   content   String
-  bookId    String
-  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookId    String?
+  chapterId Int?
+  book      Book?     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  chapter   Chapter?  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   position  Int
   createdAt DateTime @default(now())
 
@@ -132,6 +134,7 @@ model Chapter {
   parent     Chapter?    @relation("ChapterHierarchy", fields: [parentId], references: [id])
   children   Chapter[]   @relation("ChapterHierarchy")
   paragraphs Paragraph[]
+  Message    Message[]
 }
 
 model Paragraph {
@@ -142,11 +145,11 @@ model Paragraph {
 }
 
 model Tag {
-  id    Int    @id @default(autoincrement())
-  name  String
+  id        Int     @id @default(autoincrement())
+  name      String
   creatorId String?
   creator   User?   @relation("UserTags", fields: [creatorId], references: [id])
-  books Book[] @relation("BookTags")
+  books     Book[]  @relation("BookTags")
 }
 
 model Review {
