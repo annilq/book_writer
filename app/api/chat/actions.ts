@@ -7,6 +7,7 @@ import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { PromptTemplate } from "@langchain/core/prompts";
 import { z } from "zod";
 import { bookArchitectPrompt, chapterPrompt } from "@/utils/prompts";
+import { extractFirstCodeBlock } from "@/utils";
 
 const TEMPLATE = `
   You are now a professional writer, skilled in creating works in the {categories} fields.  Create a book outline based on the following information:
@@ -24,52 +25,43 @@ const TEMPLATE = `
 const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
   title: z.string().min(3),
   content: z.string().min(20),
-  order: z.number(),
-  bookId: z.string(),
-  parentId: z.number().optional(),
   children: z.array(ChapterModel)
 }));
 
 const ChaptersSchema = z.array(ChapterModel)
 
-interface RecursiveChapter {
+interface ChapterInput {
   title: string;
   content: string;
-  order?: number;
-  parent?: string;
-  children?: RecursiveChapter[];
+  position: string;
+  children?: ChapterInput[];
 }
 
-function flattenChapters(
-  node: RecursiveChapter | null,
-  bookId: string,
-  parentId: number | null = null,
-  order: number = 1,
-  result: any[] = []
-): [number, any[]] {
-  if (!node) return [order, result];
+function flattenChaptersWithPosition(
+  chapters: ChapterInput[],
+  parentPosition: string = ""
+): ChapterInput[] {
+  const result: ChapterInput[] = [];
 
-  const chapter = {
-    title: node.title,
-    content: node.content || "No content provided",
-    order: node.order || order,
-    bookId: bookId,
-    parentId: parentId
-  };
+  chapters.forEach((chapter, index) => {
+    const currentPosition = parentPosition
+      ? `${parentPosition}.${index}`
+      : `${index}`;
 
-  result.push(chapter);
-  const currentIndex = result.length;
+    const flatChapter = {
+      title: chapter.title,
+      content: chapter.content,
+      position: currentPosition,
+    };
 
-  if (node.children && Array.isArray(node.children)) {
-    let childOrder = order + 1;
-    for (const child of node.children) {
-      const [nextOrder, _] = flattenChapters(child, bookId, currentIndex, childOrder, result);
-      childOrder = nextOrder;
+    result.push(flatChapter);
+
+    if (chapter.children && chapter.children.length > 0) {
+      result.push(...flattenChaptersWithPosition(chapter.children, currentPosition));
     }
-    return [childOrder, result];
-  }
+  });
 
-  return [order + 1, result];
+  return result;
 }
 
 export async function createBook(
@@ -107,29 +99,39 @@ export async function createBook(
       },
     });
 
-    const chapters = await fetchBookOutline(id, title, description, categories, provider, modelName);
+    const chapters: ChapterInput[] = await fetchBookOutline(id, title, description, categories, provider, modelName);
 
-    if (!chapters || !Array.isArray(chapters) || chapters.length === 0) {
+    if (chapters.length === 0) {
       console.log("No valid chapters returned, returning book without chapters");
       return book;
     }
 
     try {
+      // Flatten the chapter hierarchy with position strings
+      const flattenedChapters = flattenChaptersWithPosition(chapters);
+
       const updatedBook = await prisma.book.update({
         where: {
           id: book.id,
         },
         data: {
-          chapters: { createMany: { data: chapters } },
+          chapters: {
+            createMany: {
+              data: flattenedChapters.map(({ children: _, ...chapter }) => ({
+                ...chapter,
+                bookId: book.id,
+              }))
+            }
+          },
           messages: {
             createMany: {
               data: [
                 {
                   role: "system",
-                  content: bookArchitectPrompt(book, chapters),
+                  content: bookArchitectPrompt(book, flattenedChapters.map(c => c.title)),
                   position: 0,
                 },
-                { role: "user", content: chapterPrompt(chapters[0].title), position: 1 },
+                { role: "user", content: chapterPrompt(flattenedChapters[0].title), position: 1 },
               ],
             },
           },
@@ -177,81 +179,11 @@ async function fetchBookOutline(
       categories,
       format_instructions: parser.getFormatInstructions()
     });
-
-    if (Array.isArray(rawOutline)) {
-      return rawOutline.map((chapter, index) => ({
-        ...chapter,
-        bookId,
-        order: chapter.order || index + 1
-      }));
-    } else {
-      console.log("Unexpected output format, attempting to recover");
-      if (rawOutline && typeof rawOutline === 'object') {
-        const [_, flattenedChapters] = flattenChapters(rawOutline as RecursiveChapter, bookId);
-        return flattenedChapters;
-      }
-      return null;
-    }
+    return rawOutline
   } catch (error: any) {
     console.log("Error fetching book outline:", error);
-
-    try {
-      if (error.message && typeof error.output === 'string') {
-        console.log("Attempting to recover from error output");
-        try {
-          const jsonData = JSON.parse(error.output);
-          if (Array.isArray(jsonData)) {
-            return jsonData.map((chapter, index) => ({
-              ...chapter,
-              bookId,
-              order: chapter.order || index + 1
-            }));
-          }
-        } catch (parseError) {
-          console.log("Direct parsing failed, trying to extract JSON from text");
-        }
-        // try to extract JSON from code snippet
-        const jsonMatch = error.output.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-        if (jsonMatch && jsonMatch[1]) {
-          try {
-            const jsonData = JSON.parse(jsonMatch[1]);
-            if (Array.isArray(jsonData)) {
-              return jsonData.map((chapter, index) => ({
-                ...chapter,
-                bookId,
-                order: chapter.order || index + 1
-              }));
-            } else {
-              const [_, flattenedChapters] = flattenChapters(jsonData as RecursiveChapter, bookId);
-              return flattenedChapters;
-            }
-          } catch (jsonError) {
-            console.log("JSON parsing from code block failed:", jsonError);
-          }
-        }
-        // try to find any JSON Array string
-        const arrayMatch = error.output.match(/\[\s*\{[\s\S]*\}\s*\]/);
-        if (arrayMatch) {
-          try {
-            const jsonData = JSON.parse(arrayMatch[0]);
-            if (Array.isArray(jsonData)) {
-              return jsonData.map((chapter, index) => ({
-                ...chapter,
-                bookId,
-                order: chapter.order || index + 1
-              }));
-            }
-          } catch (arrayError) {
-            console.log("Array extraction failed:", arrayError);
-          }
-        }
-      }
-    } catch (recoveryError) {
-      console.log("Recovery attempt failed:", recoveryError);
-    }
-
-    console.log("All recovery attempts failed, returning fallback structure");
-    return [
+    const extraData = extractFirstCodeBlock(error.llmOutput)
+    return extraData?.code ? JSON.parse(extraData?.code) : [
       {
         title: title,
         content: `Introduction to ${title}`,

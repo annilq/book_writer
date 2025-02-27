@@ -127,14 +127,13 @@ model Chapter {
   id         Int         @id @default(autoincrement())
   title      String
   content    String
-  order      Int         @default(autoincrement())
+  position   String      @default("0")  // Path enumeration field (e.g., "1", "1.1", "1.1.1")
   bookId     String
-  parentId   Int?
   book       Book        @relation(fields: [bookId], references: [id])
-  parent     Chapter?    @relation("ChapterHierarchy", fields: [parentId], references: [id])
-  children   Chapter[]   @relation("ChapterHierarchy")
   paragraphs Paragraph[]
   Message    Message[]
+
+  @@index([position])
 }
 
 model Paragraph {
