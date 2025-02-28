@@ -26,7 +26,7 @@ export default function Header() {
 
   return (
     <header
-      className={cn("sticky top-0 z-50 transition-all duration-300 bg-gradient-to-r from-purple-500 to-indigo-600", isScrolled && "shadow-md")}
+      className={cn("sticky w-full top-0 z-50 transition-all duration-300 bg-gradient-to-r from-purple-500 to-indigo-600", isScrolled && "shadow-md")}
     >
       <div className="container mx-auto flex justify-between gap-2 p-2">
         <div className="flex gap-4 flex-col md:flex-row md:items-center">

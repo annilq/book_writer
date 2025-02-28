@@ -37,13 +37,10 @@ export default function RootLayout({
         />
         <meta name="twitter:image" content="/images/og-image.png" />
       </head>
-      <body className={cn(publicSans.className, "flex flex-col bg-gradient-to-r from-purple-500 to-indigo-600 text-white min-h-screen overflow-y-scroll hide-scrollbar")}>
+      <body className={cn(publicSans.className, "flex flex-col text-white min-h-screen overflow-y-scroll hide-scrollbar")}>
         <ClientContext>
-          <div className="h-screen flex flex-col overflow-hidden">
-            <Header />
-            <div className="flex-1 relative items-center">
-              {children}
-            </div>
+          <div className="flex-1 relative items-center h-screen">
+            {children}
           </div>
         </ClientContext>
         <Footer />
