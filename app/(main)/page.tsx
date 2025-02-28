@@ -9,9 +9,9 @@ export default function Home() {
   const { t } = useTranslation()
 
   return (
-    <div className="h-screen bg-gradient-to-r from-purple-500 to-indigo-600">
+    <div className="min-h-screen flex flex-col bg-gradient-to-r from-purple-500 to-indigo-600 text-background">
       <Header />
-      <main className="flex flex-col items-center justify-center w-full flex-1 text-center">
+      <main className="flex flex-col flex-grow items-center justify-center w-full text-center">
         <h1 className="text-6xl font-bold">
           {t("welcome")} BookCraft
         </h1>

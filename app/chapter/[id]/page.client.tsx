@@ -39,12 +39,12 @@ export default function PageClient({ chat }: { chat: Chat }) {
 
   useEffect(() => {
     if (status === "ready" && messages.length === 2) {
-      reload()
+      // reload()
     }
   }, [messages.length, reload, status])
 
   return (
-    <main className="bg-background text-foreground flex overflow-auto h-full">
+    <main className="h-screen flex overflow-auto">
       <div className="flex w-full shrink-0 flex-col overflow-hidden lg:w-1/2">
         <ChatLog
           chat={{ ...chat, messages }}

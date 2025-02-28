@@ -33,6 +33,8 @@ export const FormSchema = z.object({
     message: "description must be at least 20 characters.",
   }),
   categories: z.string().min(1),
+  audience: z.string().optional(),
+  style: z.string().optional(),
   model: z.string().min(1),
 })
 
@@ -76,7 +78,7 @@ export default function BookOutlineForm() {
           title,
           model,
           description,
-          categories: [categories]
+          categories
         }
       );
 
@@ -115,7 +117,7 @@ export default function BookOutlineForm() {
   }
 
   return (
-    <Card className="mx-auto w-1/4 min-w-fit max-w-2xl mt-8 relative" >
+    <Card className="mx-auto xs:w-full lg:w-[560px] min-w-fit mt-8 relative" >
       <CardHeader>
         <CardTitle className="text-3xl font-bold text-center">{t("appName")}</CardTitle>
         <CardDescription className="font-bold text-center mb-8">{t("appTip")}</CardDescription>

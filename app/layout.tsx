@@ -37,11 +37,9 @@ export default function RootLayout({
         />
         <meta name="twitter:image" content="/images/og-image.png" />
       </head>
-      <body className={cn(publicSans.className, "flex flex-col text-white min-h-screen overflow-y-scroll hide-scrollbar")}>
+      <body className={cn(publicSans.className, "flex flex-grow flex-col min-h-screen overflow-y-scroll hide-scrollbar")}>
         <ClientContext>
-          <div className="flex-1 relative items-center h-screen">
-            {children}
-          </div>
+          {children}
         </ClientContext>
         <Footer />
         <Toaster />

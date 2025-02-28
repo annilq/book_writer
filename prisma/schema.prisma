@@ -94,6 +94,7 @@ model Book {
   title           String
   model           String
   description     String
+  prompt          String
   publicationDate DateTime?
   isbn            String?    @unique
   coverImage      String?
@@ -115,8 +116,8 @@ model Message {
   content   String
   bookId    String?
   chapterId Int?
-  book      Book?     @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  chapter   Chapter?  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  book      Book?    @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   position  Int
   createdAt DateTime @default(now())
 
@@ -127,7 +128,7 @@ model Chapter {
   id         Int         @id @default(autoincrement())
   title      String
   content    String
-  position   String      @default("0")  // Path enumeration field (e.g., "1", "1.1", "1.1.1")
+  position   String      @default("0") // Path enumeration field (e.g., "1", "1.1", "1.1.1")
   bookId     String
   book       Book        @relation(fields: [bookId], references: [id])
   paragraphs Paragraph[]

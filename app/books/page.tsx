@@ -34,7 +34,7 @@ export default function BookManager() {
   const { t } = useTranslation()
 
   return (
-    <div className="h-full flex bg-background">
+    <div className="flex-1 flex">
       {/* Sidebar */}
       <div className="w-64 border-r bg-background">
         <div className="p-4">
