@@ -98,6 +98,7 @@ model Book {
   publicationDate DateTime?
   isbn            String?    @unique
   coverImage      String?
+  language        String
   chapters        Chapter[]
   messages        Message[]
   authors         User[]     @relation("BookAuthors")

@@ -11,9 +11,7 @@ import { extractJsonCodeFromMarkdown, flattenChaptersWithPosition } from "@/util
 import { FormSchema } from "@/app/(main)/components/BookOutlineForm";
 
 const TEMPLATE = `
-  You are now a professional writer, skilled in creating works in the {categories} fields.  Create a book outline based on the following information:
-  Book Name: {title}
-  Book description: {description}
+  You are now a professional writer, skilled in creating works in the {categories} fields. Create a book outline based on the following information,Book Name: {title},Book description: {description}
   # General Instructions
     {prompt}
   # Format Instructions:
@@ -43,6 +41,7 @@ export async function createBook(
     title,
     model,
     description,
+    language,
     categories,
   } = book
   try {
@@ -59,6 +58,7 @@ export async function createBook(
         id,
         model,
         title,
+        language,
         prompt: TEMPLATE,
         categories: {
           connect: [categories].map(name => ({ name }))

@@ -29,6 +29,7 @@ export const FormSchema = z.object({
   title: z.string().min(2, {
     message: "bookName must be at least 2 characters.",
   }),
+  language: z.string().optional(),
   description: z.string().min(20, {
     message: "description must be at least 20 characters.",
   }),
@@ -58,40 +59,41 @@ function Example(props: { handleSubmit: (data: Partial<Book>) => void }) {
 
 export default function BookOutlineForm() {
   const router = useRouter()
-  const { id, status, setMessages } = useChat({
+  const [loading, setLoading] = useState(false)
+  const { id, setMessages } = useChat({
     api: "/api/chat"
   });
 
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { data: categories = [] } = useSWR<Category[]>('/api/categories')
   const { data: models = [] } = useSWR<Model[]>('/api/model')
 
   const handleSubmit = async (data: z.infer<typeof FormSchema>) => {
     // This would call an API route to generate the outline using the AI SDK
     // For now, we'll just set a dummy outline
-    startTransition(async () => {
-      const { model, categories, description, title } = data;
+    setLoading(true)
+    const { model, categories, description, title } = data;
 
-      const chat = await createBook(
-        {
-          id,
-          title,
-          model,
-          description,
-          categories
-        }
-      );
-
-      setMessages(chat?.messages || [])
-
-      if (chat) {
-        startTransition(() => {
-          router.push(`/chapter/${chat?.id}`);
-        });
+    const chat = await createBook(
+      {
+        id,
+        title,
+        model,
+        description,
+        categories,
+        language: i18n.language
       }
-    });
-  }
+    );
+    setLoading(false)
 
+    setMessages(chat?.messages || [])
+
+    if (chat) {
+      startTransition(() => {
+        router.push(`/chapter/${chat?.id}`);
+      });
+    }
+  }
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -202,7 +204,7 @@ export default function BookOutlineForm() {
         </form>
       </Form>
       <Example handleSubmit={(data) => { form.reset(data) }} />
-      {status === "streaming" && <Spinner />}
+      {loading && <Spinner />}
     </Card>
   )
 }

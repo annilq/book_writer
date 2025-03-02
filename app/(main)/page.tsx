@@ -9,7 +9,7 @@ export default function Home() {
   const { t } = useTranslation()
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-r from-purple-500 to-indigo-600 text-background">
+    <div className="min-h-screen flex flex-col bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
       <Header />
       <main className="flex flex-col flex-grow items-center justify-center w-full text-center">
         <h1 className="text-6xl font-bold">
