@@ -13,7 +13,8 @@ export function chapterPrompt(curChapter: string, preChapter?: string) {
   finished the Chapter:*${preChapter}*
   `;
 }
-export function getBookPrompt(book: z.infer<typeof FormSchema>) {
+
+export function getStandardBookPrompt(book: z.infer<typeof FormSchema>) {
   const systemPrompt = dedent`
   You are a professional book creation consultant. your work is generate a comprehensive set of creative prompts for a book with follow book info 
   Book Title:${book.title}
@@ -76,10 +77,13 @@ export function getBookPrompt(book: z.infer<typeof FormSchema>) {
     •	Consistency: [Consistency check standards]
     •	Professionalism: [Professionalism check standards]
     •	Innovation: [Innovation check standards]
-  
-  
-  Step 4: Generate Final Prompts
-  
+    `;
+  return systemPrompt
+}
+
+export function getBookPrompt(prompt: string, language: string) {
+  const systemPrompt = dedent`
+  ${prompt}
   Integrate all the above elements to generate structured creative prompts, ensuring that:
     1.	Content Completeness: All necessary modules are covered
     2.	Logical Coherence: Clear relationships between parts
@@ -91,7 +95,8 @@ export function getBookPrompt(book: z.infer<typeof FormSchema>) {
     2.	Maintain clarity and accuracy in language
     3.	Find a balance between consistency and flexibility
     4.	Leave enough room for creativity in the process
-    5.  Only return Final Prompts response with the language as the same as User input
+    
+  Write with Language:${language}
     `;
   return systemPrompt
 }

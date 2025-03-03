@@ -6,16 +6,14 @@ import LLMProvider from "@/utils/llms_provider";
 import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { PromptTemplate } from "@langchain/core/prompts";
 import { z } from "zod";
-import { chapterPrompt, getBookPrompt } from "@/utils/prompts";
+import { getBookPrompt, getStandardBookPrompt } from "@/utils/prompts";
 import { extractJsonCodeFromMarkdown, flattenChaptersWithPosition } from "@/utils";
 import { FormSchema } from "@/app/(main)/components/BookOutlineForm";
+import { RunnableSequence } from "@langchain/core/runnables";
+import { Book } from "@prisma/client";
 
-const TEMPLATE = `
-  You are now a professional writer, skilled in creating works in the {categories} fields. Create a book outline based on the following information,Book Name: {title},Book description: {description}
-  # General Instructions
-    {prompt}
-  # Format Instructions:
-    {format_instructions}
+const OUTLINE_PROMPT = `
+  You are now a professional writer. Create a book outline based on the following information,Book Name: {title},Book description: {description}
 `;
 
 const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
@@ -59,7 +57,7 @@ export async function createBook(
         model,
         title,
         language,
-        prompt: TEMPLATE,
+        prompt: description,
         categories: {
           connect: [categories].map(name => ({ name }))
         },
@@ -68,50 +66,74 @@ export async function createBook(
     });
 
     const bookPrompt: string = await fetchBookPrompt(book);
-    const chapters: ChapterInput[] = await fetchBookOutline(book, bookPrompt);
-
-    if (chapters.length === 0) {
-      console.log("No valid chapters returned, returning book without chapters");
-      return bookdata;
-    }
-
-    try {
-      // Flatten the chapter hierarchy with position strings
-      const flattenedChapters = flattenChaptersWithPosition(chapters);
-
-      const updatedBook = await prisma.book.update({
-        where: {
-          id: bookdata.id,
-        },
-        data: {
-          prompt: bookPrompt,
-          chapters: {
-            createMany: {
-              data: flattenedChapters.map(({ children: _, ...chapter }) => chapter)
-            }
-          },
-          messages: {
-            createMany: {
-              data: [
-                {
-                  role: "system",
-                  content: bookPrompt,
-                  position: 0,
-                },
-                { role: "user", content: chapterPrompt(flattenedChapters[0].title), position: 1 },
-              ],
-            },
+    const updatedBook = await prisma.book.update({
+      where: {
+        id: bookdata.id,
+      },
+      data: {
+        prompt: bookPrompt,
+        messages: {
+          createMany: {
+            data: [
+              {
+                role: "system",
+                content: bookPrompt,
+                position: 0,
+              },
+              { role: "user", content: OUTLINE_PROMPT, position: 1 }
+            ],
           },
         },
-        include: {
-          chapters: true
-        },
-      });
-      return updatedBook;
-    } catch (updateError) {
-      console.error("Error updating book with chapters:", updateError);
-      return book;
-    }
+      },
+      include: {
+        messages: true,
+      }
+    });
+
+    return updatedBook
+    // const chapters: ChapterInput[] = await fetchBookOutline(updatedBook);
+
+    // if (chapters.length === 0) {
+    //   console.log("No valid chapters returned, returning book without chapters");
+    //   return bookdata;
+    // }
+
+    // try {
+    //   // Flatten the chapter hierarchy with position strings
+    //   const flattenedChapters = flattenChaptersWithPosition(chapters);
+
+    //   const updatedBook = await prisma.book.update({
+    //     where: {
+    //       id: bookdata.id,
+    //     },
+    //     data: {
+    //       chapters: {
+    //         createMany: {
+    //           data: flattenedChapters.map(({ children: _, ...chapter }) => chapter)
+    //         }
+    //       },
+    //       messages: {
+    //         createMany: {
+    //           data: [
+    //             {
+    //               role: "system",
+    //               content: bookPrompt,
+    //               position: 0,
+    //             },
+    //             { role: "user", content: OUTLINE_PROMPT, position: 1 },
+    //           ],
+    //         },
+    //       },
+    //     },
+    //     include: {
+    //       chapters: true
+    //     },
+    //   });
+    //   return updatedBook;
+    // } catch (updateError) {
+    //   console.error("Error updating book with chapters:", updateError);
+    //   return book;
+    // }
   } catch (error) {
     console.error("Error in createBook:", error);
     return null;
@@ -119,8 +141,7 @@ export async function createBook(
 }
 
 async function fetchBookOutline(
-  book: z.infer<typeof FormSchema> & { id: string },
-  promptString: string
+  book: Book,
 ) {
   const {
     model
@@ -129,7 +150,13 @@ async function fetchBookOutline(
 
   const parser = StructuredOutputParser.fromZodSchema(ChaptersSchema);
 
-  const prompt = PromptTemplate.fromTemplate(TEMPLATE);
+  const prompt = PromptTemplate.fromTemplate(`${OUTLINE_PROMPT}
+      # General Instructions
+        {prompt}
+      # Format Instructions:
+        {format_instructions}
+    `
+  );
 
   const llm = LLMProvider.getModel(provider, {
     model: modelName,
@@ -142,8 +169,9 @@ async function fetchBookOutline(
 
   try {
     const rawOutline = await chain.invoke({
-      ...book,
-      prompt: promptString,
+      title: book.title,
+      description: book.description,
+      prompt: book.prompt,
       format_instructions: parser.getFormatInstructions()
     });
     return rawOutline
@@ -158,14 +186,27 @@ async function fetchBookPrompt(
 ) {
   const [provider, modelName] = book.model.split("/");
 
-  const prompt = getBookPrompt(book);
-
   const llm = LLMProvider.getModel(provider, {
     model: modelName,
     temperature: 0,
     maxRetries: 2
   });
-  const bookPrompt = await llm.invoke(prompt);
+
+  const chain = RunnableSequence.from([
+    {
+      promptGenerator: async () => {
+        return llm.invoke(getStandardBookPrompt(book));
+      }
+    },
+    {
+      contentGenerator: async (input) => {
+        return llm.invoke(getBookPrompt(input.promptGenerator.content, book.language!));
+      }
+    },
+    (input) => input.contentGenerator
+  ]);
+
+  const bookPrompt = await chain.invoke("");
   return bookPrompt.content.toString()
 }
 
