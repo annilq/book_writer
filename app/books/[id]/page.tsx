@@ -20,7 +20,7 @@ const getBookById = cache(async (id: string) => {
   const prisma = getPrisma();
   return await prisma.book.findFirst({
     where: { id },
-    include: { chapters: {}, messages: { orderBy: { position: "asc" } } },
+    include: { chapters: {}, messages: { orderBy: { position: "asc" } }, categories: {} },
   });
 });
 

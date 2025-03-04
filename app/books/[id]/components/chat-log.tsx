@@ -6,6 +6,7 @@ import { Fragment } from "react";
 import Markdown from "react-markdown";
 import { StickToBottom } from "use-stick-to-bottom";
 import { ArrowLeft } from "lucide-react";
+import { Avatar } from "@/components/ui/avatar";
 
 export default function ChatLog({
   chat,
@@ -24,7 +25,7 @@ export default function ChatLog({
       resize="smooth"
       initial="smooth"
     >
-      <StickToBottom.Content className="mx-auto flex w-full max-w-prose flex-col gap-8 p-8">
+      <StickToBottom.Content className="mx-auto flex w-full flex-col gap-8 p-2 text-sm">
         <UserMessage content={chat.title} />
 
         {chat.messages.slice(2).map((message) => (
@@ -44,14 +45,6 @@ export default function ChatLog({
             )}
           </Fragment>
         ))}
-
-        {/* { && (
-          <AssistantMessage
-            content={streamText}
-            version={assistantMessages.length + 1}
-            isActive={true}
-          />
-        )} */}
       </StickToBottom.Content>
     </StickToBottom>
   );
@@ -59,10 +52,11 @@ export default function ChatLog({
 
 function UserMessage({ content }: { content: string }) {
   return (
-    <div className="relative inline-flex max-w-[80%] items-end gap-3 self-end">
-      <div className="whitespace-pre-wrap rounded bg-white px-4 py-2 text-gray-600 shadow">
+    <div className="relative inline-flex max-w-[80%] items-end gap-2 self-end">
+      <div className="whitespace-pre-wrap rounded bg-white px-2 py-2">
         {content}
       </div>
+      <Avatar className="bg-slate-500 text-background items-center justify-center">User</Avatar>
     </div>
   );
 }

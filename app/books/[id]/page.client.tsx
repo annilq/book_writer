@@ -7,12 +7,12 @@ import ChatLog from "./components/chat-log";
 import CodeViewer from "./components/book-viewer";
 import CodeViewerLayout from "./components/book-viewer-layout";
 import type { Chat } from "./page";
-import { CreateMessage, Message, useChat } from "ai/react";
+import { CreateMessage, Message, useChat } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
-import Sidebar from "./components/sidebar";
+import BookHeader from "./components/header";
+import Sidebar from "../components/Sidebar";
+import { SettingsModal } from "./components/setting-modal";
 
-let didPushToCode = false;
-let didPushToPreview = false;
 
 export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
@@ -43,10 +43,18 @@ export default function PageClient({ chat }: { chat: Chat }) {
 
 
   return (
-    <div className="flex bg-background text-foreground">
-      <Sidebar bookId={chat.id} />
+    <div className="flex bg-background text-foreground h-screen">
+      <Sidebar />
       <main className="flex flex-1 overflow-auto">
         <div className="flex w-full shrink-0 flex-col overflow-hidden lg:w-1/2">
+          <BookHeader  >
+            <div className="flex items-center flex-1">
+              {chat.title}
+            </div>
+            <div className="flex items-center">
+              <SettingsModal book={chat} />
+            </div>
+          </BookHeader>
           <ChatLog
             chat={{ ...chat, messages }}
             activeMessage={activeMessage}
@@ -103,7 +111,6 @@ export default function PageClient({ chat }: { chat: Chat }) {
           )}
         </CodeViewerLayout>
       </main>
-
     </div>
   );
 }

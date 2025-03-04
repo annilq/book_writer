@@ -35,6 +35,7 @@ export const FormSchema = z.object({
   }),
   categories: z.string().min(1),
   audience: z.string().optional(),
+  prompt: z.string().optional(),
   style: z.string().optional(),
   model: z.string().min(1),
 })
@@ -90,7 +91,7 @@ export default function BookOutlineForm() {
 
     if (chat) {
       startTransition(() => {
-        router.push(`/chapter/${chat?.id}`);
+        router.push(`/books/${chat?.id}`);
       });
     }
   }
@@ -126,18 +127,41 @@ export default function BookOutlineForm() {
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-2xl mx-auto space-y-4 px-6 pb-6">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input placeholder={t("bookName")} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="flex items-center w-full justify-between gap-2">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormControl>
+                    <Input placeholder={t("bookName")} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="categories"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Select {...field} onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t("bookCate")} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map(cate => <SelectItem key={cate.id} value={cate.name}>{t(cate.name)}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
             name="description"
@@ -149,27 +173,6 @@ export default function BookOutlineForm() {
                     rows={8}
                     {...field}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="categories"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Select {...field} onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("bookCate")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map(cate => <SelectItem key={cate.id} value={cate.name}>{t(cate.name)}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>

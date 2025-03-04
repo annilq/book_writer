@@ -11,10 +11,8 @@ import { extractJsonCodeFromMarkdown, flattenChaptersWithPosition } from "@/util
 import { FormSchema } from "@/app/(main)/components/BookOutlineForm";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { Book } from "@prisma/client";
+import { getI18n } from "@/utils/i18n/server";
 
-const OUTLINE_PROMPT = `
-  You are now a professional writer. Create a book outline based on the following information,Book Name: {title},Book description: {description}
-`;
 
 const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
   title: z.string().min(3),
@@ -39,9 +37,10 @@ export async function createBook(
     title,
     model,
     description,
-    language,
+    language = 'en',
     categories,
   } = book
+  const i18n = getI18n(language);
   try {
     const [provider, modelName] = model.split("/");
     if (!provider || !modelName) {
@@ -80,7 +79,7 @@ export async function createBook(
                 content: bookPrompt,
                 position: 0,
               },
-              { role: "user", content: OUTLINE_PROMPT, position: 1 }
+              { role: "user", content: i18n.t("bookOutlinePrompt"), position: 1 }
             ],
           },
         },
@@ -120,7 +119,7 @@ export async function createBook(
     //               content: bookPrompt,
     //               position: 0,
     //             },
-    //             { role: "user", content: OUTLINE_PROMPT, position: 1 },
+    //             { role: "user", content: i18n.t("bookOutlinePrompt"), position: 1 },
     //           ],
     //         },
     //       },
@@ -143,6 +142,7 @@ export async function createBook(
 async function fetchBookOutline(
   book: Book,
 ) {
+  const i18n = getI18n(book.language);
   const {
     model
   } = book
@@ -150,11 +150,12 @@ async function fetchBookOutline(
 
   const parser = StructuredOutputParser.fromZodSchema(ChaptersSchema);
 
-  const prompt = PromptTemplate.fromTemplate(`${OUTLINE_PROMPT}
+  const prompt = PromptTemplate.fromTemplate(`${i18n.t("bookOutlinePrompt")}
       # General Instructions
         {prompt}
       # Format Instructions:
         {format_instructions}
+      # Write with Language:{language}
     `
   );
 
@@ -172,6 +173,7 @@ async function fetchBookOutline(
       title: book.title,
       description: book.description,
       prompt: book.prompt,
+      language: book.language,
       format_instructions: parser.getFormatInstructions()
     });
     return rawOutline
