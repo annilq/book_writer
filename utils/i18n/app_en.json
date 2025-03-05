@@ -39,6 +39,7 @@
   "bookSetting":"Book Generation Settings",
   "prompt":"Prompt",
   "save":"Save",
+  "retry":"Retry",
   "optionNoChatFound": "暂无聊天消息",
   "tipPrefix": "提示： ",
   "tip0": "长按编辑消息",

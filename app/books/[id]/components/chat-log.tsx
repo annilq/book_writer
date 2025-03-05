@@ -5,18 +5,21 @@ import type { Chat, Message } from "../page";
 import { Fragment } from "react";
 import Markdown from "react-markdown";
 import { StickToBottom } from "use-stick-to-bottom";
-import { ArrowLeft, Copy, Download, ThumbsUp, ThumbsDown, RefreshCcw } from "lucide-react";
+import { ArrowLeft, Copy, Edit } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { RefreashMessage } from "@/components/Refreash";
 
 export default function ChatLog({
   chat,
   activeMessage,
   onMessageClick,
+  refreshAssitant,
 }: {
   chat: Chat;
   activeMessage?: Message;
   onMessageClick: (v: Message) => void;
+  refreshAssitant: (v: Message & { model: string }) => void;
 }) {
   const assistantMessages = chat.messages.filter((m) => m.role === "assistant");
 
@@ -30,13 +33,15 @@ export default function ChatLog({
         {chat.messages.slice(1).map((message) => (
           <Fragment key={message.id}>
             {message.role === "user" ? (
-              <UserMessage content={message.content} />
+              <UserMessage model={chat.model} message={message} refreshAssitant={refreshAssitant} />
             ) : (
               <AssistantMessage
+                model={chat.model}
                 content={message.content}
                 version={
                   assistantMessages.map((m) => m.id).indexOf(message.id) + 1
                 }
+                refreshAssitant={refreshAssitant}
                 message={message}
                 isActive={activeMessage?.id === message.id}
                 onMessageClick={onMessageClick}
@@ -49,12 +54,12 @@ export default function ChatLog({
   );
 }
 
-function UserMessage({ content }: { content: string }) {
+function UserMessage({ message, model, refreshAssitant }: { model: string, message: Message, refreshAssitant: (message: Message & { model: string }) => void }) {
   return (
     <div className="self-end  max-w-[80%]">
       <div className="relative inline-flex gap-2 items-end">
         <div className="whitespace-pre-wrap rounded bg-white px-2 py-2">
-          {content}
+          {message.content}
         </div>
         <Avatar className="bg-slate-500 text-background items-center justify-center">User</Avatar>
       </div>
@@ -63,25 +68,30 @@ function UserMessage({ content }: { content: string }) {
           <Copy className="h-4 w-4" />
         </Button>
         <Button variant="ghost" size="icon" className="h-8 w-8">
-          <RefreshCcw className="h-4 w-4" />
+          <Edit className="h-4 w-4" />
         </Button>
+        <RefreashMessage model={model} refreshAssitant={(model) => refreshAssitant({ ...message, model })} />
       </div>
     </div>
   );
 }
 
 function AssistantMessage({
+  model,
   content,
   version,
   message,
   isActive,
   onMessageClick = () => { },
+  refreshAssitant
 }: {
+  model: string,
   content: string;
   version: number;
   message?: Message;
   isActive?: boolean;
   onMessageClick?: (v: Message) => void;
+  refreshAssitant: (v: Message & { model: string }) => void;
 }) {
   const parts = splitByFirstCodeFence(content);
 
@@ -90,7 +100,7 @@ function AssistantMessage({
       {parts.map((part, i) => (
         <div key={i}>
           {part.type === "text" ? (
-            <Markdown className="prose">{part.content}</Markdown>
+            <Markdown>{part.content}</Markdown>
           ) : part.type === "first-code-fence-generating" ? (
             <div className="my-4">
               <button
@@ -164,6 +174,12 @@ function AssistantMessage({
           )}
         </div>
       ))}
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Copy className="h-4 w-4" />
+        </Button>
+        <RefreashMessage model={model} refreshAssitant={(model) => refreshAssitant({ ...message, model })} />
+      </div>
     </div>
   );
 }

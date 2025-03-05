@@ -27,7 +27,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
     chat.messages.filter((m) => m.role === "assistant").at(-1),
   );
 
-  const { messages, isLoading, append } = useChat({
+  const { messages, status, append, } = useChat({
     id: chat.id,
     api: "/api/chat",
     initialMessages: chat.messages as Message[],
@@ -40,6 +40,20 @@ export default function PageClient({ chat }: { chat: Chat }) {
     },
   });
 
+  const refreshAssitant = async (message: Message & { model?: string }) => {
+
+    fetch("/api/chat", {
+      method: 'POST',
+      body: JSON.stringify({
+        model: message.model,
+        chatId: chat.id,
+        messages,
+        messageId: message.id
+      }),
+    }).then(res => res.json()).then(data => {
+      console.log(data);
+    });
+  }
 
   return (
     <div className="flex bg-background text-foreground h-screen">
@@ -63,6 +77,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
             <ChatLog
               chat={{ ...chat, messages }}
               activeMessage={activeMessage}
+              refreshAssitant={refreshAssitant}
               onMessageClick={(message) => {
                 if (message.id !== activeMessage?.id) {
                   setActiveMessage(message);
@@ -75,7 +90,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
             />
             <ChatBox
               onNewStreamPromise={(message: CreateMessage) => append(message, { body: { model: chat.model, chatId: chat.id } })}
-              isStreaming={!!isLoading}
+              isStreaming={status === "streaming"}
             />
           </div>
         </div>

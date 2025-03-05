@@ -116,6 +116,7 @@ model Message {
   role      String
   content   String
   bookId    String?
+  model     String?
   chapterId Int?
   book      Book?    @relation(fields: [bookId], references: [id], onDelete: Cascade)
   chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)

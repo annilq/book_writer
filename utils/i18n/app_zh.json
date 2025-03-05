@@ -39,6 +39,7 @@
   "bookSetting":"书籍生成设置",
   "prompt":"提示词",
   "save":"保存",
+  "retry":"重试",
   "optionNoChatFound": "暂无聊天消息",
   "tipPrefix": "提示： ",
   "tip0": "长按编辑消息",

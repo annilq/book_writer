@@ -16,7 +16,9 @@ export async function POST(req: NextRequest) {
       temperature: 0,
       maxRetries: 2
     });
-
+    console.log(new HumanMessage("message.content"));
+    console.log(new AIMessage("message.content"));
+    return
     const stream = await llm.streamEvents(
       messages.map(message =>
         message.role == 'user'
