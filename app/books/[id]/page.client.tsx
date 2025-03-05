@@ -46,7 +46,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
     <div className="flex bg-background text-foreground h-screen">
       <Sidebar />
       <main className="flex flex-1 overflow-auto">
-        <div className="flex w-full shrink-0 flex-col overflow-hidden lg:w-1/2">
+        <div className="flex w-full shrink-0 flex-col overflow-hidden lg:w-1/3">
           <BookHeader  >
             <div className="flex items-center flex-1">
               {chat.title}

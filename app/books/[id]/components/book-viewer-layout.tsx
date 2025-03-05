@@ -15,7 +15,7 @@ export default function CodeViewerLayout({
 
   return (
     <div
-      className={`w-1/2 h-full overflow-hidden transition-[width] lg:block bg-muted border-l`}
+      className={`w-2/3 h-full overflow-hidden transition-[width] lg:block bg-muted border-l`}
     >
       <BookHeader>
         <div className="flex items-center flex-1">

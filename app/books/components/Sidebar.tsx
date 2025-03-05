@@ -30,7 +30,7 @@ export default function SideBar() {
   const { t } = useTranslation()
 
   return (
-    <div className="w-64 border-r bg-muted">
+    <div className="w-56 border-r bg-muted">
       <div className="p-4">
         <h1 className="text-xl font-bold text-foreground">Bookshelf</h1>
       </div>
