@@ -58,7 +58,7 @@ function UserMessage({ message, model, refreshAssitant }: { model: string, messa
   return (
     <div className="self-end  max-w-[80%]">
       <div className="relative inline-flex gap-2 items-end">
-        <div className="whitespace-pre-wrap rounded bg-white px-2 py-2">
+        <div className="whitespace-pre-wrap rounded bg-background text-foreground px-2 py-2">
           {message.content}
         </div>
         <Avatar className="bg-slate-500 text-background items-center justify-center">User</Avatar>

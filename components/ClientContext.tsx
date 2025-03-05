@@ -27,7 +27,14 @@ const ClientContext = ({ children }: { children: React.ReactNode }) => {
             <SWRConfig
                 value={{
                     // refreshInterval: 10000,
-                    fetcher: (resource, init) => fetch(resource, init).then(res => res.json()).then(data => data.data)
+                    fetcher: (resource, init) => {
+                        // useChat breaks custom SWR fetcher implementation #3214
+                        // https://github.com/vercel/ai/issues/3214
+                        if (resource.startsWith("/api/chat")) {
+                            return [];
+                        }
+                        return fetch(resource, init).then(res => res.json()).then(data => data.data)
+                    }
                 }}
             >
                 <ThemeProvider attribute="data-joy-color-scheme">

@@ -8,7 +8,7 @@ import useSWR from "swr";
 
 function TagItem({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+    <Link href={href} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-gray-50">
       <TagsIcon className="w-4 h-4 text-gray-400" />
       <span>{children}</span>
     </Link>

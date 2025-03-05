@@ -3,7 +3,7 @@ import type React from "react" // Import React
 
 function TagItem({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+    <Link href={href} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-gray-50">
       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
