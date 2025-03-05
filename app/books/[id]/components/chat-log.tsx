@@ -5,8 +5,9 @@ import type { Chat, Message } from "../page";
 import { Fragment } from "react";
 import Markdown from "react-markdown";
 import { StickToBottom } from "use-stick-to-bottom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Copy, Download, ThumbsUp, ThumbsDown, RefreshCcw } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
 export default function ChatLog({
   chat,
@@ -26,9 +27,7 @@ export default function ChatLog({
       initial="smooth"
     >
       <StickToBottom.Content className="mx-auto flex w-full flex-col gap-8 p-2 text-sm">
-        <UserMessage content={chat.title} />
-
-        {chat.messages.slice(2).map((message) => (
+        {chat.messages.slice(1).map((message) => (
           <Fragment key={message.id}>
             {message.role === "user" ? (
               <UserMessage content={message.content} />
@@ -52,11 +51,21 @@ export default function ChatLog({
 
 function UserMessage({ content }: { content: string }) {
   return (
-    <div className="relative inline-flex max-w-[80%] items-end gap-2 self-end">
-      <div className="whitespace-pre-wrap rounded bg-white px-2 py-2">
-        {content}
+    <div className="self-end  max-w-[80%]">
+      <div className="relative inline-flex gap-2 items-end">
+        <div className="whitespace-pre-wrap rounded bg-white px-2 py-2">
+          {content}
+        </div>
+        <Avatar className="bg-slate-500 text-background items-center justify-center">User</Avatar>
       </div>
-      <Avatar className="bg-slate-500 text-background items-center justify-center">User</Avatar>
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Copy className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <RefreshCcw className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }
@@ -66,7 +75,7 @@ function AssistantMessage({
   version,
   message,
   isActive,
-  onMessageClick = () => {},
+  onMessageClick = () => { },
 }: {
   content: string;
   version: number;

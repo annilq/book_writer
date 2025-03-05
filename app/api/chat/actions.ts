@@ -79,7 +79,12 @@ export async function createBook(
                 content: bookPrompt,
                 position: 0,
               },
-              { role: "user", content: i18n.t("bookOutlinePrompt"), position: 1 }
+              {
+                role: "user", content: i18n.t("bookOutlinePrompt", {
+                  title,
+                  description
+                }), position: 1
+              }
             ],
           },
         },
