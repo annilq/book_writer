@@ -35,7 +35,7 @@
   "DELETED": "Deleted",
   "UNPUBLISHED": "Unpublished",
   "PENDINGREVIEW": "Pendingreview",
-  "bookOutlinePrompt": "You are now a professional writer. Create a book outline based on the following information,Book Name: {title},Book description: {description}",
+  "bookOutlinePrompt": "You are now a professional writer. Create a book outline based on the following information,Book Name: {{title}},Book description: {{description}}",
   "bookSetting":"Book Generation Settings",
   "prompt":"Prompt",
   "save":"Save",
