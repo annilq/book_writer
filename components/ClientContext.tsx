@@ -30,8 +30,8 @@ const ClientContext = ({ children }: { children: React.ReactNode }) => {
                     fetcher: (resource, init) => {
                         // useChat breaks custom SWR fetcher implementation #3214
                         // https://github.com/vercel/ai/issues/3214
-                        if (resource.startsWith("/api/chat")) {
-                            return [];
+                        if (resource?.[0].startsWith("/api/chat")) {
+                            return undefined;
                         }
                         return fetch(resource, init).then(res => res.json()).then(data => data.data)
                     }

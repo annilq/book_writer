@@ -6,7 +6,8 @@ import { AIMessage, HumanMessage } from "@langchain/core/messages";
 export const runtime = "edge";
 
 export async function POST(req: NextRequest) {
-  const { model, messages, chatId } = await req.json();
+  const body = await req.json();
+  const { model, messages, chatId } = body;
   const [provider, modelName] = model.split("/");
 
   const llm = LLMProvider.getModel(provider, {

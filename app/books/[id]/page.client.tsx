@@ -15,7 +15,6 @@ import { ChevronsLeft } from "lucide-react";
 import { cn } from "@/utils";
 import { Button } from "@/components/ui/button";
 
-
 export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
 
@@ -27,7 +26,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
     chat.messages.filter((m) => m.role === "assistant").at(-1),
   );
 
-  const { messages, status, append, } = useChat({
+  const { messages, status, append, reload } = useChat({
     id: chat.id,
     api: "/api/chat",
     initialMessages: chat.messages as Message[],
@@ -42,17 +41,14 @@ export default function PageClient({ chat }: { chat: Chat }) {
 
   const refreshAssitant = async (message: Message & { model?: string }) => {
 
-    fetch("/api/chat", {
-      method: 'POST',
-      body: JSON.stringify({
+    reload({
+      body: {
         model: message.model,
         chatId: chat.id,
         messages,
         messageId: message.id
-      }),
-    }).then(res => res.json()).then(data => {
-      console.log(data);
-    });
+      }
+    })
   }
 
   return (
@@ -73,7 +69,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
               }
             </div>
           </BookHeader>
-          <div className={cn("flex flex-col flex-1 ", !isShowingCodeViewer && "max-w-3xl mx-auto")}>
+          <div className={cn("flex flex-col flex-1 overflow-auto", !isShowingCodeViewer && "max-w-3xl mx-auto")}>
             <ChatLog
               chat={{ ...chat, messages }}
               activeMessage={activeMessage}
