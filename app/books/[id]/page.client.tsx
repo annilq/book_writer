@@ -14,6 +14,7 @@ import { SettingsModal } from "./components/setting-modal";
 import { ChevronsLeft } from "lucide-react";
 import { cn } from "@/utils";
 import { Button } from "@/components/ui/button";
+import { createMessage } from "@/app/api/chat/actions";
 
 export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
@@ -35,6 +36,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
       chatId: chat.id,
     },
     async onFinish(message, options) {
+      const updateMessage = await createMessage(chat.id, message) as Message
       router.refresh();
     },
   });
@@ -51,11 +53,16 @@ export default function PageClient({ chat }: { chat: Chat }) {
     })
   }
 
+  const appendMessage = async (message: CreateMessage) => {
+    const updateMessage = await createMessage(chat.id, message) as Message
+    append(updateMessage, { body: { model: chat.model, chatId: chat.id } })
+  }
+
   return (
     <div className="flex bg-background text-foreground h-screen">
       <Sidebar />
       <main className="flex flex-1 overflow-auto">
-        <div className="flex flex-col flex-1 w-full shrink-0 overflow-hidden lg:w-1/3">
+        <div className="flex flex-col flex-1 w-full shrink-0 overflow-hidden lg:w-1/2">
           <BookHeader>
             <div className="flex items-center flex-1">
               {chat.title}
@@ -85,7 +92,9 @@ export default function PageClient({ chat }: { chat: Chat }) {
               }}
             />
             <ChatBox
-              onNewStreamPromise={(message: CreateMessage) => append(message, { body: { model: chat.model, chatId: chat.id } })}
+              onNewStreamPromise={(message: CreateMessage) => {
+                appendMessage(message)
+              }}
               isStreaming={status === "streaming"}
             />
           </div>

@@ -29,7 +29,7 @@ export default function ChatLog({
       resize="smooth"
       initial="smooth"
     >
-      <StickToBottom.Content className="mx-auto flex w-full flex-col gap-8 p-2 text-sm">
+      <StickToBottom.Content className="mx-auto flex w-full flex-col gap-8 p-4 text-sm">
         {chat.messages.slice(1).map((message) => (
           <Fragment key={message.id}>
             {message.role === "user" ? (
@@ -57,8 +57,8 @@ export default function ChatLog({
 function UserMessage({ message, model, refreshAssitant }: { model: string, message: Message, refreshAssitant: (message: Message & { model: string }) => void }) {
   return (
     <div className="self-end  max-w-[80%]">
-      <div className="relative inline-flex gap-2 items-end">
-        <div className="whitespace-pre-wrap rounded bg-background text-foreground px-2 py-2">
+      <div className="relative inline-flex items-end">
+        <div className="whitespace-pre-wrap rounded bg-background text-foreground p-2">
           {message.content}
         </div>
         <Avatar className="bg-slate-500 text-background items-center justify-center">User</Avatar>

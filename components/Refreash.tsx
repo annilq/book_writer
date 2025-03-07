@@ -20,7 +20,7 @@ export function RefreashMessage({ model, refreshAssitant }: { model: string, ref
           <RefreshCcw className="h-4 w-4" /> <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {models.map(model => <SelectItem key={model.name} value={`${model.provider}/${model.name}`}>{model.name}</SelectItem>)}
+          {models.map(model => <SelectItem key={model.name} value={`${model.provider}/${model.name}`}>{model.name}/{model.provider}</SelectItem>)}
           <div className="text-center divide-y border-t border-teal-50">
             <Button size="sm" className="w-full" variant={"ghost"} onClick={() => refreshAssitant(model)}>{t("retry")}</Button>
           </div>

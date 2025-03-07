@@ -49,7 +49,7 @@ export default function CodeViewerLayout({
       : undefined;
   return (
     <div
-      className={cn(`h-full hidden overflow-hidden transition-[width] lg:block bg-muted`, isShowing ? "w-2/3 border-l" : "w-0")}
+      className={cn(`h-full hidden overflow-hidden transition-[width] lg:block bg-muted`, isShowing ? "w-1/2 border-l" : "w-0")}
     >
       <BookHeader>
         <div className="flex items-center w-full">

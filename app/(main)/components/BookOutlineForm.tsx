@@ -192,7 +192,7 @@ export default function BookOutlineForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {models.map(model => <SelectItem key={model.name} value={`${model.provider}/${model.name}`}>{model.name}</SelectItem>)}
+                        {models.map(model => <SelectItem key={model.name} value={`${model.provider}/${model.name}`}>{model.name}/{model.provider}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </FormControl>

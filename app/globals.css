@@ -55,12 +55,20 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
 
-  p {
-    margin: 8px 0;
+  p,
+  hr {
+    @apply my-2
+  }
+
+  ul,
+  ol,
+  menu {
+    @apply pl-8 my-2
   }
 
   code {
@@ -78,6 +86,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
