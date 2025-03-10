@@ -1,21 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { EventStreamContentType, fetchEventSource } from "@microsoft/fetch-event-source";
 
+import { ChevronsLeft } from "lucide-react";
+import { CreateMessage, Message, useChat } from "@ai-sdk/react";
+import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from 'uuid';
+
+import { Button } from "@/components/ui/button";
+import { createMessage } from "@/app/api/chat/actions";
+
+import BookHeader from "./components/chat-header";
+import Sidebar from "../components/Sidebar";
+import { SettingsModal } from "./components/setting-modal";
 import ChatBox from "./components/chat-box";
 import ChatLog from "./components/chat-log";
 import OutlineViewerLayout from "./components/book-viewer-layout";
 import type { Chat } from "./page";
-import { CreateMessage, Message, useChat } from "@ai-sdk/react";
-import { useRouter } from "next/navigation";
-import BookHeader from "./components/chat-header";
-import Sidebar from "../components/Sidebar";
-import { SettingsModal } from "./components/setting-modal";
-import { ChevronsLeft } from "lucide-react";
 import { cn } from "@/utils";
-import { Button } from "@/components/ui/button";
-import { createMessage } from "@/app/api/chat/actions";
+
 import { Message as MessageClient } from '@prisma/client'
+import { AIMessageChunk } from "@langchain/core/messages";
 
 export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
@@ -28,7 +34,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
     chat.messages.filter((m) => m.role === "assistant").at(-1),
   );
 
-  const { messages, status, append, reload } = useChat({
+  const { messages, status, append, reload, setMessages } = useChat({
     id: chat.id,
     api: "/api/chat",
     initialMessages: chat.messages as Message[],
@@ -37,27 +43,95 @@ export default function PageClient({ chat }: { chat: Chat }) {
       chatId: chat.id,
     },
     async onFinish(message, options) {
-      const updateMessage = await createMessage(chat.id, message) as Message
+      await createMessage(chat.id, message) as Message
       router.refresh();
     },
   });
 
   const refreshAssitant = async (message: MessageClient & { model?: string }) => {
-
-    reload({
-      body: {
+    let aiMessage: AIMessageChunk | null = null;
+    await fetchEventSource("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "text/event-stream",
+      },
+      body: JSON.stringify({
         model: message.model,
         chatId: chat.id,
         messages,
         messageId: message.id
-      }
-    })
-  }
+      }),
+      onmessage: (message) => {
+        if (message.event !== "data") return;
+        const eventSourceMessage = JSON.parse(message.data);
+
+        if (!eventSourceMessage.data.chunk) return;
+
+        if (eventSourceMessage.event === "on_chat_model_stream") {
+          if (aiMessage) {
+            aiMessage = aiMessage.concat(new AIMessageChunk(eventSourceMessage.data.chunk));
+          } else {
+            aiMessage = new AIMessageChunk(eventSourceMessage.data.chunk);
+          }
+          console.log(aiMessage?.content);
+
+          // setMessages((prevState) => [
+          //   ...(prevState.at(-1)?.role === "user" ? prevState : prevState.slice(0, -1)),
+          //   {
+          //     id: messageId,
+          //     role: "assistant",
+          //     content: aiMessage?.content,
+          //   },
+          // ]);
+        }
+      },
+      onerror: (err) => {
+        console.log(err);
+      },
+    });
+  };
 
   const appendMessage = async (message: CreateMessage) => {
     const updateMessage = await createMessage(chat.id, message) as Message
-    append(updateMessage, { body: { model: chat.model, chatId: chat.id } })
-  }
+    const messageId = uuidv4()
+    await fetchEventSource("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "text/event-stream",
+      },
+      body: JSON.stringify({
+        model: chat.model,
+        chatId: chat.id,
+        messages,
+        messageId: updateMessage.id
+      }),
+      onmessage: (message) => {
+        if (message.event !== "data") return;
+
+        const eventSourceMessage = JSON.parse(message.data);
+
+        if (!eventSourceMessage.data.chunk) return;
+
+        if (eventSourceMessage.event === "on_chain_stream") {
+          console.log(eventSourceMessage.data.chunk);
+
+          setMessages((prevState) => [
+            ...(prevState.at(-1)?.role === "user" ? prevState : prevState.slice(0, -1)),
+            {
+              id: messageId,
+              role: "assistant",
+              content: eventSourceMessage.data.chunk,
+            },
+          ]);
+        }
+      },
+      onerror: (err) => {
+        console.log(err);
+      },
+    });
+  };
 
   return (
     <div className="flex bg-background text-foreground h-screen">
@@ -119,3 +193,5 @@ export default function PageClient({ chat }: { chat: Chat }) {
     </div>
   );
 }
+class RetriableError extends Error { }
+class FatalError extends Error { }

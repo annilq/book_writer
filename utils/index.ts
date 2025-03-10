@@ -79,7 +79,7 @@ export function splitByFirstCodeFence(markdown: string) {
     language: string;
   }[] = [];
 
-  const lines = markdown.split("\n");
+  const lines = markdown?.split("\n");
 
   let inFirstCodeFence = false; // Are we currently inside the first code fence?
   let codeFenceFound = false; // Have we fully closed the first code fence?

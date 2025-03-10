@@ -21,7 +21,7 @@ const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
   children: z.array(ChapterModel)
 }));
 
-const ChaptersSchema = z.array(ChapterModel)
+export const ChaptersSchema = z.array(ChapterModel)
 
 export interface ChapterInput {
   title: string;
