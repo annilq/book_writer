@@ -15,6 +15,7 @@ import { ChevronsLeft } from "lucide-react";
 import { cn } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { createMessage } from "@/app/api/chat/actions";
+import { Message as MessageClient } from '@prisma/client'
 
 export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
     },
   });
 
-  const refreshAssitant = async (message: Message & { model?: string }) => {
+  const refreshAssitant = async (message: MessageClient & { model?: string }) => {
 
     reload({
       body: {
@@ -92,8 +93,12 @@ export default function PageClient({ chat }: { chat: Chat }) {
               }}
             />
             <ChatBox
-              onNewStreamPromise={(message: CreateMessage) => {
-                appendMessage(message)
+              onInputMessage={(message: CreateMessage) => {
+                if (message.id) {
+                  appendMessage(message)
+                } else {
+                  appendMessage(message)
+                }
               }}
               isStreaming={status === "streaming"}
             />

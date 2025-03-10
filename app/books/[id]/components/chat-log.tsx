@@ -1,14 +1,18 @@
 "use client";
 
-import { splitByFirstCodeFence } from "@/utils";
-import type { Chat, Message } from "../page";
 import { Fragment } from "react";
 import Markdown from "react-markdown";
 import { StickToBottom } from "use-stick-to-bottom";
-import { ArrowLeft, Copy, Edit } from "lucide-react";
+import { useClipboard } from 'use-clipboard-copy';
+import { ArrowLeft, CopyCheck, Copy, Edit } from "lucide-react";
+
+import { splitByFirstCodeFence } from "@/utils";
+import type { Chat, Message } from "../page";
+
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { RefreashMessage } from "@/components/Refreash";
+import { useMessageStore } from "@/store/message";
 
 export default function ChatLog({
   chat,
@@ -55,19 +59,25 @@ export default function ChatLog({
 }
 
 function UserMessage({ message, model, refreshAssitant }: { model: string, message: Message, refreshAssitant: (message: Message & { model: string }) => void }) {
+  const { setMessage } = useMessageStore()
+
+  const clipboard = useClipboard({
+    copiedTimeout: 600
+  });
+
   return (
     <div className="self-end  max-w-[80%]">
-      <div className="relative inline-flex items-end">
-        <div className="whitespace-pre-wrap rounded bg-background text-foreground p-2">
+      <div className="relative inline-flex items-end w-full justify-end">
+        <div className="whitespace-pre-wrap rounded bg-background text-foreground p-2 flex-1">
           {message.content}
         </div>
         <Avatar className="bg-slate-500 text-background items-center justify-center">User</Avatar>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Copy className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => clipboard.copy(message.content)}>
+          {clipboard.copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMessage(message)} >
           <Edit className="h-4 w-4" />
         </Button>
         <RefreashMessage model={model} refreshAssitant={(model) => refreshAssitant({ ...message, model })} />
@@ -94,7 +104,9 @@ function AssistantMessage({
   refreshAssitant: (v: Message & { model: string }) => void;
 }) {
   const parts = splitByFirstCodeFence(content);
-
+  const clipboard = useClipboard({
+    copiedTimeout: 600
+  });
   return (
     <div>
       {parts.map((part, i) => (
@@ -120,7 +132,7 @@ function AssistantMessage({
           ) : message ? (
             <div className="my-4">
               <button
-                className={`${isActive ? "bg-white" : "bg-gray-300 hover:border-gray-400 hover:bg-gray-400"} inline-flex w-full items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5`}
+                className={`${isActive ? "bg-background" : "bg-gray-300 hover:border-gray-400 hover:bg-gray-400"} inline-flex w-full items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5`}
                 onClick={() => onMessageClick(message)}
               >
                 <div
@@ -175,8 +187,8 @@ function AssistantMessage({
         </div>
       ))}
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Copy className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => clipboard.copy(content)}>
+          {clipboard.copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </Button>
         <RefreashMessage model={model} refreshAssitant={(model) => refreshAssitant({ ...message, model })} />
       </div>

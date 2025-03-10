@@ -72,7 +72,7 @@ export default function CodeViewerLayout({
       </BookHeader>
       <div className="flex h-full flex-col ">
         <div className="flex h-full flex-col">
-          <div className="flex grow flex-col overflow-y-auto bg-white">
+          <div className="flex grow flex-col overflow-y-auto bg-background">
             <StickToBottom
               className="relative grow overflow-hidden"
               resize="smooth"
