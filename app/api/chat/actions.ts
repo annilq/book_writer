@@ -1,34 +1,18 @@
 "use server";
 
-import { getPrisma } from "@/utils/prisma";
+import { getPrisma, prisma } from "@/utils/prisma";
 import { notFound } from "next/navigation";
 import LLMProvider from "@/utils/llms_provider";
-import { StructuredOutputParser } from '@langchain/core/output_parsers';
-import { PromptTemplate } from "@langchain/core/prompts";
+import { StringOutputParser, StructuredOutputParser } from '@langchain/core/output_parsers';
+import { ChatPromptTemplate, MessagesPlaceholder, PromptTemplate } from "@langchain/core/prompts";
 import { z } from "zod";
 import { getBookPrompt, getStandardBookPrompt } from "@/utils/prompts";
-import { extractJsonCodeFromMarkdown, flattenChaptersWithPosition } from "@/utils";
+import { ChapterInput, flattenChaptersWithPosition } from "@/utils";
 import { FormSchema } from "@/app/(main)/components/BookOutlineForm";
 import { RunnableSequence } from "@langchain/core/runnables";
-import { Book } from "@prisma/client";
+import { Book, Message } from "@prisma/client";
 import { getI18n } from "@/utils/i18n/server";
 import { CreateMessage } from "ai";
-
-
-const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
-  title: z.string().min(3),
-  content: z.string().min(20),
-  children: z.array(ChapterModel)
-}));
-
-const ChaptersSchema = z.array(ChapterModel)
-
-export interface ChapterInput {
-  title: string;
-  content: string;
-  position: string;
-  children?: ChapterInput[];
-}
 
 export async function createBook(
   book: z.infer<typeof FormSchema> & { id: string }
@@ -75,16 +59,20 @@ export async function createBook(
         messages: {
           createMany: {
             data: [
+              // {
+              //   role: "system",
+              //   content: bookPrompt,
+              //   position: 0,
+              // },
               {
-                role: "system",
-                content: bookPrompt,
-                position: 0,
-              },
-              {
-                role: "user", content: i18n.t("bookOutlinePrompt", {
-                  title,
-                  description
-                }), position: 1
+                role: "user",
+                content: i18n.t("bookOutlinePrompt",
+                  {
+                    title,
+                    description
+                  }
+                ),
+                position: 1
               }
             ],
           },
@@ -96,58 +84,28 @@ export async function createBook(
     });
 
     return updatedBook
-    // const chapters: ChapterInput[] = await fetchBookOutline(updatedBook);
 
-    // if (chapters.length === 0) {
-    //   console.log("No valid chapters returned, returning book without chapters");
-    //   return bookdata;
-    // }
 
-    // try {
-    //   // Flatten the chapter hierarchy with position strings
-    //   const flattenedChapters = flattenChaptersWithPosition(chapters);
-
-    //   const updatedBook = await prisma.book.update({
-    //     where: {
-    //       id: bookdata.id,
-    //     },
-    //     data: {
-    //       chapters: {
-    //         createMany: {
-    //           data: flattenedChapters.map(({ children: _, ...chapter }) => chapter)
-    //         }
-    //       },
-    //       messages: {
-    //         createMany: {
-    //           data: [
-    //             {
-    //               role: "system",
-    //               content: bookPrompt,
-    //               position: 0,
-    //             },
-    //             { role: "user", content: i18n.t("bookOutlinePrompt"), position: 1 },
-    //           ],
-    //         },
-    //       },
-    //     },
-    //     include: {
-    //       chapters: true
-    //     },
-    //   });
-    //   return updatedBook;
-    // } catch (updateError) {
-    //   console.error("Error updating book with chapters:", updateError);
-    //   return book;
-    // }
   } catch (error) {
     console.error("Error in createBook:", error);
     return null;
   }
 }
 
-async function fetchBookOutline(
+export async function fetchBookOutline(
   book: Book,
+  messages: Message
 ) {
+
+  const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
+    id: z.string().min(5),
+    title: z.string().min(3),
+    content: z.string().min(20),
+    children: z.array(ChapterModel)
+  }));
+
+  const ChaptersSchema = z.array(ChapterModel)
+
   const i18n = getI18n(book.language);
   const {
     model
@@ -155,15 +113,17 @@ async function fetchBookOutline(
   const [provider, modelName] = model.split("/");
 
   const parser = StructuredOutputParser.fromZodSchema(ChaptersSchema);
-
-  const prompt = PromptTemplate.fromTemplate(`${i18n.t("bookOutlinePrompt")}
+  const systemMsg = `${i18n.t("bookOutlinePrompt")}
       # General Instructions
         {prompt}
       # Format Instructions:
         {format_instructions}
       # Write with Language:{language}
     `
-  );
+  const prompt = ChatPromptTemplate.fromMessages([
+    ["system", systemMsg],
+    new MessagesPlaceholder("messages"),
+  ]);
 
   const llm = LLMProvider.getModel(provider, {
     model: modelName,
@@ -171,25 +131,22 @@ async function fetchBookOutline(
     maxRetries: 2
   });
 
-  const chain = prompt.pipe(llm).pipe(parser);
-  console.log(parser.getFormatInstructions());
+  const chain = prompt.pipe(llm).pipe(new StringOutputParser());
+  // const chain = prompt.pipe(llm).pipe(parser);
 
-  try {
-    const rawOutline = await chain.invoke({
-      title: book.title,
-      description: book.description,
-      prompt: book.prompt,
-      language: book.language,
-      format_instructions: parser.getFormatInstructions()
-    });
-    return rawOutline
-  } catch (error: any) {
-    const [extraData] = extractJsonCodeFromMarkdown(error.llmOutput)
-    return extraData ? extraData : [];
-  }
+  const eventStream = await chain.stream({
+    title: book.title,
+    description: book.description,
+    prompt: book.prompt,
+    language: book.language,
+    format_instructions: parser.getFormatInstructions(),
+    messages
+  });
+
+  return eventStream
 }
 
-async function fetchBookPrompt(
+export async function fetchBookPrompt(
   book: z.infer<typeof FormSchema> & { id: string }
 ) {
   const [provider, modelName] = book.model.split("/");
@@ -244,35 +201,72 @@ export async function createMessage(
   return newMessage;
 }
 
+export async function createBookOutline(
+  bookId: string,
+  chapters: ChapterInput[]
+) {
+  try {
+    // Flatten the chapter hierarchy with position strings
+    const flattenedChapters = flattenChaptersWithPosition(chapters);
+
+    const updatedBook = await prisma.book.update({
+      where: {
+        id: bookId,
+      },
+      data: {
+        chapters: {
+          createMany: {
+            data: flattenedChapters.map(({ children: _, ...chapter }) => chapter)
+          }
+        },
+      },
+      include: {
+        chapters: true
+      },
+    });
+    return updatedBook;
+  } catch (updateError) {
+    console.error("Error updating book with chapters:", updateError);
+  }
+}
+
 export async function updateMessage(
-  { bookId,
-    text,
-    role
-  }:
-    {
-      bookId: string,
-      text: string,
-      role: "assistant" | "user",
-    }
+  messageId: string,
+  content: string,
 ) {
   const prisma = getPrisma();
-  const book = await prisma.book.findUnique({
-    where: { id: bookId },
-    include: { messages: true },
-  });
-  if (!book) notFound();
-
-  const positions = book.messages.map(m => m.position);
-  const maxPosition = positions.length > 0 ? Math.max(...positions) : 0;
-
-  const newMessage = await prisma.message.create({
+  const mesage = await prisma.message.update({
+    where: { id: messageId },
     data: {
-      role,
-      content: text,
-      position: maxPosition + 1,
-      bookId,
-    },
+      content
+    }
+  });
+  return mesage;
+}
+
+export async function removeMessagesAfterMessageId(
+  bookId: string,
+  messageId: string,
+) {
+  const prisma = getPrisma();
+
+  const targetMessage = await prisma.message.findUnique({
+    where: { id: messageId },
+    select: { position: true }
   });
 
-  return newMessage;
+  if (!targetMessage) {
+    throw new Error('Message not found');
+  }
+
+  const result = await prisma.message.deleteMany({
+    where: {
+      bookId,
+      position: {
+        gt: targetMessage.position
+      }
+    }
+  });
+
+  return result;
 }

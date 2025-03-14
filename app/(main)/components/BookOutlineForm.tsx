@@ -19,11 +19,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 import useSWR from "swr";
 import { Model } from "@/app/api/model/models";
-import { Spinner } from "@/components/spinner";
+import { Spinner } from "@/components/Spinner";
 import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useChat } from "@ai-sdk/react";
-import { createBook } from "@/app/api/chat/actions";
+import { Message, useChat } from "@ai-sdk/react";
+import { createBook, createMessage } from "@/app/api/chat/actions";
 
 export const FormSchema = z.object({
   title: z.string().min(2, {
@@ -61,8 +61,12 @@ function Example(props: { handleSubmit: (data: Partial<Book>) => void }) {
 export default function BookOutlineForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const { id, setMessages } = useChat({
-    api: "/api/chat"
+  const { id, setMessages, reload } = useChat({
+    api: "/api/chat",
+    async onFinish(message, options) {
+      // this will call when reload complete
+      await createMessage(id, message) as Message
+    },
   });
 
   const { t, i18n } = useTranslation()
@@ -87,9 +91,16 @@ export default function BookOutlineForm() {
     );
     setLoading(false)
 
-    setMessages(chat?.messages || [])
-
     if (chat) {
+      setMessages(chat.messages || [])
+      reload({
+        body: {
+          chat,
+          model: chat.model,
+          chatId: chat.id,
+          book: chat,
+        }
+      })
       startTransition(() => {
         router.push(`/books/${chat?.id}`);
       });

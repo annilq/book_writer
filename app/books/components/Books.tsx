@@ -6,7 +6,7 @@ import useSWR from "swr";
 
 function BookCard({ bookId, title, metadata, thumbnail }: { bookId: string; title: string; metadata: string; thumbnail: string }) {
   return (
-    <Link href={`/books/${bookId}`} className="group relative overflow-hidden rounded-lg border bg-white">
+    <Link href={`/books/${bookId}`} className="group relative overflow-hidden rounded-lg border bg-background">
       <div className="aspect-[4/3] overflow-hidden">
         <Image
           src={thumbnail || "/placeholder.svg"}

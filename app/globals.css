@@ -65,9 +65,9 @@
     @apply my-2
   }
 
-  ul,
-  ol,
-  menu {
+  .chat-log ul,
+  .chat-log ol,
+  .chat-log menu {
     @apply pl-8 my-2
   }
 

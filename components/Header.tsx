@@ -32,17 +32,6 @@ export default function Header() {
         <div className="flex gap-4 flex-col md:flex-row md:items-center">
           <nav className="flex gap-1 flex-col md:flex-row">
             <ActiveLink href="/">Chat</ActiveLink>
-            <ActiveLink href="/structured_output">
-              Structured Output
-            </ActiveLink>
-            <ActiveLink href="/agents">Agents</ActiveLink>
-            <ActiveLink href="/retrieval">Retrieval</ActiveLink>
-            <ActiveLink href="/retrieval_agents">
-              Retrieval Agents
-            </ActiveLink>
-            <ActiveLink href="/ai_sdk">
-              LangChain x AI SDK RSC
-            </ActiveLink>
           </nav>
         </div>
         <div className="flex justify-center">

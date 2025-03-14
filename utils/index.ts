@@ -1,7 +1,25 @@
-import { ChapterInput } from "@/app/api/chat/actions";
+import { HumanMessage, AIMessage, ChatMessage } from "@langchain/core/messages";
+import { Message } from "ai";
 
 export * from "./cn"
 
+
+export const convertVercelMessageToLangChainMessage = (message: Message) => {
+  if (message.role === "user") {
+    return new HumanMessage(message.content);
+  } else if (message.role === "assistant") {
+    return new AIMessage(message.content);
+  } else {
+    return new ChatMessage(message.content, message.role);
+  }
+};
+
+export interface ChapterInput {
+  title: string;
+  content: string;
+  position: string;
+  children?: ChapterInput[];
+}
 
 export function extractFirstCodeBlock(input: string) {
   // 1) We use a more general pattern for the code fence:
@@ -79,7 +97,7 @@ export function splitByFirstCodeFence(markdown: string) {
     language: string;
   }[] = [];
 
-  const lines = markdown.split("\n");
+  const lines = markdown?.split("\n");
 
   let inFirstCodeFence = false; // Are we currently inside the first code fence?
   let codeFenceFound = false; // Have we fully closed the first code fence?

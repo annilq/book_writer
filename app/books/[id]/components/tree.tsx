@@ -5,15 +5,20 @@ import React from "react";
 import { type LucideIcon } from "lucide-react";
 import { cn } from "@/utils";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../../../components/ui/accordion";
-import { Chapter } from "@prisma/client";
 
+export interface TreeData {
+  id: string
+  title: string
+  content: string
+  children?: TreeData[]
+}
 
 type TreeProps =
   React.HTMLAttributes<HTMLDivElement> &
   {
-    data: Chapter[],
+    data: TreeData[],
     initialSlelectedItemId?: string,
-    onSelectChange?: (item: Chapter | undefined) => void,
+    onSelectChange?: (item: TreeData | undefined) => void,
     expandAll?: boolean,
     folderIcon?: LucideIcon,
     itemIcon?: LucideIcon
@@ -28,10 +33,10 @@ const Tree = React.forwardRef<
   itemIcon,
   ...props
 }, ref) => {
-  const [selectedItemId, setSelectedItemId] = React.useState<string | number | undefined>(initialSlelectedItemId)
+  const [selectedItemId, setSelectedItemId] = React.useState<string | undefined>(initialSlelectedItemId)
 
-  const handleSelectChange = React.useCallback((item: Chapter | undefined) => {
-    setSelectedItemId(item?.id);
+  const handleSelectChange = React.useCallback((item: TreeData | undefined) => {
+    setSelectedItemId(item?.id.toString());
     if (onSelectChange) {
       onSelectChange(item)
     }
@@ -44,16 +49,16 @@ const Tree = React.forwardRef<
 
     const ids: string[] = []
 
-    function walkTreeItems(items: Chapter[] | Chapter, targetId: string) {
+    function walkTreeItems(items: TreeData[] | TreeData, targetId: string) {
       if (items instanceof Array) {
         for (let i = 0; i < items.length; i++) {
-          ids.push(items[i]!.id);
+          ids.push(items[i]!.id.toString());
           if (walkTreeItems(items[i]!, targetId) && !expandAll) {
             return true;
           }
           if (!expandAll) ids.pop();
         }
-      } else if (!expandAll && items.id === targetId) {
+      } else if (!expandAll && items.id?.toString() === targetId) {
         return true;
       } else if (items.children) {
         return walkTreeItems(items.children, targetId)
@@ -84,7 +89,7 @@ type TreeItemProps =
   TreeProps &
   {
     selectedItemId?: string,
-    handleSelectChange: (item: Chapter | undefined) => void,
+    handleSelectChange: (item: TreeData | undefined) => void,
     expandedItemIds: string[],
     FolderIcon?: LucideIcon,
     ItemIcon?: LucideIcon
@@ -103,11 +108,11 @@ const TreeItem = React.forwardRef<
             <li key={item.id}>
               {item.children ? (
                 <Accordion type="multiple" defaultValue={expandedItemIds}>
-                  <AccordionItem value={item.id} className="border-none">
+                  <AccordionItem value={item.id.toString()} className="border-none">
                     <AccordionTrigger
                       className={cn(
-                        "px-2 hover:before:opacity-100 before:absolute before:left-0 before:w-full before:opacity-0 before:bg-muted/80 before:h-[1.75rem] before:-z-10",
-                        selectedItemId === item.id && "before:opacity-100 before:bg-accent text-accent-foreground before:border-l-2 before:border-l-accent-foreground/50 dark:before:border-0"
+                        "px-2 ",
+                        selectedItemId === item.id.toString() && " text-accent-foreground before:border-l-2 before:border-l-accent-foreground/50 dark:before:border-0"
                       )}
                       onClick={() => handleSelectChange(item)}
                     >
@@ -134,7 +139,7 @@ const TreeItem = React.forwardRef<
                 <Leaf
                   item={item}
                   index={[...parentIndex, index + 1]}
-                  isSelected={selectedItemId === item.id}
+                  isSelected={selectedItemId === item.id.toString()}
                   onClick={() => handleSelectChange(item)}
                   Icon={ItemIcon}
                 />
@@ -150,7 +155,7 @@ const TreeItem = React.forwardRef<
 const Leaf = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
-    item: Chapter, isSelected?: boolean,
+    item: TreeData, isSelected?: boolean,
     index: number[],
     Icon?: LucideIcon
   }
@@ -173,4 +178,4 @@ const Leaf = React.forwardRef<
 })
 
 
-export { Tree, type Chapter }
+export { Tree, type TreeData }

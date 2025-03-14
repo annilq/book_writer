@@ -1,20 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { produce } from "immer";
+import { ChevronsLeft } from "lucide-react";
+import { CreateMessage, Message, useChat } from "@ai-sdk/react";
+import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from 'uuid';
 
+import { Button } from "@/components/ui/button";
+import { createMessage, removeMessagesAfterMessageId, updateMessage } from "@/app/api/chat/actions";
+
+import BookHeader from "./components/chat-header";
+import Sidebar from "../components/Sidebar";
+import { SettingsModal } from "./components/setting-modal";
 import ChatBox from "./components/chat-box";
 import ChatLog from "./components/chat-log";
 import OutlineViewerLayout from "./components/book-viewer-layout";
 import type { Chat } from "./page";
-import { CreateMessage, Message, useChat } from "@ai-sdk/react";
-import { useRouter } from "next/navigation";
-import BookHeader from "./components/chat-header";
-import Sidebar from "../components/Sidebar";
-import { SettingsModal } from "./components/setting-modal";
-import { ChevronsLeft } from "lucide-react";
 import { cn } from "@/utils";
-import { Button } from "@/components/ui/button";
-import { createMessage } from "@/app/api/chat/actions";
+
+import { Message as MessageClient } from '@prisma/client'
 
 export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
@@ -27,7 +32,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
     chat.messages.filter((m) => m.role === "assistant").at(-1),
   );
 
-  const { messages, status, append, reload } = useChat({
+  const { messages, status, append, reload, setMessages } = useChat({
     id: chat.id,
     api: "/api/chat",
     initialMessages: chat.messages as Message[],
@@ -36,33 +41,48 @@ export default function PageClient({ chat }: { chat: Chat }) {
       chatId: chat.id,
     },
     async onFinish(message, options) {
-      const updateMessage = await createMessage(chat.id, message) as Message
+      await createMessage(chat.id, message) as Message
       router.refresh();
     },
   });
 
-  const refreshAssitant = async (message: Message & { model?: string }) => {
+  const refreshAssitant = async (message: MessageClient, updateCurrentMessage: boolean = false) => {
+    // fliter message  and reload
+    const currentMessageIndex = messages.findIndex(msg => msg.id === message.id)
+    let updateMessages = messages.slice(0, currentMessageIndex + 1)
+    if (updateCurrentMessage) {
+      updateMessages = produce(updateMessages, draft => {
+        draft[currentMessageIndex].content = message.content
+      })
+    }
+
+    setMessages(updateMessages)
 
     reload({
       body: {
         model: message.model,
         chatId: chat.id,
+        book: chat,
         messages,
         messageId: message.id
       }
     })
-  }
+    if (updateCurrentMessage) {
+      updateMessage(message.id, message.content)
+    }
+    removeMessagesAfterMessageId(chat.id, message.id)
+  };
 
   const appendMessage = async (message: CreateMessage) => {
     const updateMessage = await createMessage(chat.id, message) as Message
-    append(updateMessage, { body: { model: chat.model, chatId: chat.id } })
-  }
+    append(updateMessage, { body: { model: chat.model, chatId: chat.id, book: chat } })
+  };
 
   return (
     <div className="flex bg-background text-foreground h-screen">
       <Sidebar />
       <main className="flex flex-1 overflow-auto">
-        <div className="flex flex-col flex-1 w-full shrink-0 overflow-hidden lg:w-1/2">
+        <div className="flex flex-col flex-1 w-full shrink-0 overflow-hidden lg:w-2/5">
           <BookHeader>
             <div className="flex items-center flex-1">
               {chat.title}
@@ -76,7 +96,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
               }
             </div>
           </BookHeader>
-          <div className={cn("flex flex-col flex-1 overflow-auto", !isShowingCodeViewer && "max-w-3xl mx-auto")}>
+          <div className={cn("flex flex-col flex-1 overflow-auto min-w-min", !isShowingCodeViewer && "max-w-3xl mx-auto")}>
             <ChatLog
               chat={{ ...chat, messages }}
               activeMessage={activeMessage}
@@ -92,8 +112,12 @@ export default function PageClient({ chat }: { chat: Chat }) {
               }}
             />
             <ChatBox
-              onNewStreamPromise={(message: CreateMessage) => {
-                appendMessage(message)
+              onInputMessage={(message: CreateMessage | MessageClient) => {
+                if (message.id) {
+                  refreshAssitant(message as MessageClient, true)
+                } else {
+                  appendMessage(message as CreateMessage)
+                }
               }}
               isStreaming={status === "streaming"}
             />
