@@ -2,17 +2,16 @@
 
 import { getPrisma, prisma } from "@/utils/prisma";
 import { notFound } from "next/navigation";
-import LLMProvider from "@/utils/llms_provider";
-import { StringOutputParser, StructuredOutputParser } from '@langchain/core/output_parsers';
-import { ChatPromptTemplate, MessagesPlaceholder, PromptTemplate } from "@langchain/core/prompts";
+import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { z } from "zod";
 import { getBookPrompt, getStandardBookPrompt } from "@/utils/prompts";
 import { ChapterInput, flattenChaptersWithPosition } from "@/utils";
 import { FormSchema } from "@/app/(main)/components/BookOutlineForm";
-import { RunnableSequence } from "@langchain/core/runnables";
-import { Book, Message } from "@prisma/client";
+import { Book } from "@prisma/client";
 import { getI18n } from "@/utils/i18n/server";
-import { CreateMessage } from "ai";
+import { CoreMessage, CreateMessage, generateText, streamText } from "ai";
+import { getAIModel } from "@/utils/ai_providers";
+import { parseBookOutline } from "@/utils/ai_providers/tools/bookline";
 
 export async function createBook(
   book: z.infer<typeof FormSchema> & { id: string }
@@ -82,10 +81,7 @@ export async function createBook(
         messages: true,
       }
     });
-
     return updatedBook
-
-
   } catch (error) {
     console.error("Error in createBook:", error);
     return null;
@@ -94,8 +90,11 @@ export async function createBook(
 
 export async function fetchBookOutline(
   book: Book,
-  messages: Message
+  messages: CoreMessage[] = []
 ) {
+  const i18n = getI18n(book.language);
+  const { model } = book;
+  const [provider, modelName] = model.split("/");
 
   const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
     id: z.string().min(5),
@@ -104,46 +103,30 @@ export async function fetchBookOutline(
     children: z.array(ChapterModel)
   }));
 
-  const ChaptersSchema = z.array(ChapterModel)
-
-  const i18n = getI18n(book.language);
-  const {
-    model
-  } = book
-  const [provider, modelName] = model.split("/");
-
+  const ChaptersSchema = z.array(ChapterModel);
   const parser = StructuredOutputParser.fromZodSchema(ChaptersSchema);
-  const systemMsg = `${i18n.t("bookOutlinePrompt")}
+
+  const systemPrompt = `${i18n.t("bookOutlinePrompt")}
       # General Instructions
-        {prompt}
+        ${book.prompt}
       # Format Instructions:
-        {format_instructions}
-      # Write with Language:{language}
-    `
-  const prompt = ChatPromptTemplate.fromMessages([
-    ["system", systemMsg],
-    new MessagesPlaceholder("messages"),
-  ]);
+        ${parser.getFormatInstructions()}
+      # Write with Language: ${book.language}
+    `;
 
-  const llm = LLMProvider.getModel(provider, {
-    model: modelName,
+  const eventStream = await streamText({
+    model: getAIModel(provider, modelName),
+    messages: [
+      { role: 'system' as const, content: systemPrompt },
+      ...messages
+    ],
     temperature: 0,
-    maxRetries: 2
+    // tools: {
+    //   parseBookOutline
+    // },
+    // maxSteps: 5
   });
-
-  const chain = prompt.pipe(llm).pipe(new StringOutputParser());
-  // const chain = prompt.pipe(llm).pipe(parser);
-
-  const eventStream = await chain.stream({
-    title: book.title,
-    description: book.description,
-    prompt: book.prompt,
-    language: book.language,
-    format_instructions: parser.getFormatInstructions(),
-    messages
-  });
-
-  return eventStream
+  return eventStream;
 }
 
 export async function fetchBookPrompt(
@@ -151,28 +134,17 @@ export async function fetchBookPrompt(
 ) {
   const [provider, modelName] = book.model.split("/");
 
-  const llm = LLMProvider.getModel(provider, {
-    model: modelName,
-    temperature: 0,
-    maxRetries: 2
+  const standardBookPrompt = await generateText({
+    model: getAIModel(provider, modelName),
+    prompt: getStandardBookPrompt(book),
   });
 
-  const chain = RunnableSequence.from([
-    {
-      promptGenerator: async () => {
-        return llm.invoke(getStandardBookPrompt(book));
-      }
-    },
-    {
-      contentGenerator: async (input) => {
-        return llm.invoke(getBookPrompt(input.promptGenerator.content, book.language!));
-      }
-    },
-    (input) => input.contentGenerator
-  ]);
+  const prompt = await generateText({
+    model: getAIModel(provider, modelName),
+    prompt: getBookPrompt(standardBookPrompt.text, book.language!),
+  });
 
-  const bookPrompt = await chain.invoke("");
-  return bookPrompt.content.toString()
+  return prompt.text
 }
 
 export async function createMessage(

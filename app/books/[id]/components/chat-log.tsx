@@ -6,13 +6,15 @@ import { StickToBottom } from "use-stick-to-bottom";
 import { useClipboard } from 'use-clipboard-copy';
 import { ArrowLeft, CopyCheck, Copy, Edit } from "lucide-react";
 
-import { splitByFirstCodeFence } from "@/utils";
 import type { Chat, Message } from "../page";
 
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { RefreashMessage } from "@/components/Refreash";
 import { useMessageStore } from "@/store/message";
+import { UIMessage } from "ai";
+import { Chapter } from "@prisma/client";
+import { ChapterInput } from "@/utils";
 
 export default function ChatLog({
   chat,
@@ -42,7 +44,6 @@ export default function ChatLog({
               <AssistantMessage
                 model={chat.model}
                 title={chat.title}
-                content={message.content}
                 version={
                   assistantMessages.map((m) => m.id).indexOf(message.id) + 1
                 }
@@ -87,10 +88,22 @@ function UserMessage({ message, model, refreshAssitant }: { model: string, messa
   );
 }
 
+
+type BookOutlineProps = {
+  data: ChapterInput[];
+};
+
+export const BookOutlineCard = ({ data }: BookOutlineProps) => {
+  return (
+    <div>
+      <h2>BookOutlineCard Information</h2>
+    </div>
+  );
+};
+
 function AssistantMessage({
   title,
   model,
-  content,
   version,
   message,
   isActive,
@@ -99,72 +112,45 @@ function AssistantMessage({
 }: {
   title: string,
   model: string,
-  content: string;
   version: number;
-  message?: Message;
+  message: UIMessage;
   isActive?: boolean;
   onMessageClick?: (v: Message) => void;
   refreshAssitant: (v: Message & { model: string }) => void;
 }) {
-  const parts = splitByFirstCodeFence(content);
+
   const clipboard = useClipboard({
     copiedTimeout: 600
   });
+
   return (
     <div>
-      {parts.map((part, i) => (
-        <div key={i}>
-          {part.type === "text" ? (
-            <Markdown>{part.content}</Markdown>
-          ) : part.type === "first-code-fence-generating" ? (
-            <div className="my-4">
-              <button
-                disabled
-                className="inline-flex w-full animate-pulse items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5"
-              >
-                <div className="flex size-8 items-center justify-center rounded font-bold">
-                  V{version}
-                </div>
-                <div className="flex flex-col gap-0.5 text-left leading-none">
-                  <div className="text-sm font-medium leading-none">
-                    Generating...
-                  </div>
-                </div>
-              </button>
-            </div>
-          ) : message ? (
-            <div className="my-4">
-              <button
-                className={`${isActive ? "bg-background" : " hover:border-gray-400 hover:bg-gray-100"} inline-flex w-full items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5`}
-                onClick={() => onMessageClick(message)}
-              >
-                <div
-                  className={`flex size-8 items-center justify-center rounded font-bold`}
-                >
-                  V{version}-{title}
-                </div>
-                <div className="ml-auto">
-                  <ArrowLeft />
-                </div>
-              </button>
-            </div>
-          ) : (
-            <div className="my-4">
-              <button
-                className="inline-flex w-full items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5"
-                disabled
-              >
-                <div className="flex size-8 items-center justify-center rounded font-bold">
-                  V{version}-{title}
-                </div>
-                <div className="ml-auto">
-                  <ArrowLeft />
-                </div>
-              </button>
-            </div>
-          )}
-        </div>
-      ))}
+      {message.parts.map((part, i) => {
+        console.log(part);
+        let contentCom = <div>{JSON.stringify(part)}</div>
+        switch (part.type) {
+          case "text":
+            contentCom = <Markdown className="part-text">{part.text}</Markdown>
+            break;
+          case "reasoning":
+            <pre  className="part-reasoning">{part.reasoning}</pre>
+            break;
+          case "tool-invocation":
+            const { toolName, toolCallId, state, result } = part.toolInvocation;
+            if (toolName === "result" && state === "result") {
+              contentCom = <BookOutlineCard key={toolCallId} data={result} />
+            }
+            break;
+          default:
+            break;
+        }
+        return (
+          <div key={i}>
+            {contentCom}
+          </div>
+        )
+      })}
+
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => clipboard.copy(content)}>
           {clipboard.copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -174,3 +160,4 @@ function AssistantMessage({
     </div>
   );
 }
+

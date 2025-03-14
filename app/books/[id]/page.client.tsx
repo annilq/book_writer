@@ -40,10 +40,22 @@ export default function PageClient({ chat }: { chat: Chat }) {
       model: chat.model,
       chatId: chat.id,
     },
+    maxSteps: 5,
+    async onToolCall({ toolCall, }) {
+      if (toolCall.toolName === "parseBookOutline") {
+        const input = toolCall.args
+        console.log(input);
+        return input
+      }
+    },
     async onFinish(message, options) {
       await createMessage(chat.id, message) as Message
       router.refresh();
     },
+    onError:(e)=>{
+      console.log(e);
+      
+    }
   });
 
   const refreshAssitant = async (message: MessageClient, updateCurrentMessage: boolean = false) => {

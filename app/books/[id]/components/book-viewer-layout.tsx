@@ -4,9 +4,9 @@ import BookHeader from "./chat-header";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronsRight, SaveIcon } from "lucide-react";
 import { cn, splitByFirstCodeFence, extractFirstCodeBlock } from "@/utils";
 import { Button } from "@/components/ui/button";
-import { StickToBottom } from "use-stick-to-bottom";
 import { Chat, Message } from "../page";
 import SidebarPreview from "./sidebar-preview";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 
 export default function CodeViewerLayout({
   chat,
@@ -62,9 +62,26 @@ export default function CodeViewerLayout({
             </div>
           </div>
           {isShowing && (
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
-              <SaveIcon className="h-4 w-4" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <SaveIcon className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your
+                    account and remove your data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </BookHeader>
