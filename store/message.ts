@@ -3,10 +3,14 @@ import { create } from 'zustand'
 
 interface MessageState {
   message: Message | null
-  setMessage: (message?: Message) => void
+  setActiveMessage: (message?: Message) => void
+  editMessage: Message | null
+  setEditMessage: (message?: Message) => void
 }
 
 export const useMessageStore = create<MessageState>()((set) => ({
   message: null,
-  setMessage: (message) => set((state) => ({ message })),
+  setActiveMessage: (message) => set((state) => ({ message })),
+  editMessage: null,
+  setEditMessage: (editMessage) => set((state) => ({ editMessage })),
 }))

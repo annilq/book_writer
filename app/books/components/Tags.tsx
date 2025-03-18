@@ -21,7 +21,7 @@ export default function Tags() {
 
   return (
     <div className="py-3">
-      <div className="px-3 text-xs font-medium uppercase text-gray-500 flex justify-between items-center">
+      <div className="px-2 text-xs font-medium uppercase text-gray-500 flex justify-between items-center">
         {t("Tags")}
         <Button size="icon" variant={"link"}>
           <Plus className="h-4 w-4" />

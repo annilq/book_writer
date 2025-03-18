@@ -13,18 +13,13 @@ import { Button } from "@/components/ui/button";
 import { RefreashMessage } from "@/components/Refreash";
 import { useMessageStore } from "@/store/message";
 import { UIMessage } from "ai";
-import { Chapter } from "@prisma/client";
-import { ChapterInput } from "@/utils";
+import { splitByFirstCodeFence } from "@/utils";
 
 export default function ChatLog({
   chat,
-  activeMessage,
-  onMessageClick,
   refreshAssitant,
 }: {
   chat: Chat;
-  activeMessage?: Message;
-  onMessageClick: (v: Message) => void;
   refreshAssitant: (v: Message & { model: string }) => void;
 }) {
   const assistantMessages = chat.messages.filter((m) => m.role === "assistant");
@@ -49,8 +44,6 @@ export default function ChatLog({
                 }
                 refreshAssitant={refreshAssitant}
                 message={message}
-                isActive={activeMessage?.id === message.id}
-                onMessageClick={onMessageClick}
               />
             )}
           </Fragment>
@@ -61,7 +54,7 @@ export default function ChatLog({
 }
 
 function UserMessage({ message, model, refreshAssitant }: { model: string, message: Message, refreshAssitant: (message: Message & { model: string }) => void }) {
-  const { setMessage } = useMessageStore()
+  const { setEditMessage } = useMessageStore()
 
   const clipboard = useClipboard({
     copiedTimeout: 600
@@ -79,7 +72,7 @@ function UserMessage({ message, model, refreshAssitant }: { model: string, messa
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => clipboard.copy(message.content)}>
           {clipboard.copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMessage(message)} >
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditMessage(message)} >
           <Edit className="h-4 w-4" />
         </Button>
         <RefreashMessage model={model} refreshAssitant={(model) => refreshAssitant({ ...message, model })} />
@@ -89,56 +82,68 @@ function UserMessage({ message, model, refreshAssitant }: { model: string, messa
 }
 
 
-type BookOutlineProps = {
-  data: ChapterInput[];
-};
-
-export const BookOutlineCard = ({ data }: BookOutlineProps) => {
-  return (
-    <div>
-      <h2>BookOutlineCard Information</h2>
-    </div>
-  );
-};
-
 function AssistantMessage({
   title,
   model,
   version,
   message,
-  isActive,
-  onMessageClick = () => { },
   refreshAssitant
 }: {
   title: string,
   model: string,
   version: number;
   message: UIMessage;
-  isActive?: boolean;
-  onMessageClick?: (v: Message) => void;
   refreshAssitant: (v: Message & { model: string }) => void;
 }) {
 
   const clipboard = useClipboard({
     copiedTimeout: 600
   });
+  const { message: activeMessage, setActiveMessage } = useMessageStore()
 
   return (
     <div>
       {message.parts.map((part, i) => {
-        console.log(part);
         let contentCom = <div>{JSON.stringify(part)}</div>
         switch (part.type) {
           case "text":
-            contentCom = <Markdown className="part-text">{part.text}</Markdown>
+            contentCom = (
+              <AssistantText
+                key={i}
+                data={part.text}
+                version={version}
+                title={title}
+                isActive={message.id === activeMessage?.id}
+                onMessageClick={() => {
+                  if (message.id !== activeMessage?.id) {
+                    setActiveMessage(message as unknown as Message);
+                  } else {
+                    setActiveMessage(undefined);
+                  }
+                }}
+              />)
             break;
           case "reasoning":
-            <pre  className="part-reasoning">{part.reasoning}</pre>
+            <pre className="part-reasoning" key={i}>{part.reasoning}</pre>
             break;
           case "tool-invocation":
-            const { toolName, toolCallId, state, result } = part.toolInvocation;
+            const { toolName, toolCallId, state } = part.toolInvocation;
             if (toolName === "result" && state === "result") {
-              contentCom = <BookOutlineCard key={toolCallId} data={result} />
+              contentCom = (
+                <AssistantText
+                  key={i}
+                  data={part.toolInvocation.result}
+                  version={version}
+                  title={title}
+                  isActive={message.id === activeMessage?.id}
+                  onMessageClick={() => {
+                    if (message.id !== activeMessage?.id) {
+                      setActiveMessage(message as unknown as Message);
+                    } else {
+                      setActiveMessage(undefined);
+                    }
+                  }}
+                />)
             }
             break;
           default:
@@ -150,7 +155,6 @@ function AssistantMessage({
           </div>
         )
       })}
-
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => clipboard.copy(content)}>
           {clipboard.copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -161,3 +165,59 @@ function AssistantMessage({
   );
 }
 
+
+export const AssistantText = ({ data, version = 1, title = "", isActive = false, onMessageClick }: {
+  data: string,
+  version: number,
+  title: string,
+  isActive: boolean,
+  onMessageClick?: () => void
+}) => {
+
+  const parts = splitByFirstCodeFence(data);
+  console.log(parts);
+
+  return (
+    <div className="my-4">
+      {parts.map((part, i) => (
+        <div key={i}>
+          {part.type === "text" ? (
+            <Markdown>{part.content}</Markdown>
+          ) : part.type === "first-code-fence-generating" ? (
+            <div className="my-4">
+              <button
+                disabled
+                className="inline-flex w-full animate-pulse items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5"
+              >
+                <div className="flex size-8 items-center justify-center rounded font-bold">
+                  V{version}
+                </div>
+                <div className="flex flex-col gap-0.5 text-left leading-none">
+                  <div className="text-sm font-medium leading-none">
+                    Generating...
+                  </div>
+                </div>
+              </button>
+            </div>
+          ) : (
+            <div className="my-4">
+              <button
+                className={`${isActive ? "bg-background" : " hover:border-gray-400 hover:bg-gray-100"} inline-flex w-full items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5`}
+                onClick={onMessageClick}
+              >
+                <div
+                  className={`flex size-8 items-center justify-center rounded font-bold`}
+                >
+                  V{version}-{title}
+                </div>
+                <div className="ml-auto">
+                  <ArrowLeft />
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};

@@ -30,7 +30,7 @@ export default function ChatBox({
 }) {
   const { t } = useTranslation()
 
-  const { message, setMessage } = useMessageStore()
+  const { editMessage: message, setEditMessage } = useMessageStore()
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -43,7 +43,7 @@ export default function ChatBox({
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     onInputMessage({ content: data.prompt, role: "user", id: message?.id });
-    setMessage()
+    setEditMessage()
   }
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function ChatBox({
         {message ? (
           <div className="font-bold p-2 text-xs bg-background rounded mb-2 flex justify-between items-center">
             <div className="flex  items-center gap-2"><Pen className="h-4 w-4" />{t("editTip")}</div>
-            <Button variant="link" size="sm" onClick={() => setMessage()}>
+            <Button variant="link" size="sm" onClick={() => setEditMessage()}>
               <X className="h-4 w-4" />
             </Button>
           </div>

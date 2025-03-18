@@ -8,34 +8,27 @@ import { Chat, Message } from "../page";
 import SidebarPreview from "./sidebar-preview";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 
-export default function CodeViewerLayout({
+export default function OutlineViewerLayout({
   chat,
-  streamText = "",
   message,
   onMessageChange,
   isShowing,
   onClose,
 }: {
   chat: Chat;
-  streamText: string;
   message?: Message;
   onMessageChange: (v: Message) => void;
   isShowing: boolean,
   onClose: () => void;
 }) {
   const app = message ? extractFirstCodeBlock(message.content) : undefined;
-  const streamAppParts = splitByFirstCodeFence(streamText);
-  const streamApp = streamAppParts.find(
-    (p) =>
-      p.type === "first-code-fence-generating" || p.type === "first-code-fence",
-  );
+console.log(app);
 
-  const code = streamApp ? streamApp.content : app?.code || "";
+  const code = app?.code || "";
 
   const assistantMessages = chat.messages.filter((m) => m.role === "assistant");
-  const currentVersion = streamApp
-    ? assistantMessages.length
-    : message
+  const currentVersion = 
+     message
       ? assistantMessages.map((m) => m.id).indexOf(message.id)
       : 1;
   const previousMessage =

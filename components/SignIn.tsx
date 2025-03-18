@@ -7,7 +7,7 @@ import { Button } from './ui/button';
 
 export default function SignIn() {
   const session = useSession()
-  
+
   if (session.data?.user) {
     return (
       <Button asChild variant="secondary" size="default">
@@ -23,7 +23,8 @@ export default function SignIn() {
     return (
       <div className="space-y-1">
         <Button
-          variant="secondary" size="default"
+          variant="secondary"
+          size="default"
           onClick={() => signIn('github')}
         >
           Sign in
