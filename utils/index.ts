@@ -1,3 +1,4 @@
+import { TreeData } from "@/app/books/[id]/components/tree";
 import { HumanMessage, AIMessage, ChatMessage } from "@langchain/core/messages";
 import { Message } from "ai";
 
@@ -262,4 +263,12 @@ export function arrayToTree(items: ChapterInput[]): ChapterInput[] {
   }
 
   return result;
+}
+
+export function getOutlineMessage(outline: TreeData[]) {
+
+  const outLineMessageStirng = `\`\`\`json
+${JSON.stringify(outline)}
+\`\`\``
+  return outLineMessageStirng;
 }

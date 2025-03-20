@@ -1,11 +1,10 @@
 "use client"
 
 import * as React from "react"
-// import { Tree, TreeData } from "./tree";
 import { Tree, Data as TreeData } from "@/components/tree";
 
 import { v4 as uuidv4 } from 'uuid';
-import { ChapterInput } from "@/utils";
+import { ChapterInput, extractFirstCodeBlock, getOutlineMessage } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -15,15 +14,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { moveNode, updateNode } from "@/components/tree/util";
-
-const transformData = (chapter: ChapterInput): TreeData => {
-  return {
-    id: uuidv4(),
-    title: chapter.title,
-    content: chapter.content,
-    ...(chapter.children && chapter.children?.length > 0 && { children: chapter.children?.map(transformData) })
-  }
-}
+import { updateMessage } from "@/app/api/chat/actions";
+import { useMessageStore } from "@/store/message";
 
 const FormSchema = z.object({
   title: z.string().min(2, {
@@ -32,17 +24,19 @@ const FormSchema = z.object({
   content: z.string().optional(),
 })
 
-export default function SidebarPreview({ data }: { data: string }) {
+export default function SidebarPreview() {
   const treeRef = React.useRef()
   const [treeData, setTreeData] = React.useState<TreeData[]>([])
   const [chapter, setChapter] = React.useState<TreeData>()
+  const { message, setActiveMessage } = useMessageStore()
 
   React.useEffect(() => {
-    if (data) {
-      const newdata = JSON.parse(data)
-      setTreeData(newdata.map(transformData))
+    if (message) {
+      const app = extractFirstCodeBlock(message.content)!;
+      const newdata = JSON.parse(app.code)
+      setTreeData(newdata)
     }
-  }, [data])
+  }, [message])
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -54,7 +48,12 @@ export default function SidebarPreview({ data }: { data: string }) {
 
   async function onSubmit(values: z.infer<typeof FormSchema>) {
     const updateData = updateNode(treeData, { ...chapter!, ...values })
-    setTreeData(updateData)
+    // setTreeData(updateData)
+    const content = getOutlineMessage(updateData)
+    const newMessage = await updateMessage(message!.id, content)
+    if (newMessage) {
+      setActiveMessage(newMessage)
+    }
   }
 
   return (
@@ -66,7 +65,6 @@ export default function SidebarPreview({ data }: { data: string }) {
           className="min-w-1/3 bg-muted h-full overflow-y-auto text-sm px-2"
           onActivate={(node) => { setChapter(node.data); form.reset(node.data) }}
           onMove={async (data) => {
-            console.log(data);
             const updateData = moveNode(treeData, data)
             setTreeData(updateData)
           }}

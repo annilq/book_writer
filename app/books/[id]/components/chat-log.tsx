@@ -4,7 +4,7 @@ import { Fragment } from "react";
 import Markdown from "react-markdown";
 import { StickToBottom } from "use-stick-to-bottom";
 import { useClipboard } from 'use-clipboard-copy';
-import { ArrowLeft, CopyCheck, Copy, Edit } from "lucide-react";
+import { ArrowLeft, CopyCheck, Copy, Edit, ArrowRight } from "lucide-react";
 
 import type { Chat, Message } from "../page";
 
@@ -211,7 +211,7 @@ export const AssistantText = ({ data, version = 1, title = "", isActive = false,
                   V{version}-{title}
                 </div>
                 <div className="ml-auto">
-                  <ArrowLeft />
+                  {isActive ? <ArrowRight /> : <ArrowLeft />}
                 </div>
               </button>
             </div>

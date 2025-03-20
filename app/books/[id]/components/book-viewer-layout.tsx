@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Chat, Message } from "../page";
 import SidebarPreview from "./sidebar-preview";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { useTranslation } from "react-i18next"
 
 export default function OutlineViewerLayout({
   chat,
@@ -21,14 +22,12 @@ export default function OutlineViewerLayout({
   isShowing: boolean,
   onClose: () => void;
 }) {
-  const app = message ? extractFirstCodeBlock(message.content) : undefined;
-console.log(app);
+  const { t } = useTranslation()
 
-  const code = app?.code || "";
 
   const assistantMessages = chat.messages.filter((m) => m.role === "assistant");
-  const currentVersion = 
-     message
+  const currentVersion =
+    message
       ? assistantMessages.map((m) => m.id).indexOf(message.id)
       : 1;
   const previousMessage =
@@ -54,33 +53,12 @@ console.log(app);
               {chat.title}
             </div>
           </div>
-          {isShowing && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <SaveIcon className="h-4 w-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete your
-                    account and remove your data from our servers.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction>Continue</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
+
         </div>
       </BookHeader>
       <div className="flex flex-col h-full ">
         <div className="flex flex-1 flex-col overflow-y-auto bg-background">
-          <SidebarPreview data={code} />
+          <SidebarPreview />
         </div>
         <div className="flex items-center justify-between border-t border-gray-300 px-4 py-4 h-10 sticky bottom-0 w-full bg-background">
           <div className="flex items-center justify-end gap-3">
@@ -118,6 +96,25 @@ console.log(app);
               </button>
             )}
           </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <SaveIcon className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t("booklineConfirmTip")}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t("booklineConfirmContent")}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                <AlertDialogAction>{t("save")}</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>
