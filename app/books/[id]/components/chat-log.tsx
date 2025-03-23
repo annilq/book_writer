@@ -202,7 +202,7 @@ export const AssistantText = ({ data, version = 1, title = "", isActive = false,
           ) : (
             <div className="my-4">
               <button
-                className={`${isActive ? "bg-background" : " hover:border-gray-400 hover:bg-gray-100"} inline-flex w-full items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5`}
+                className={`${isActive ? "bg-background" : " hover:border-gray-400 hover:bg-secondary hover:text-secondary-foreground"} inline-flex w-full items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5`}
                 onClick={onMessageClick}
               >
                 <div

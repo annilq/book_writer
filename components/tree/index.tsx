@@ -8,6 +8,13 @@ export type Data = { id: string; title: string; content: string; children?: Data
 
 const INDENT_STEP = 16;
 
+const getTreeId = (id: string) => {
+  // format chap1-2
+  const prefix = "chap"
+  const newId = id.replace("chap", "").replaceAll("-", ".");
+  return newId
+}
+
 export function Tree(props: TreeProps<Data>) {
   const { ref, width, height } = useResizeObserver();
 
@@ -34,14 +41,14 @@ function Node({ node, style, dragHandle }: NodeRendererProps<Data>) {
   return (
     <div
       ref={dragHandle}
-      className={cn(node.isInternal && "font-bold", "flex gap-2 items-center justify-between cursor-pointer hover:underline mx-4")}
+      className={cn((node.level === 0) && "font-bold", "flex gap-2 items-center justify-between cursor-pointer hover:underline mx-4")}
       style={style}
       onClick={() => node.isInternal && node.toggle()}
     >
       <span className="flex-1" >
-        {node.data.title}
+        {getTreeId(node.id)} {node.data.title}
       </span>
-      <FolderArrow node={node} />
+      {!!node.children?.length && <FolderArrow node={node} />}
     </div>
   );
 }
