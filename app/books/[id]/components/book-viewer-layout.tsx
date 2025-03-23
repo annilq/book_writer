@@ -64,13 +64,13 @@ export default function OutlineViewerLayout({
           <div className="flex items-center justify-end gap-3">
             {previousMessage ? (
               <button
-                className="text-gray-900"
+                className="text-foreground"
                 onClick={() => onMessageChange(previousMessage)}
               >
                 <ChevronLeftIcon className="size-4" />
               </button>
             ) : (
-              <button className="text-gray-900 opacity-25" disabled>
+              <button className="text-foreground opacity-25" disabled>
                 <ChevronLeftIcon className="size-4" />
               </button>
             )}
@@ -85,13 +85,13 @@ export default function OutlineViewerLayout({
 
             {nextMessage ? (
               <button
-                className="text-gray-900"
+                className="text-foreground"
                 onClick={() => onMessageChange(nextMessage)}
               >
                 <ChevronRightIcon className="size-4" />
               </button>
             ) : (
-              <button className="text-gray-900 opacity-25" disabled>
+              <button className="text-foreground opacity-25" disabled>
                 <ChevronRightIcon className="size-4" />
               </button>
             )}

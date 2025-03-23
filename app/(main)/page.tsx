@@ -14,7 +14,7 @@ export default function Home() {
       <div className="min-h-screen flex flex-col bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
         <Header />
         <main className="flex flex-col flex-grow items-center justify-center w-full text-center">
-          <h1 className="text-6xl font-bold">
+          <h1 className="text-4xl font-bold">
             {t("welcome")} BookCraft
           </h1>
           <p className="mt-3 text-2xl"> {t("appDesc")}</p>
