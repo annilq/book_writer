@@ -17,6 +17,8 @@ import { cn } from "@/utils";
 
 import { Message as MessageClient } from '@prisma/client'
 import { useMessageStore } from "@/store/message";
+import { Button } from "@/components/ui/button";
+import { ChevronsRight } from "lucide-react";
 
 export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
@@ -86,43 +88,47 @@ export default function PageClient({ chat }: { chat: Chat }) {
   return (
     <div className="flex bg-background text-foreground h-screen">
       <Sidebar />
-      <main className="flex flex-1 overflow-auto">
-        <div className="flex flex-col flex-1 w-full shrink-0 overflow-hidden lg:w-2/5">
-          <BookHeader>
-            <div className="flex items-center flex-1">
-              {chat.title}
-            </div>
-            <div className="flex items-center">
-              <SettingsModal book={chat} />
-            </div>
-          </BookHeader>
-          <div className={cn("flex flex-col flex-1 overflow-auto min-w-min", !activeMessage && "max-w-3xl mx-auto")}>
-            <ChatLog
-              chat={{ ...chat, messages }}
-              refreshAssitant={refreshAssitant}
-            />
-            <ChatBox
-              onInputMessage={(message: CreateMessage | MessageClient) => {
-                if (message.id) {
-                  refreshAssitant(message as MessageClient, true)
-                } else {
-                  appendMessage(message as CreateMessage)
-                }
-              }}
-              isStreaming={status === "streaming"}
-            />
+      <main className="flex flex-1 flex-col">
+        <BookHeader>
+          <div className="flex items-center flex-1">
+            {chat.title}
           </div>
+          <div className="flex items-center">
+            <SettingsModal book={chat} />
+            {!!activeMessage && (
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setActiveMessage(undefined)}>
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </BookHeader>
+        <div className="flex flex-1 overflow-auto">
+          <div className="flex flex-col flex-1  w-full shrink-0 overflow-hidden lg:w-2/5">
+            <div className={cn("flex flex-col flex-1 overflow-auto min-w-min", !activeMessage && "max-w-3xl mx-auto")}>
+              <ChatLog
+                chat={{ ...chat, messages }}
+                refreshAssitant={refreshAssitant}
+              />
+              <ChatBox
+                onInputMessage={(message: CreateMessage | MessageClient) => {
+                  if (message.id) {
+                    refreshAssitant(message as MessageClient, true)
+                  } else {
+                    appendMessage(message as CreateMessage)
+                  }
+                }}
+                isStreaming={status === "streaming"}
+              />
+            </div>
+          </div>
+          <OutlineViewerLayout
+            streamText={""}
+            chat={{ ...chat, messages }}
+            onMessageChange={setActiveMessage}
+            isShowing={!!activeMessage}
+            message={activeMessage as Message}
+          />
         </div>
-        <OutlineViewerLayout
-          streamText={""}
-          chat={{ ...chat, messages }}
-          onMessageChange={setActiveMessage}
-          isShowing={!!activeMessage}
-          message={activeMessage as Message}
-          onClose={() => {
-            setActiveMessage(undefined);
-          }}
-        />
       </main>
     </div>
   );

@@ -89,6 +89,14 @@ enum BookStatus {
   PENDINGREVIEW
 }
 
+// step
+enum STEP {
+  INIT
+  OUTLINE
+  CHAPTER
+  COMPLETE
+}
+
 model Book {
   id              String     @id @default(nanoid(16))
   title           String
@@ -108,6 +116,7 @@ model Book {
   publisher       Publisher? @relation(fields: [publisherId], references: [id])
   categories      Category[] @relation("BookCategories")
   status          BookStatus @default(DRAFT)
+  step            STEP       @default(INIT)
   createdAt       DateTime   @default(now())
 }
 

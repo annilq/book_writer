@@ -175,7 +175,7 @@ export const AssistantText = ({ data, version = 1, title = "", isActive = false,
 }) => {
 
   const parts = splitByFirstCodeFence(data);
-  console.log(parts);
+  // console.log(parts);
 
   return (
     <div className="my-4">

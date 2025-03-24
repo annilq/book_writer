@@ -55,11 +55,11 @@ export default function SidebarPreview() {
   }
 
   return (
-    <div className="flex h-full gap-2">
+    <div className="flex flex-1 gap-2 overflow-y-auto bg-background">
       {treeData?.length > 0 ? (
         <Tree
           data={treeData}
-          className="min-w-1/3 bg-muted h-full overflow-y-auto text-sm px-2"
+          className="min-w-1/3 bg-muted overflow-y-auto text-sm px-2"
           onActivate={(node) => { setChapter(node.data); form.reset(node.data) }}
           onMove={async (data) => {
             const updateData = moveNode(treeData, data)
@@ -69,12 +69,12 @@ export default function SidebarPreview() {
       ) : false}
       <div className="flex-1">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="mx-auto space-y-4 p-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="mx-auto space-y-4 p-4 flex flex-col">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
-                <FormItem className="flex-1">
+                <FormItem>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -86,9 +86,10 @@ export default function SidebarPreview() {
               control={form.control}
               name="content"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col flex-1">
                   <FormControl>
                     <Textarea
+                      className="flex-1"
                       rows={8}
                       {...field}
                     />

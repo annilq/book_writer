@@ -178,4 +178,4 @@ const Leaf = React.forwardRef<
 })
 
 
-export { Tree, type TreeData }
+export { Tree }

@@ -54,6 +54,7 @@ export async function createBook(
         id: bookdata.id,
       },
       data: {
+        step: "OUTLINE",
         prompt: bookPrompt,
         messages: {
           createMany: {
@@ -186,6 +187,7 @@ export async function createBookOutline(
         id: bookId,
       },
       data: {
+        step: "CHAPTER",
         chapters: {
           createMany: {
             data: flattenedChapters.map(({ children: _, ...chapter }) => chapter)

@@ -1,7 +1,6 @@
 "use client";
 
-import BookHeader from "./chat-header";
-import { ChevronLeftIcon, ChevronRightIcon, ChevronsRight, SaveIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, SaveIcon } from "lucide-react";
 import { cn, splitByFirstCodeFence, extractFirstCodeBlock } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Chat, Message } from "../page";
@@ -15,13 +14,11 @@ export default function OutlineViewerLayout({
   message,
   onMessageChange,
   isShowing,
-  onClose,
 }: {
   chat: Chat;
   message?: Message;
   onMessageChange: (v: Message) => void;
   isShowing: boolean,
-  onClose: () => void;
 }) {
   const { t } = useTranslation()
 
@@ -40,89 +37,70 @@ export default function OutlineViewerLayout({
 
   return (
     <div
-      className={cn(`h-full hidden overflow-hidden transition-[width] lg:block bg-muted`, isShowing ? "w-3/5 border-l" : "w-0")}
+      className={cn(`h-full hidden overflow-hidden transition-[width] lg:flex bg-muted relative`, isShowing ? "flex-col w-3/5 border-l" : "w-0")}
     >
-      <BookHeader>
-        <div className="flex items-center w-full">
-          <div className="flex items-center flex-1">
-            {isShowing && (
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
-            )}
-            <div>
-              {chat.title}
-            </div>
-          </div>
+      <SidebarPreview />
+      <div className="flex items-center justify-between border-t border-gray-300 px-4 py-4 h-10 w-full bg-background">
+        <div className="flex items-center justify-end gap-3">
+          {previousMessage ? (
+            <button
+              className="text-foreground"
+              onClick={() => onMessageChange(previousMessage)}
+            >
+              <ChevronLeftIcon className="size-4" />
+            </button>
+          ) : (
+            <button className="text-foreground opacity-25" disabled>
+              <ChevronLeftIcon className="size-4" />
+            </button>
+          )}
 
+          <p className="text-sm">
+            Version <span className="tabular-nums">{currentVersion + 1}</span>{" "}
+            <span className="text-gray-400">of</span>{" "}
+            <span className="tabular-nums">
+              {Math.max(currentVersion + 1, assistantMessages.length)}
+            </span>
+          </p>
+
+          {nextMessage ? (
+            <button
+              className="text-foreground"
+              onClick={() => onMessageChange(nextMessage)}
+            >
+              <ChevronRightIcon className="size-4" />
+            </button>
+          ) : (
+            <button className="text-foreground opacity-25" disabled>
+              <ChevronRightIcon className="size-4" />
+            </button>
+          )}
         </div>
-      </BookHeader>
-      <div className="flex flex-col h-full ">
-        <div className="flex flex-1 flex-col overflow-y-auto bg-background">
-          <SidebarPreview />
-        </div>
-        <div className="flex items-center justify-between border-t border-gray-300 px-4 py-4 h-10 sticky bottom-0 w-full bg-background">
-          <div className="flex items-center justify-end gap-3">
-            {previousMessage ? (
-              <button
-                className="text-foreground"
-                onClick={() => onMessageChange(previousMessage)}
-              >
-                <ChevronLeftIcon className="size-4" />
-              </button>
-            ) : (
-              <button className="text-foreground opacity-25" disabled>
-                <ChevronLeftIcon className="size-4" />
-              </button>
-            )}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <SaveIcon className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("booklineConfirmTip")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("booklineConfirmContent")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={async () => {
+                const app = extractFirstCodeBlock(message!.content)!;
+                const outline = JSON.parse(app.code)
+                const result = await createBookOutline(chat.id, outline)
+                console.log(result);
 
-            <p className="text-sm">
-              Version <span className="tabular-nums">{currentVersion + 1}</span>{" "}
-              <span className="text-gray-400">of</span>{" "}
-              <span className="tabular-nums">
-                {Math.max(currentVersion + 1, assistantMessages.length)}
-              </span>
-            </p>
-
-            {nextMessage ? (
-              <button
-                className="text-foreground"
-                onClick={() => onMessageChange(nextMessage)}
-              >
-                <ChevronRightIcon className="size-4" />
-              </button>
-            ) : (
-              <button className="text-foreground opacity-25" disabled>
-                <ChevronRightIcon className="size-4" />
-              </button>
-            )}
-          </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <SaveIcon className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{t("booklineConfirmTip")}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {t("booklineConfirmContent")}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                <AlertDialogAction onClick={async () => {
-                  const app = extractFirstCodeBlock(message!.content)!;
-                  const outline = JSON.parse(app.code)
-                  const result = await createBookOutline(chat.id, outline)
-                  console.log(result);
-
-                }}>{t("save")}</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+              }}>{t("save")}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
