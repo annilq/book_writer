@@ -1,12 +1,12 @@
-import { Book } from "@prisma/client";
+import { Book, STEP } from "@prisma/client";
 import Image from "next/image"
 import Link from "next/link";
 import type React from "react"
 import useSWR from "swr";
 
-function BookCard({ bookId, title, metadata, thumbnail }: { bookId: string; title: string; metadata: string; thumbnail: string }) {
+function BookCard({ bookId, title, metadata, step, thumbnail }: { bookId: string; step: STEP, title: string; metadata: string; thumbnail: string }) {
   return (
-    <Link href={`/books/${bookId}`} className="group relative overflow-hidden rounded-lg border bg-background">
+    <Link href={step === "CHAPTER" ? `/content/${bookId}` : `/chats/${bookId}`} className="group relative overflow-hidden rounded-lg border bg-background">
       <div className="aspect-[4/3] overflow-hidden">
         <Image
           src={thumbnail || "/placeholder.svg"}
@@ -30,7 +30,7 @@ export default function Books() {
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6">
-      {books?.map(book => <BookCard key={book.id} title={book.title} bookId={book.id} metadata={book.description} thumbnail={book.coverImage || "/placeholder.svg"} />)}
+      {books?.map(book => <BookCard key={book.id} title={book.title} step={book.step} bookId={book.id} metadata={book.description} thumbnail={book.coverImage || "/placeholder.svg"} />)}
     </div>
   )
 }

@@ -1,5 +1,5 @@
-import { TreeData } from "@/app/books/[id]/components/tree";
 import { HumanMessage, AIMessage, ChatMessage } from "@langchain/core/messages";
+import { Chapter } from "@prisma/client";
 import { Message } from "ai";
 
 export * from "./cn"
@@ -211,7 +211,7 @@ export function splitByFirstCodeFence(markdown: string) {
 
 
 export function flattenChaptersWithPosition(
-  chapters: (Omit<TreeData, "id">)[],
+  chapters: ChapterInput[],
   parentPosition: string = ""
 ): ChapterInput[] {
   const result: ChapterInput[] = [];
@@ -237,14 +237,14 @@ export function flattenChaptersWithPosition(
   return result;
 }
 
-export function arrayToTree(items: ChapterInput[]): ChapterInput[] {
-  const result: ChapterInput[] = [];
-  const map: { [key: string]: ChapterInput } = {};
+export function arrayToTree(items: Chapter[]): ChapterInput[] {
+  const result: Chapter[] = [];
+  const map: { [key: string]: Chapter } = {};
 
   const sortedItems = [...items].sort((a, b) => a.position.localeCompare(b.position));
 
   for (const item of sortedItems) {
-    const newItem: ChapterInput = { ...item };
+    const newItem: Chapter = { ...item };
     map[item.position] = newItem;
 
     const lastDotIndex = item.position.lastIndexOf('.');
@@ -252,7 +252,7 @@ export function arrayToTree(items: ChapterInput[]): ChapterInput[] {
       result.push(newItem);
     } else {
       const parentPosition = item.position.substring(0, lastDotIndex);
-      const parent = map[parentPosition];
+      const parent = map[parentPosition] as ChapterInput;
       if (parent) {
         if (!parent.children) {
           parent.children = [];
@@ -265,7 +265,7 @@ export function arrayToTree(items: ChapterInput[]): ChapterInput[] {
   return result;
 }
 
-export function getOutlineMessage(outline: TreeData[]) {
+export function getOutlineMessage(outline: ChapterInput[]) {
 
   const outLineMessageStirng = `\`\`\`json
 ${JSON.stringify(outline)}

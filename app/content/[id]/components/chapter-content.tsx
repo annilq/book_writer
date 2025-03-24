@@ -1,15 +1,15 @@
 "use client";
 
 import { ChevronLeftIcon, ChevronRightIcon, SaveIcon } from "lucide-react";
-import { cn, splitByFirstCodeFence, extractFirstCodeBlock } from "@/utils";
+import { cn, extractFirstCodeBlock } from "@/utils";
 import { Button } from "@/components/ui/button";
-import { Chat, Message } from "../page";
-import SidebarPreview from "./sidebar-preview";
+import { Chat, Message } from "../../../books/[id]/page";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { useTranslation } from "react-i18next"
 import { createBookOutline } from "@/app/api/chat/actions";
+import { useRouter } from "next/navigation";
 
-export default function OutlineViewerLayout({
+export default function ChapterContent({
   chat,
   message,
   onMessageChange,
@@ -22,6 +22,7 @@ export default function OutlineViewerLayout({
 }) {
   const { t } = useTranslation()
 
+  const router = useRouter();
 
   const assistantMessages = chat.messages.filter((m) => m.role === "assistant");
   const currentVersion =
@@ -37,9 +38,8 @@ export default function OutlineViewerLayout({
 
   return (
     <div
-      className={cn(`h-full hidden overflow-hidden transition-[width] lg:flex bg-muted relative`, isShowing ? "flex-col w-3/5 border-l" : "w-0")}
+      className={cn(`h-full hidden overflow-hidden transition-[width] lg:flex bg-muted relative flex-col`, isShowing ? "w-3/5 border-l" : "w-0", chat.step === "CHAPTER" ? "flex-1" : "")}
     >
-      <SidebarPreview />
       <div className="flex items-center justify-between border-t border-gray-300 px-4 py-4 h-10 w-full bg-background">
         <div className="flex items-center justify-end gap-3">
           {previousMessage ? (
@@ -95,8 +95,7 @@ export default function OutlineViewerLayout({
                 const app = extractFirstCodeBlock(message!.content)!;
                 const outline = JSON.parse(app.code)
                 const result = await createBookOutline(chat.id, outline)
-                console.log(result);
-
+                router.refresh();
               }}>{t("save")}</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

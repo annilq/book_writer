@@ -3,8 +3,7 @@
 import * as React from "react"
 import { Tree, Data as TreeData } from "@/components/tree";
 
-import { v4 as uuidv4 } from 'uuid';
-import { ChapterInput, extractFirstCodeBlock, getOutlineMessage } from "@/utils";
+import { extractFirstCodeBlock, getOutlineMessage } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -59,7 +58,7 @@ export default function SidebarPreview() {
       {treeData?.length > 0 ? (
         <Tree
           data={treeData}
-          className="min-w-1/3 bg-muted overflow-y-auto text-sm px-2"
+          className="w-1/3 bg-muted overflow-y-auto text-sm px-2"
           onActivate={(node) => { setChapter(node.data); form.reset(node.data) }}
           onMove={async (data) => {
             const updateData = moveNode(treeData, data)

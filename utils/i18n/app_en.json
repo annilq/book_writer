@@ -36,6 +36,7 @@
   "UNPUBLISHED": "Unpublished",
   "PENDINGREVIEW": "Pendingreview",
   "bookOutlinePrompt": "You are now a professional writer. Create a book outline based on the following information,Book Name: {{title}},Book description: {{description}}",
+  "bookChapterPrompt": "You are now a professional writer. Your task is to generate detailed content for a specified chapter based on the overall outline, chapter titles, and content summaries provided by the user.",
   "bookSetting": "Book Settings",
   "bookInfo": "Book Info",
   "bookPrompt": "Book Prompt",

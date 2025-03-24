@@ -36,7 +36,7 @@ export default function SideBar() {
   return (
     <div className={cn("w-56 transition-all duration-100 bg-muted", collapse && "w-12 overflow-hidden")}>
       <div className="p-2 flex justify-between items-center">
-        {!collapse && <h1 className="text-xl font-bold text-foreground">Bookshelf</h1>}
+        {!collapse && <Link href={"/"}><h1 className="text-xl font-bold text-foreground">BookCraft</h1></Link>}
         <Button size={"icon"} variant={"ghost"} onClick={() => setCollapse(!collapse)} > <PanelLeft /> </Button>
       </div>
       <nav className="space-y-1 px-2">

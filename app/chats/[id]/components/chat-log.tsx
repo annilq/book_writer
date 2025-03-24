@@ -6,7 +6,7 @@ import { StickToBottom } from "use-stick-to-bottom";
 import { useClipboard } from 'use-clipboard-copy';
 import { ArrowLeft, CopyCheck, Copy, Edit, ArrowRight } from "lucide-react";
 
-import type { Chat, Message } from "../page";
+import type { Chat, Message } from "../../../books/[id]/page";
 
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

@@ -136,23 +136,15 @@ model Message {
 }
 
 model Chapter {
-  id         Int         @id @default(autoincrement())
-  title      String
-  content    String
-  position   String      @default("0") // Path enumeration field (e.g., "1", "1.1", "1.1.1")
-  bookId     String
-  book       Book        @relation(fields: [bookId], references: [id])
-  paragraphs Paragraph[]
-  Message    Message[]
+  id       Int       @id @default(autoincrement())
+  title    String
+  content  String
+  position String    @default("0") // Path enumeration field (e.g., "1", "1.1", "1.1.1")
+  bookId   String
+  book     Book      @relation(fields: [bookId], references: [id])
+  messages Message[]
 
   @@index([position])
-}
-
-model Paragraph {
-  id        Int     @id @default(autoincrement())
-  content   String
-  chapterId Int
-  chapter   Chapter @relation(fields: [chapterId], references: [id])
 }
 
 model Tag {

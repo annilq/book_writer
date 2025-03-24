@@ -107,7 +107,7 @@ export async function fetchBookOutline(
   const ChaptersSchema = z.array(ChapterModel);
   const parser = StructuredOutputParser.fromZodSchema(ChaptersSchema);
 
-  const systemPrompt = `${i18n.t("bookOutlinePrompt")}
+  const systemPrompt = `${i18n.t("bookOutlinePrompt", { title: book.title, description: book.description })}
       # General Instructions
         ${book.prompt}
       # Format Instructions:
@@ -168,6 +168,31 @@ export async function createMessage(
       content: message.content,
       position: maxPosition + 1,
       bookId,
+    },
+  });
+
+  return newMessage;
+}
+export async function createChapterMessage(
+  chapterId: number,
+  message: CreateMessage
+) {
+  const prisma = getPrisma();
+  const book = await prisma.chapter.findUnique({
+    where: { id: chapterId },
+    include: { messages: true },
+  });
+  if (!book) notFound();
+
+  const positions = book.messages.map(m => m.position);
+  const maxPosition = positions.length > 0 ? Math.max(...positions) : 0;
+
+  const newMessage = await prisma.message.create({
+    data: {
+      role: message.role,
+      content: message.content,
+      position: maxPosition + 1,
+      chapterId,
     },
   });
 
@@ -236,6 +261,32 @@ export async function removeMessagesAfterMessageId(
   const result = await prisma.message.deleteMany({
     where: {
       bookId,
+      position: {
+        gt: targetMessage.position
+      }
+    }
+  });
+
+  return result;
+}
+export async function removeChapterMessagesAfterMessageId(
+  chapterId: number,
+  messageId: string,
+) {
+  const prisma = getPrisma();
+
+  const targetMessage = await prisma.message.findUnique({
+    where: { id: messageId },
+    select: { position: true }
+  });
+
+  if (!targetMessage) {
+    throw new Error('Message not found');
+  }
+
+  const result = await prisma.message.deleteMany({
+    where: {
+      chapterId,
       position: {
         gt: targetMessage.position
       }

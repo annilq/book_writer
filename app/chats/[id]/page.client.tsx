@@ -7,17 +7,17 @@ import { useRouter } from "next/navigation";
 import { createMessage, removeMessagesAfterMessageId, updateMessage } from "@/app/api/chat/actions";
 
 import BookHeader from "@/app/chats/[id]/components/chat-header";
-import Outline from "./components/outline";
 import { SettingsModal } from "@/app/chats/[id]/components/setting-modal";
 import ChatBox from "@/app/chats/[id]/components/chat-box";
 import ChatLog from "@/app/chats/[id]/components/chat-log";
+import OutlineViewerLayout from "@/app/chats/[id]/components/book-viewer-layout";
 import type { Chat } from "./page";
 import { cn } from "@/utils";
 
 import { Message as MessageClient } from '@prisma/client'
 import { useMessageStore } from "@/store/message";
 import { Button } from "@/components/ui/button";
-import { ChevronsRight } from "lucide-react";
+import { ChevronsRight, ChevronLeft } from "lucide-react";
 
 export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
@@ -85,12 +85,13 @@ export default function PageClient({ chat }: { chat: Chat }) {
   };
 
   return (
-    <div className="flex bg-background text-foreground h-screen overflow-hidden">
-      <Outline book={chat} />
+    <div className="flex bg-background text-foreground h-screen">
       <main className="flex flex-1 flex-col">
         <BookHeader>
-          <div className="flex items-center flex-1">
-            {chat.title}
+          <div className="flex items-center flex-1 gap-2">
+            <Button variant={"ghost"} size={"icon"} onClick={()=>{
+              router.back()
+            }}> <ChevronLeft /> </Button>  {chat.title}
           </div>
           <div className="flex items-center">
             <SettingsModal book={chat} />
@@ -102,8 +103,8 @@ export default function PageClient({ chat }: { chat: Chat }) {
           </div>
         </BookHeader>
         <div className="flex flex-1 overflow-auto">
-          <div className="flex flex-col flex-1  w-full shrink-0 overflow-hidden">
-            <div className={cn("flex flex-col flex-1 overflow-auto min-w-min")}>
+          <div className="flex flex-col flex-1  w-full shrink-0 overflow-hidden lg:w-2/5">
+            <div className={cn("flex flex-col flex-1 overflow-auto min-w-min", !activeMessage && "max-w-3xl mx-auto")}>
               <ChatLog
                 chat={{ ...chat, messages }}
                 refreshAssitant={refreshAssitant}
@@ -120,6 +121,12 @@ export default function PageClient({ chat }: { chat: Chat }) {
               />
             </div>
           </div>
+          <OutlineViewerLayout
+            chat={{ ...chat, messages }}
+            onMessageChange={setActiveMessage}
+            isShowing={!!activeMessage}
+            message={activeMessage as Message}
+          />
         </div>
       </main>
     </div>

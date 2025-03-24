@@ -4,7 +4,7 @@ import { produce } from "immer";
 import { CreateMessage, Message, useChat } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
 
-import { createMessage, removeMessagesAfterMessageId, updateMessage } from "@/app/api/chat/actions";
+import { createChapterMessage, removeChapterMessagesAfterMessageId, updateMessage } from "@/app/api/chat/actions";
 
 import BookHeader from "@/app/chats/[id]/components/chat-header";
 import Outline from "./components/outline";
@@ -14,41 +14,30 @@ import ChatLog from "@/app/chats/[id]/components/chat-log";
 import type { Chat } from "./page";
 import { cn } from "@/utils";
 
-import { Message as MessageClient } from '@prisma/client'
+import { Category, Message as MessageClient } from '@prisma/client'
 import { useMessageStore } from "@/store/message";
 import { Button } from "@/components/ui/button";
 import { ChevronsRight } from "lucide-react";
+import { useChapterStore } from "@/store/chapter";
+import ChapterContent from "./components/chapter-content";
+import { useEffect } from "react";
+import useSWR from "swr";
 
 export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
+  const { chapter } = useChapterStore()
 
   const { message: activeMessage, setActiveMessage } = useMessageStore()
 
   const { messages, status, append, reload, setMessages } = useChat({
-    id: chat.id,
-    api: "/api/chat",
-    initialMessages: chat.messages as Message[],
-    body: {
-      model: chat.model,
-      chatId: chat.id,
-    },
-    maxSteps: 5,
-    async onToolCall({ toolCall, }) {
-      if (toolCall.toolName === "parseBookOutline") {
-        const input = toolCall.args
-        console.log(input);
-        return input
-      }
-    },
+    api: "/api/chapter",
     async onFinish(message, options) {
       console.log(message);
-
-      await createMessage(chat.id, message) as Message
+      await createChapterMessage(chapter!.id, message) as Message
       router.refresh();
     },
     onError: (e) => {
       console.log(e);
-
     }
   });
 
@@ -76,11 +65,11 @@ export default function PageClient({ chat }: { chat: Chat }) {
     if (updateCurrentMessage) {
       updateMessage(message.id, message.content)
     }
-    removeMessagesAfterMessageId(chat.id, message.id)
+    removeChapterMessagesAfterMessageId(chapter!.id, message.id)
   };
 
   const appendMessage = async (message: CreateMessage) => {
-    const updateMessage = await createMessage(chat.id, message) as Message
+    const updateMessage = await createChapterMessage(chapter!.id, message) as Message
     append(updateMessage, { body: { model: chat.model, chatId: chat.id, book: chat } })
   };
 
@@ -102,8 +91,8 @@ export default function PageClient({ chat }: { chat: Chat }) {
           </div>
         </BookHeader>
         <div className="flex flex-1 overflow-auto">
-          <div className="flex flex-col flex-1  w-full shrink-0 overflow-hidden">
-            <div className={cn("flex flex-col flex-1 overflow-auto min-w-min")}>
+          <div className="flex flex-col flex-1  w-full shrink-0 overflow-hidden lg:w-2/5">
+            <div className={cn("flex flex-col flex-1 overflow-auto", !activeMessage && "max-w-3xl mx-auto")}>
               <ChatLog
                 chat={{ ...chat, messages }}
                 refreshAssitant={refreshAssitant}
@@ -120,6 +109,12 @@ export default function PageClient({ chat }: { chat: Chat }) {
               />
             </div>
           </div>
+          <ChapterContent
+            chat={{ ...chat, messages }}
+            onMessageChange={setActiveMessage}
+            isShowing={!!activeMessage}
+            message={activeMessage as Message}
+          />
         </div>
       </main>
     </div>
