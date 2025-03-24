@@ -49,7 +49,7 @@ export default function BookManager() {
 
         <div className="p-6">
           <div className="mb-6 flex items-center gap-4">
-            <Button className="gap-2">
+            <Button className="gap-2 rounded">
               <Plus className="h-4 w-4" />
               {t("create")}
             </Button>

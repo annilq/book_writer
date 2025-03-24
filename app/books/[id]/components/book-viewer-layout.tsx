@@ -8,6 +8,7 @@ import { Chat, Message } from "../page";
 import SidebarPreview from "./sidebar-preview";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { useTranslation } from "react-i18next"
+import { createBookOutline } from "@/app/api/chat/actions";
 
 export default function OutlineViewerLayout({
   chat,
@@ -111,7 +112,13 @@ export default function OutlineViewerLayout({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                <AlertDialogAction>{t("save")}</AlertDialogAction>
+                <AlertDialogAction onClick={async () => {
+                  const app = extractFirstCodeBlock(message!.content)!;
+                  const outline = JSON.parse(app.code)
+                  const result = await createBookOutline(chat.id, outline)
+                  console.log(result);
+
+                }}>{t("save")}</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

@@ -61,7 +61,7 @@ export default function SideBar() {
         >
           {!collapse && t("UNPUBLISHED")}
         </NavItem>
-        <Tags />
+        <Tags collapse={collapse} />
       </nav>
     </div>
   )

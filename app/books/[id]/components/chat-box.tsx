@@ -17,7 +17,7 @@ import { Message } from "@prisma/client";
 
 export const FormSchema = z.object({
   prompt: z.string().min(2, {
-    message: "bookName must be at least 2 characters.",
+    message: "must be at least 2 characters.",
   }),
 })
 
@@ -78,6 +78,7 @@ export default function ChatBox({
                         {...field}
                         placeholder="Follow up"
                         ref={textareaRef}
+                        disabled={isStreaming}
                         className="absolute shadow-none border-none inset-0 w-full resize-none placeholder-gray-500 disabled:opacity-50 focus-visible:ring-0 p-0"
                         onKeyDown={(event) => {
                           if (event.key === "Enter" && !event.shiftKey) {

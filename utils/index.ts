@@ -211,7 +211,7 @@ export function splitByFirstCodeFence(markdown: string) {
 
 
 export function flattenChaptersWithPosition(
-  chapters: ChapterInput[],
+  chapters: TreeData[],
   parentPosition: string = ""
 ): ChapterInput[] {
   const result: ChapterInput[] = [];

@@ -25,7 +25,6 @@ const FormSchema = z.object({
 })
 
 export default function SidebarPreview() {
-  const treeRef = React.useRef()
   const [treeData, setTreeData] = React.useState<TreeData[]>([])
   const [chapter, setChapter] = React.useState<TreeData>()
   const { message, setActiveMessage } = useMessageStore()
@@ -48,7 +47,6 @@ export default function SidebarPreview() {
 
   async function onSubmit(values: z.infer<typeof FormSchema>) {
     const updateData = updateNode(treeData, { ...chapter!, ...values })
-    // setTreeData(updateData)
     const content = getOutlineMessage(updateData)
     const newMessage = await updateMessage(message!.id, content)
     if (newMessage) {
@@ -60,7 +58,6 @@ export default function SidebarPreview() {
     <div className="flex h-full gap-2">
       {treeData?.length > 0 ? (
         <Tree
-          ref={treeRef}
           data={treeData}
           className="min-w-1/3 bg-muted h-full overflow-y-auto text-sm px-2"
           onActivate={(node) => { setChapter(node.data); form.reset(node.data) }}
