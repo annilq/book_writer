@@ -2,16 +2,14 @@
 
 import { getPrisma, prisma } from "@/utils/prisma";
 import { notFound } from "next/navigation";
-import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { z } from "zod";
-import { getBookPrompt, getStandardBookPrompt } from "@/utils/prompts";
+import { getOutlinePrompt, getStandardBookPrompt } from "@/utils/prompts";
 import { ChapterInput, flattenChaptersWithPosition } from "@/utils";
 import { FormSchema } from "@/app/(main)/components/BookOutlineForm";
 import { Book } from "@prisma/client";
 import { getI18n } from "@/utils/i18n/server";
 import { CoreMessage, CreateMessage, generateText, streamText } from "ai";
 import { getAIModel } from "@/utils/ai_providers";
-import { parseBookOutline } from "@/utils/ai_providers/tools/bookline";
 
 export async function createBook(
   book: z.infer<typeof FormSchema> & { id: string }
@@ -59,11 +57,6 @@ export async function createBook(
         messages: {
           createMany: {
             data: [
-              // {
-              //   role: "system",
-              //   content: bookPrompt,
-              //   position: 0,
-              // },
               {
                 role: "user",
                 content: i18n.t("bookOutlinePrompt",
@@ -89,47 +82,6 @@ export async function createBook(
   }
 }
 
-export async function fetchBookOutline(
-  book: Book,
-  messages: CoreMessage[] = []
-) {
-  const i18n = getI18n(book.language);
-  const { model } = book;
-  const [provider, modelName] = model.split("/");
-
-  const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
-    id: z.string().min(5),
-    title: z.string().min(3),
-    content: z.string().min(20),
-    children: z.array(ChapterModel)
-  }));
-
-  const ChaptersSchema = z.array(ChapterModel);
-  const parser = StructuredOutputParser.fromZodSchema(ChaptersSchema);
-
-  const systemPrompt = `${i18n.t("bookOutlinePrompt", { title: book.title, description: book.description })}
-      # General Instructions
-        ${book.prompt}
-      # Format Instructions:
-        ${parser.getFormatInstructions()}
-      # Write with Language: ${book.language}
-    `;
-
-  const eventStream = await streamText({
-    model: getAIModel(provider, modelName),
-    messages: [
-      { role: 'system' as const, content: systemPrompt },
-      ...messages
-    ],
-    temperature: 0,
-    // tools: {
-    //   parseBookOutline
-    // },
-    // maxSteps: 5
-  });
-  return eventStream;
-}
-
 export async function fetchBookPrompt(
   book: z.infer<typeof FormSchema> & { id: string }
 ) {
@@ -140,12 +92,31 @@ export async function fetchBookPrompt(
     prompt: getStandardBookPrompt(book),
   });
 
-  const prompt = await generateText({
-    model: getAIModel(provider, modelName),
-    prompt: getBookPrompt(standardBookPrompt.text, book.language!),
-  });
+  return standardBookPrompt.text
+}
 
-  return prompt.text
+export async function fetchBookOutline(
+  book: Book,
+  messages: CoreMessage[] = []
+) {
+
+  const { model } = book;
+  const [provider, modelName] = model.split("/");
+  const outlinePrompt = getOutlinePrompt(book);
+
+  const eventStream = await streamText({
+    model: getAIModel(provider, modelName),
+    messages: [
+      { role: 'system' as const, content: outlinePrompt },
+      ...messages
+    ],
+    temperature: 0,
+    // tools: {
+    //   parseBookOutline
+    // },
+    // maxSteps: 5
+  });
+  return eventStream;
 }
 
 export async function createMessage(

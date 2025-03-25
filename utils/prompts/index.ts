@@ -1,6 +1,8 @@
 import dedent from "dedent";
 import { FormSchema } from "@/app/(main)/components/BookOutlineForm";
 import { z } from "zod";
+import { StructuredOutputParser } from "@langchain/core/output_parsers";
+import { Book } from "@prisma/client";
 
 export function chapterPrompt(curChapter: string, preChapter?: string) {
   if (preChapter) {
@@ -77,14 +79,9 @@ export function getStandardBookPrompt(book: z.infer<typeof FormSchema>) {
     •	Consistency: [Consistency check standards]
     •	Professionalism: [Professionalism check standards]
     •	Innovation: [Innovation check standards]
-    `;
-  return systemPrompt
-}
 
-export function getBookPrompt(prompt: string, language: string) {
-  const systemPrompt = dedent`
-  ${prompt}
-  Integrate all the above elements to generate structured creative prompts, ensuring that:
+  [Generate prompts]
+    Integrate all the above elements to generate structured creative prompts, ensuring that:
     1.	Content Completeness: All necessary modules are covered
     2.	Logical Coherence: Clear relationships between parts
     3.	Operability: Requirements are specific and executable
@@ -95,8 +92,30 @@ export function getBookPrompt(prompt: string, language: string) {
     2.	Maintain clarity and accuracy in language
     3.	Find a balance between consistency and flexibility
     4.	Leave enough room for creativity in the process
+    5.	Only return the [Generate prompts] result, no other text
     
-  Write with Language:${language}
+  Write with Language:${book.language}
+    `;
+  return systemPrompt
+}
+
+export function getOutlinePrompt(book: Book) {
+  const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
+    id: z.string().min(5),
+    title: z.string().min(3),
+    content: z.string().min(20),
+    children: z.array(ChapterModel)
+  }));
+
+  const ChaptersSchema = z.array(ChapterModel);
+  const parser = StructuredOutputParser.fromZodSchema(ChaptersSchema);
+  const systemPrompt = dedent`
+ You are now a professional writer. You can create a book outline based on the information the user provides.
+      # General Instructions
+        ${book.prompt}
+      # Format Instructions:
+        ${parser.getFormatInstructions()}
+      # Write with Language: ${book.language}
     `;
   return systemPrompt
 }
