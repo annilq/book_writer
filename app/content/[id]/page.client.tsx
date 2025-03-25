@@ -14,14 +14,12 @@ import ChatLog from "@/app/chats/[id]/components/chat-log";
 import type { Chat } from "./page";
 import { cn } from "@/utils";
 
-import { Category, Message as MessageClient } from '@prisma/client'
+import { Message as MessageClient } from '@prisma/client'
 import { useMessageStore } from "@/store/message";
 import { Button } from "@/components/ui/button";
 import { ChevronsRight } from "lucide-react";
 import { useChapterStore } from "@/store/chapter";
 import ChapterContent from "./components/chapter-content";
-import { useEffect } from "react";
-import useSWR from "swr";
 
 export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
@@ -31,6 +29,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
 
   const { messages, status, append, reload, setMessages } = useChat({
     api: "/api/chapter",
+    id: chat.id,
     async onFinish(message, options) {
       console.log(message);
       await createChapterMessage(chapter!.id, message) as Message
@@ -68,14 +67,14 @@ export default function PageClient({ chat }: { chat: Chat }) {
     removeChapterMessagesAfterMessageId(chapter!.id, message.id)
   };
 
-  const appendMessage = async (message: CreateMessage) => {
-    const updateMessage = await createChapterMessage(chapter!.id, message) as Message
-    append(updateMessage, { body: { model: chat.model, chatId: chat.id, book: chat } })
+  const appendMessage = async (chapterId: number, message: CreateMessage) => {
+    const updateMessage = await createChapterMessage(chapterId, message) as Message
+    append(updateMessage, { body: { model: chat.model, book: chat } })
   };
 
   return (
     <div className="flex bg-background text-foreground h-screen overflow-hidden">
-      <Outline book={chat} />
+      <Outline book={chat} handleSubmit={appendMessage} setMessages={setMessages} />
       <main className="flex flex-1 flex-col">
         <BookHeader>
           <div className="flex items-center flex-1">
@@ -92,7 +91,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
         </BookHeader>
         <div className="flex flex-1 overflow-auto">
           <div className="flex flex-col flex-1  w-full shrink-0 overflow-hidden lg:w-2/5">
-            <div className={cn("flex flex-col flex-1 overflow-auto", !activeMessage && "max-w-3xl mx-auto")}>
+            <div className={cn("flex flex-col flex-1 overflow-auto w-full", !activeMessage && "max-w-3xl mx-auto")}>
               <ChatLog
                 chat={{ ...chat, messages }}
                 refreshAssitant={refreshAssitant}
@@ -102,7 +101,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
                   if (message.id) {
                     refreshAssitant(message as MessageClient, true)
                   } else {
-                    appendMessage(message as CreateMessage)
+                    appendMessage(chapter?.id!, message as CreateMessage)
                   }
                 }}
                 isStreaming={status === "streaming"}

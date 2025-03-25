@@ -102,7 +102,7 @@ export default function BookOutlineForm() {
         }
       })
       startTransition(() => {
-        router.push(`/books/${chat?.id}`);
+        router.push(`/chats/${chat?.id}`);
       });
     }
   }

@@ -207,25 +207,57 @@ export async function createBookOutline(
     // Flatten the chapter hierarchy with position strings
     const flattenedChapters = flattenChaptersWithPosition(chapters);
 
-    const updatedBook = await prisma.book.update({
-      where: {
-        id: bookId,
-      },
-      data: {
-        step: "CHAPTER",
-        chapters: {
-          createMany: {
-            data: flattenedChapters.map(({ children: _, ...chapter }) => chapter)
-          }
+    // Use transaction to ensure atomicity with increased timeout
+    const updatedBook = await prisma.$transaction(async (tx) => {
+      // Create chapters first
+      const bookWithChapters = await tx.book.update({
+        where: {
+          id: bookId,
         },
-      },
-      include: {
-        chapters: true
-      },
+        data: {
+          step: "CHAPTER",
+          chapters: {
+            createMany: {
+              data: flattenedChapters.map(({ children: _, ...chapter }) => chapter)
+            }
+          },
+        },
+        include: {
+          chapters: {
+            where: { leaf: true },
+            orderBy: {
+              position: 'asc'
+            },
+            take: 1
+          }
+        }
+      });
+
+      // Get the first leaf chapter from the included chapters
+      const firstLeafChapter = bookWithChapters.chapters[0];
+
+      // Update the book with the first chapter's id if we have chapters
+      if (firstLeafChapter) {
+        return await tx.book.update({
+          where: { id: bookId },
+          data: {
+            currentChapterId: firstLeafChapter.id
+          },
+          include: {
+            chapters: true
+          }
+        });
+      }
+
+      return bookWithChapters;
+    }, {
+      timeout: 10000 // Increase timeout to 10 seconds
     });
+
     return updatedBook;
-  } catch (updateError) {
-    console.error("Error updating book with chapters:", updateError);
+  } catch (error) {
+    console.error("Error in createBookOutline transaction:", error);
+    throw error;
   }
 }
 

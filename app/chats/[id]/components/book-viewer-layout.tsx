@@ -97,7 +97,7 @@ export default function OutlineViewerLayout({
                 const app = extractFirstCodeBlock(message!.content)!;
                 const outline = JSON.parse(app.code)
                 const result = await createBookOutline(chat.id, outline)
-                router.refresh();
+                router.replace(`/content/${chat.id}`);
               }}>{t("save")}</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

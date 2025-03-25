@@ -225,6 +225,7 @@ export function flattenChaptersWithPosition(
       title: chapter.title,
       content: chapter.content,
       position: currentPosition,
+      leaf: !(chapter.children && chapter.children.length > 0)
     };
 
     result.push(flatChapter);
