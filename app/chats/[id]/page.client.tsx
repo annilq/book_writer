@@ -3,6 +3,7 @@
 import { produce } from "immer";
 import { CreateMessage, Message, useChat } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
+import React from "react";
 
 import { createMessage, removeMessagesAfterMessageId, updateMessage } from "@/app/api/chat/actions";
 
@@ -18,11 +19,17 @@ import { Message as MessageClient } from '@prisma/client'
 import { useMessageStore } from "@/store/message";
 import { Button } from "@/components/ui/button";
 import { ChevronsRight, ChevronLeft } from "lucide-react";
+import { useBookStore } from "@/store/book";
 
 export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
 
   const { message: activeMessage, setActiveMessage } = useMessageStore()
+  const { book, setActiveBook } = useBookStore()
+
+  React.useEffect(() => {
+    setActiveBook(chat)
+  }, [chat.id, setActiveBook])
 
   const { messages, status, append, reload, setMessages } = useChat({
     id: chat.id,
@@ -52,7 +59,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
     }
   });
 
-  const refreshAssitant = async (message: MessageClient, updateCurrentMessage: boolean = false) => {
+  const refresh = async (message: MessageClient, updateCurrentMessage: boolean = false) => {
     // fliter message  and reload
     const currentMessageIndex = messages.findIndex(msg => msg.id === message.id)
     let updateMessages = messages.slice(0, currentMessageIndex + 1)
@@ -83,13 +90,15 @@ export default function PageClient({ chat }: { chat: Chat }) {
     const updateMessage = await createMessage(chat.id, message) as Message
     append(updateMessage, { body: { model: chat.model, chatId: chat.id, book: chat } })
   };
-
+  if (!book) {
+    return
+  }
   return (
     <div className="flex bg-background text-foreground h-screen">
       <main className="flex flex-1 flex-col">
         <BookHeader>
           <div className="flex items-center flex-1 gap-2">
-            <Button variant={"ghost"} size={"icon"} onClick={()=>{
+            <Button variant={"ghost"} size={"icon"} onClick={() => {
               router.back()
             }}> <ChevronLeft /> </Button>  {chat.title}
           </div>
@@ -106,13 +115,13 @@ export default function PageClient({ chat }: { chat: Chat }) {
           <div className="flex flex-col flex-1  w-full shrink-0 overflow-hidden lg:w-2/5">
             <div className={cn("flex flex-col flex-1 overflow-auto min-w-min", !activeMessage && "max-w-3xl mx-auto")}>
               <ChatLog
-                chat={{ ...chat, messages }}
-                refreshAssitant={refreshAssitant}
+                messages={messages}
+                refresh={refresh}
               />
               <ChatBox
                 onInputMessage={(message: CreateMessage | MessageClient) => {
                   if (message.id) {
-                    refreshAssitant(message as MessageClient, true)
+                    refresh(message as MessageClient, true)
                   } else {
                     appendMessage(message as CreateMessage)
                   }

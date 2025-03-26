@@ -39,7 +39,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
     }
   });
 
-  const refreshAssitant = async (message: MessageClient, updateCurrentMessage: boolean = false) => {
+  const refresh = async (message: MessageClient, updateCurrentMessage: boolean = false) => {
     // fliter message  and reload
     const currentMessageIndex = messages.findIndex(msg => msg.id === message.id)
     let updateMessages = messages.slice(0, currentMessageIndex + 1)
@@ -93,12 +93,12 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
             <div className={cn("flex flex-col flex-1 overflow-auto w-full", !activeMessage && "max-w-3xl mx-auto")}>
               <ChatLog
                 chat={{ ...chat, messages }}
-                refreshAssitant={refreshAssitant}
+                refresh={refresh}
               />
               <ChatBox
                 onInputMessage={(message: CreateMessage | MessageClient) => {
                   if (message.id) {
-                    refreshAssitant(message as MessageClient, true)
+                    refresh(message as MessageClient, true)
                   } else {
                     appendMessage(chat.currentChapterId!, message as CreateMessage)
                   }

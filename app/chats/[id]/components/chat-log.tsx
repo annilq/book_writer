@@ -3,9 +3,9 @@
 import { Fragment } from "react";
 import { StickToBottom } from "use-stick-to-bottom";
 import { useClipboard } from 'use-clipboard-copy';
-import { ArrowLeft, CopyCheck, Copy, Edit, ArrowRight } from "lucide-react";
+import { ArrowLeft, CopyCheck, Copy, Edit, ArrowRight, FilePenLine } from "lucide-react";
 
-import type { Chat, Message } from "../../../books/[id]/page";
+import type { Message } from "../../../books/[id]/page";
 
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -14,15 +14,16 @@ import { useMessageStore } from "@/store/message";
 import { UIMessage } from "ai";
 import { splitByFirstCodeFence } from "@/utils";
 import { ForwardRefEditor } from "@/components/Editor/ForwardRefEditor";
+import { useBookStore } from "@/store/book";
 
 export default function ChatLog({
-  chat,
-  refreshAssitant,
+  messages,
+  refresh,
 }: {
-  chat: Chat;
-  refreshAssitant: (v: Message & { model: string }) => void;
+  messages: UIMessage[];
+  refresh: (v: Message & { model: string }) => void;
 }) {
-  const assistantMessages = chat.messages.filter((m) => m.role === "assistant");
+  const { message: activeMessage, setActiveMessage } = useMessageStore()
 
   return (
     <StickToBottom
@@ -31,19 +32,23 @@ export default function ChatLog({
       initial="smooth"
     >
       <StickToBottom.Content className="mx-auto flex w-full flex-col gap-8 p-4 text-sm">
-        {chat.messages.filter(message => message.role !== "system").map((message) => (
+        {messages.filter(message => message.role !== "system").map((message) => (
           <Fragment key={message.id}>
             {message.role === "user" ? (
-              <UserMessage model={chat.model} message={message} refreshAssitant={refreshAssitant} />
+              <UserMessage message={message} refresh={refresh} />
             ) : (
               <AssistantMessage
-                model={chat.model}
-                title={chat.title}
-                version={
-                  assistantMessages.map((m) => m.id).indexOf(message.id) + 1
-                }
-                refreshAssitant={refreshAssitant}
+                refresh={refresh}
+                messages={messages}
                 message={message}
+                isActive={message.id === activeMessage?.id}
+                onMessageClick={() => {
+                  if (message.id !== activeMessage?.id) {
+                    setActiveMessage(message as unknown as Message);
+                  } else {
+                    setActiveMessage(undefined);
+                  }
+                }}
               />
             )}
           </Fragment>
@@ -53,7 +58,7 @@ export default function ChatLog({
   );
 }
 
-function UserMessage({ message, model, refreshAssitant }: { model: string, message: Message, refreshAssitant: (message: Message & { model: string }) => void }) {
+export function UserMessage({ message, refresh }: { message: UIMessage, refresh: (message: Message & { model: string }) => void }) {
   const { setEditMessage } = useMessageStore()
 
   const clipboard = useClipboard({
@@ -75,7 +80,7 @@ function UserMessage({ message, model, refreshAssitant }: { model: string, messa
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditMessage(message)} >
           <Edit className="h-4 w-4" />
         </Button>
-        <RefreashMessage model={model} refreshAssitant={(model) => refreshAssitant({ ...message, model })} />
+        <RefreashMessage refresh={(model) => refresh({ ...message, model })} />
       </div>
     </div>
   );
@@ -83,20 +88,21 @@ function UserMessage({ message, model, refreshAssitant }: { model: string, messa
 
 
 function AssistantMessage({
-  title,
-  model,
-  version,
+  isActive,
+  messages,
   message,
-  refreshAssitant
+  refresh,
+  onMessageClick
 }: {
-  title: string,
-  model: string,
-  version: number;
+  isActive: boolean,
+  messages: UIMessage[],
   message: UIMessage;
-  refreshAssitant: (v: Message & { model: string }) => void;
+  refresh: (v: Message & { model: string }) => void;
+  onMessageClick: () => void;
 }) {
 
-  const { message: activeMessage, setActiveMessage } = useMessageStore()
+  const assistantMessages = messages.filter((m) => m.role === "assistant");
+  const version = assistantMessages.map((m) => m.id).indexOf(message.id) + 1
 
   return (
     <div>
@@ -106,20 +112,12 @@ function AssistantMessage({
           case "text":
             contentCom = (
               <AssistantText
-                model={model}
-                refreshAssitant={(model) => refreshAssitant({ ...message, model })}
+                refresh={(model) => refresh({ ...message, model })}
                 key={i}
                 data={part.text}
                 version={version}
-                title={title}
-                isActive={message.id === activeMessage?.id}
-                onMessageClick={() => {
-                  if (message.id !== activeMessage?.id) {
-                    setActiveMessage(message as unknown as Message);
-                  } else {
-                    setActiveMessage(undefined);
-                  }
-                }}
+                isActive={isActive}
+                onMessageClick={onMessageClick}
               />)
             break;
           case "reasoning":
@@ -131,19 +129,11 @@ function AssistantMessage({
               contentCom = (
                 <AssistantText
                   key={i}
-                  model={model}
-                  refreshAssitant={(model) => refreshAssitant({ ...message, model })}
+                  refresh={(model) => refresh({ ...message, model })}
                   data={part.toolInvocation.result}
                   version={version}
-                  title={title}
-                  isActive={message.id === activeMessage?.id}
-                  onMessageClick={() => {
-                    if (message.id !== activeMessage?.id) {
-                      setActiveMessage(message as unknown as Message);
-                    } else {
-                      setActiveMessage(undefined);
-                    }
-                  }}
+                  isActive={isActive}
+                  onMessageClick={onMessageClick}
                 />)
             }
             break;
@@ -161,13 +151,11 @@ function AssistantMessage({
 }
 
 
-export const AssistantText = ({ data, version = 1, title = "", isActive = false, onMessageClick, refreshAssitant, model }: {
+export const AssistantText = ({ data, version = 1, isActive = false, onMessageClick, refresh }: {
   data: string,
   version: number,
-  title: string,
   isActive: boolean,
-  model: string
-  refreshAssitant: (model: string) => void
+  refresh: (model: string) => void
   onMessageClick?: () => void
 }) => {
 
@@ -176,56 +164,79 @@ export const AssistantText = ({ data, version = 1, title = "", isActive = false,
   const clipboard = useClipboard({
     copiedTimeout: 600
   });
-
+  
   return (
     <div className="my-4">
       {parts.map((part, i) => (
         <div key={i}>
-          {part.type === "text" ? (
+          {part.type === "text" && (
             <>
               <ForwardRefEditor markdown={part.content} readOnly />
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => clipboard.copy(part.content)}>
                   {clipboard.copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
-                <RefreashMessage model={model} refreshAssitant={refreshAssitant} />
+                <RefreashMessage refresh={refresh} />
+                <FilePenLine onClick={onMessageClick} />
               </div>
             </>
-          ) : part.type === "first-code-fence-generating" ? (
-            <div className="my-4">
-              <button
-                disabled
-                className="inline-flex w-full animate-pulse items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5"
-              >
-                <div className="flex size-8 items-center justify-center rounded font-bold">
-                  V{version}
-                </div>
-                <div className="flex flex-col gap-0.5 text-left leading-none">
-                  <div className="text-sm font-medium leading-none">
-                    Generating...
-                  </div>
-                </div>
-              </button>
-            </div>
-          ) : (
-            <div className="my-4">
-              <button
-                className={`${isActive ? "bg-background" : " hover:border-gray-400 hover:bg-secondary hover:text-secondary-foreground"} inline-flex w-full items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5`}
-                onClick={onMessageClick}
-              >
-                <div
-                  className={`flex size-8 items-center justify-center rounded font-bold`}
-                >
-                  V{version}-{title}
-                </div>
-                <div className="ml-auto">
-                  {isActive ? <ArrowRight /> : <ArrowLeft />}
-                </div>
-              </button>
-            </div>
-          )}
+          )} {
+            part.type === "first-code-fence-generating" ? (
+              <StreamingCard version={version} />
+            ) : (
+              <VersionCard onMessageClick={onMessageClick} version={version} isActive={isActive} />
+            )}
         </div>
       ))}
     </div>
   );
 };
+
+export const VersionCard = ({ version = 1, isActive = false, onMessageClick }: {
+  version: number,
+  isActive: boolean,
+  onMessageClick?: () => void
+}) => {
+  const { book } = useBookStore()
+
+  return (
+    <div className="my-4">
+      <button
+        className={`${isActive ? "bg-background" : " hover:border-gray-400 hover:bg-secondary hover:text-secondary-foreground"} inline-flex w-full items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5`}
+        onClick={onMessageClick}
+      >
+        <div
+          className={`flex size-8 items-center justify-center rounded font-bold`}
+        >
+          V{version}-{book!.title}
+        </div>
+        <div className="ml-auto">
+          {isActive ? <ArrowRight /> : <ArrowLeft />}
+        </div>
+      </button>
+    </div>
+  )
+}
+export const StreamingCard = ({ version = 1 }: {
+  version: number,
+}) => {
+  const { book } = useBookStore()
+
+  return (
+    <div className="my-4">
+      <button
+        disabled
+        className="inline-flex w-full animate-pulse items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5"
+      >
+        <div className="flex size-8 items-center justify-center rounded font-bold">
+          V{version}
+        </div>
+        <div className="flex flex-col gap-0.5 text-left leading-none">
+          <div className="text-sm font-medium leading-none">
+            Generating...
+          </div>
+        </div>
+      </button>
+    </div>
+  )
+}
