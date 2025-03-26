@@ -96,9 +96,6 @@ function AssistantMessage({
   refreshAssitant: (v: Message & { model: string }) => void;
 }) {
 
-  const clipboard = useClipboard({
-    copiedTimeout: 600
-  });
   const { message: activeMessage, setActiveMessage } = useMessageStore()
 
   return (
@@ -109,6 +106,8 @@ function AssistantMessage({
           case "text":
             contentCom = (
               <AssistantText
+                model={model}
+                refreshAssitant={(model) => refreshAssitant({ ...message, model })}
                 key={i}
                 data={part.text}
                 version={version}
@@ -132,6 +131,8 @@ function AssistantMessage({
               contentCom = (
                 <AssistantText
                   key={i}
+                  model={model}
+                  refreshAssitant={(model) => refreshAssitant({ ...message, model })}
                   data={part.toolInvocation.result}
                   version={version}
                   title={title}
@@ -155,34 +156,41 @@ function AssistantMessage({
           </div>
         )
       })}
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => clipboard.copy(content)}>
-          {clipboard.copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-        </Button>
-        <RefreashMessage model={model} refreshAssitant={(model) => refreshAssitant({ ...message, model })} />
-      </div>
     </div>
   );
 }
 
 
-export const AssistantText = ({ data, version = 1, title = "", isActive = false, onMessageClick }: {
+export const AssistantText = ({ data, version = 1, title = "", isActive = false, onMessageClick, refreshAssitant, model }: {
   data: string,
   version: number,
   title: string,
   isActive: boolean,
+  model: string
+  refreshAssitant: (model: string) => void
   onMessageClick?: () => void
 }) => {
 
   const parts = splitByFirstCodeFence(data);
   // console.log(parts);
+  const clipboard = useClipboard({
+    copiedTimeout: 600
+  });
 
   return (
     <div className="my-4">
       {parts.map((part, i) => (
         <div key={i}>
           {part.type === "text" ? (
-            <Markdown>{part.content}</Markdown>
+            <>
+              <Markdown>{part.content}</Markdown>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => clipboard.copy(part.content)}>
+                  {clipboard.copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                </Button>
+                <RefreashMessage model={model} refreshAssitant={refreshAssitant} />
+              </div>
+            </>
           ) : part.type === "first-code-fence-generating" ? (
             <div className="my-4">
               <button

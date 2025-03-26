@@ -3,7 +3,7 @@ import { fetchChapterContent } from "./actions";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { messages, book } = body;
-  const result = await fetchChapterContent(book, messages);
+  const { model, messages, book } = body;
+  const result = await fetchChapterContent(model, book, messages);
   return result.toDataStreamResponse()
 }

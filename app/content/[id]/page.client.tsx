@@ -4,7 +4,7 @@ import { produce } from "immer";
 import { CreateMessage, Message, useChat } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
 
-import { createChapterMessage, removeChapterMessagesAfterMessageId, updateMessage } from "@/app/api/chat/actions";
+import { removeChapterMessagesAfterMessageId, updateMessage } from "@/app/api/chat/actions";
 
 import BookHeader from "@/app/chats/[id]/components/chat-header";
 import Outline from "./components/outline";
@@ -18,21 +18,20 @@ import { Message as MessageClient } from '@prisma/client'
 import { useMessageStore } from "@/store/message";
 import { Button } from "@/components/ui/button";
 import { ChevronsRight } from "lucide-react";
-import { useChapterStore } from "@/store/chapter";
 import ChapterContent from "./components/chapter-content";
+import { createChapterMessage } from "@/app/api/chapter/actions";
 
-export default function PageClient({ chat }: { chat: Chat }) {
+export default function PageClient({ chat, messages: initialMessages }: { chat: Chat, messages: Message[] }) {
+
   const router = useRouter();
-  const { chapter } = useChapterStore()
 
   const { message: activeMessage, setActiveMessage } = useMessageStore()
 
   const { messages, status, append, reload, setMessages } = useChat({
     api: "/api/chapter",
     id: chat.id,
+    initialMessages,
     async onFinish(message, options) {
-      console.log(message);
-      await createChapterMessage(chapter!.id, message) as Message
       router.refresh();
     },
     onError: (e) => {
@@ -64,7 +63,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
     if (updateCurrentMessage) {
       updateMessage(message.id, message.content)
     }
-    removeChapterMessagesAfterMessageId(chapter!.id, message.id)
+    removeChapterMessagesAfterMessageId(chat.currentChapterId!, message.id)
   };
 
   const appendMessage = async (chapterId: number, message: CreateMessage) => {
@@ -101,19 +100,21 @@ export default function PageClient({ chat }: { chat: Chat }) {
                   if (message.id) {
                     refreshAssitant(message as MessageClient, true)
                   } else {
-                    appendMessage(chapter?.id!, message as CreateMessage)
+                    appendMessage(chat.currentChapterId!, message as CreateMessage)
                   }
                 }}
                 isStreaming={status === "streaming"}
               />
             </div>
           </div>
-          <ChapterContent
-            chat={{ ...chat, messages }}
-            onMessageChange={setActiveMessage}
-            isShowing={!!activeMessage}
-            message={activeMessage as Message}
-          />
+          {!!activeMessage && (
+            <ChapterContent
+              chat={{ ...chat, messages }}
+              onMessageChange={setActiveMessage}
+              isShowing={!!activeMessage}
+              message={activeMessage as Message}
+            />
+          )}
         </div>
       </main>
     </div>

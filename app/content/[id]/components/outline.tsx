@@ -3,13 +3,13 @@
 import * as React from "react"
 import { Tree } from "@/components/tree";
 import { Book, Chapter } from "@prisma/client";
-import { arrayToTree } from "@/utils";
+import { arrayToTree, cn } from "@/utils";
 import { Play, RefreshCw } from "lucide-react";
-import { useChapterStore } from "@/store/chapter";
-import { getChapterById } from "@/app/api/book/actions";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useTranslation } from "react-i18next";
 import { CreateMessage, Message } from "ai";
+import { Button } from "@/components/ui/button";
+import { clearMessageOfChapter, getMessageOfChapter } from "@/app/api/chapter/actions";
 
 export default function Outline({ book, handleSubmit, setMessages }: { book: Book & { chapters: Chapter[] }, setMessages: (message: Message[]) => void, handleSubmit: (chapterId: number, message: CreateMessage) => void }) {
 
@@ -17,7 +17,6 @@ export default function Outline({ book, handleSubmit, setMessages }: { book: Boo
     return arrayToTree(book?.chapters)
   }, [book?.chapters])
 
-  const { setActiveChapter } = useChapterStore()
   const { t } = useTranslation()
 
   return (
@@ -31,20 +30,39 @@ export default function Outline({ book, handleSubmit, setMessages }: { book: Boo
         }}
         onSelect={async ([node]) => {
           if (node) {
-            const data = await getChapterById(Number(node.data.id))
-            setActiveChapter(data)
-            setMessages(data?.messages)
+            const chapterId = Number(node.data.id)
+            // only the current chapter and previous chapters have history messages
+            const isCurrentChapter = chapterId === book.currentChapterId
+            if (isCurrentChapter || chapterId < book.currentChapterId!) {
+              const messages = await getMessageOfChapter(chapterId)
+              setMessages(messages)
+            } else {
+              setMessages([])
+            }
           }
         }}
-        renderSuffix={(node) => {          
+        renderSuffix={(node) => {
+          const chapterId = Number(node.data.id)
+          const isCurrentChapter = chapterId === book.currentChapterId
           return !node.children?.length && (
             <>
-              {Number(node.data.id) === book.currentChapterId || Number(node.data.id) < book.currentChapterId! ? (
-                <AlertDialog>
+              {isCurrentChapter || chapterId < book.currentChapterId! ? (
+                isCurrentChapter ? (
+                  <Button
+                    onClick={async e => {
+                      e.stopPropagation()
+                      await clearMessageOfChapter(chapterId)
+                      setMessages([])
+                      handleSubmit(chapterId, { role: "user", content: node.data.title + node.data.content })
+                    }}
+                    className={cn("rounded-full h-6 w-6 p-0 hover:scale-105", node.isSelected && " bg-card text-card-foreground hover:bg-card hover:text-card-foreground")}
+                  >
+                    <Play className="h-4 w-4" />
+                  </Button>
+                ) : <AlertDialog>
                   <AlertDialogTrigger asChild onClick={e => e.stopPropagation()}>
-                    {Number(node.data.id) === book.currentChapterId ? (
-                      <Play className="h-4 w-4 cursor-pointer" />
-                    ) : <RefreshCw className="h-4 w-4 cursor-pointer" />}
+                    <Button className={cn("rounded-full h-6 w-6 p-0 hover:scale-105", node.isSelected && " bg-card text-card-foreground")}><RefreshCw className="h-4 w-4" />
+                    </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -59,8 +77,7 @@ export default function Outline({ book, handleSubmit, setMessages }: { book: Boo
                         onClick={async (e) => {
                           e.stopPropagation()
                           setMessages([])
-                          setActiveChapter(node.data)
-                          handleSubmit(Number(node.data.id), { role: "user", content: node.data.title + node.data.content })
+                          handleSubmit(chapterId, { role: "user", content: node.data.title + node.data.content })
                         }}>
                         {t("save")}
                       </AlertDialogAction>

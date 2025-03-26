@@ -96,11 +96,11 @@ export async function fetchBookPrompt(
 }
 
 export async function fetchBookOutline(
+  model: string,
   book: Book,
   messages: CoreMessage[] = []
 ) {
 
-  const { model } = book;
   const [provider, modelName] = model.split("/");
   const outlinePrompt = getOutlinePrompt(book);
 
@@ -139,31 +139,6 @@ export async function createMessage(
       content: message.content,
       position: maxPosition + 1,
       bookId,
-    },
-  });
-
-  return newMessage;
-}
-export async function createChapterMessage(
-  chapterId: number,
-  message: CreateMessage
-) {
-  const prisma = getPrisma();
-  const book = await prisma.chapter.findUnique({
-    where: { id: chapterId },
-    include: { messages: true },
-  });
-  if (!book) notFound();
-
-  const positions = book.messages.map(m => m.position);
-  const maxPosition = positions.length > 0 ? Math.max(...positions) : 0;
-
-  const newMessage = await prisma.message.create({
-    data: {
-      role: message.role,
-      content: message.content,
-      position: maxPosition + 1,
-      chapterId,
     },
   });
 
