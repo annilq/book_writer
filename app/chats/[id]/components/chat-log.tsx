@@ -1,7 +1,6 @@
 "use client";
 
 import { Fragment } from "react";
-import Markdown from "react-markdown";
 import { StickToBottom } from "use-stick-to-bottom";
 import { useClipboard } from 'use-clipboard-copy';
 import { ArrowLeft, CopyCheck, Copy, Edit, ArrowRight } from "lucide-react";
@@ -14,6 +13,7 @@ import { RefreashMessage } from "@/components/Refreash";
 import { useMessageStore } from "@/store/message";
 import { UIMessage } from "ai";
 import { splitByFirstCodeFence } from "@/utils";
+import { ForwardRefEditor } from "@/components/Editor/ForwardRefEditor";
 
 export default function ChatLog({
   chat,
@@ -183,7 +183,7 @@ export const AssistantText = ({ data, version = 1, title = "", isActive = false,
         <div key={i}>
           {part.type === "text" ? (
             <>
-              <Markdown>{part.content}</Markdown>
+              <ForwardRefEditor markdown={part.content} readOnly />
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => clipboard.copy(part.content)}>
                   {clipboard.copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
