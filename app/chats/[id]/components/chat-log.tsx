@@ -3,7 +3,7 @@
 import { Fragment } from "react";
 import { StickToBottom } from "use-stick-to-bottom";
 import { useClipboard } from 'use-clipboard-copy';
-import { ArrowLeft, CopyCheck, Copy, Edit, ArrowRight, FilePenLine } from "lucide-react";
+import { ArrowLeft, CopyCheck, Copy, Edit, ArrowRight, FilePenLine, Check } from "lucide-react";
 
 import type { Message } from "../../../books/[id]/page";
 
@@ -19,9 +19,11 @@ import { useBookStore } from "@/store/book";
 export default function ChatLog({
   messages = [],
   refresh,
+  onSave
 }: {
   messages: UIMessage[];
   refresh: (v: Message & { model: string }) => void;
+  onSave?: (content: string) => void;
 }) {
   const { message: activeMessage, setActiveMessage } = useMessageStore()
 
@@ -42,6 +44,7 @@ export default function ChatLog({
                 messages={messages}
                 message={message}
                 isActive={message.id === activeMessage?.id}
+                onSave={onSave}
                 onMessageClick={() => {
                   if (message.id !== activeMessage?.id) {
                     setActiveMessage(message as unknown as Message);
@@ -92,13 +95,15 @@ function AssistantMessage({
   messages,
   message,
   refresh,
-  onMessageClick
+  onMessageClick,
+  onSave
 }: {
   isActive: boolean,
   messages: UIMessage[],
   message: UIMessage;
   refresh: (v: Message & { model: string }) => void;
   onMessageClick: () => void;
+  onSave?: (content: string) => void;
 }) {
 
   const assistantMessages = messages.filter((m) => m.role === "assistant");
@@ -118,6 +123,7 @@ function AssistantMessage({
                 version={version}
                 isActive={isActive}
                 onMessageClick={onMessageClick}
+                onSave={onSave}
               />)
             break;
           case "reasoning":
@@ -134,6 +140,7 @@ function AssistantMessage({
                   version={version}
                   isActive={isActive}
                   onMessageClick={onMessageClick}
+                  onSave={onSave}
                 />)
             }
             break;
@@ -151,12 +158,13 @@ function AssistantMessage({
 }
 
 
-export const AssistantText = ({ data, version = 1, isActive = false, onMessageClick, refresh }: {
+export const AssistantText = ({ data, version = 1, isActive = false, onMessageClick, refresh, onSave }: {
   data: string,
   version: number,
   isActive: boolean,
   refresh: (model: string) => void
   onMessageClick?: () => void
+  onSave?: (content: string) => void
 }) => {
 
   const parts = splitByFirstCodeFence(data);
@@ -168,16 +176,27 @@ export const AssistantText = ({ data, version = 1, isActive = false, onMessageCl
   return (
     <div className="my-4">
       {parts.map((part, i) => (
-        <div key={i}>
+        <div key={part.content}>
           {part.type === "text" ? (
             <>
               <ForwardRefEditor markdown={part.content} readOnly />
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => clipboard.copy(part.content)}>
+                <Button variant="ghost" size="icon" onClick={() => clipboard.copy(part.content)}>
                   {clipboard.copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
+
+                <Button variant="ghost" size="icon" onClick={onMessageClick}>
+                  <FilePenLine className="h-4 w-4" />
+                </Button>
                 <RefreashMessage refresh={refresh} />
-                <FilePenLine onClick={onMessageClick} />
+                {onSave && (
+                  <div className="flex flex-1 justify-end">
+                    <Button variant="ghost" size="icon" onClick={() => onSave(part.content)}>
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )
+                }
               </div>
             </>
           ) : part.type === "first-code-fence-generating" ? (
@@ -219,8 +238,6 @@ export const VersionCard = ({ version = 1, isActive = false, onMessageClick }: {
 export const StreamingCard = ({ version = 1 }: {
   version: number,
 }) => {
-  const { book } = useBookStore()
-
   return (
     <div className="my-4">
       <button

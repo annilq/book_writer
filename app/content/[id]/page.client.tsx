@@ -19,7 +19,7 @@ import { useMessageStore } from "@/store/message";
 import { Button } from "@/components/ui/button";
 import { ChevronsRight } from "lucide-react";
 import ChapterContent from "./components/chapter-content";
-import { createChapterMessage } from "@/app/api/chapter/actions";
+import { createChapterMessage, saveChapterContent } from "@/app/api/chapter/actions";
 import { useBookStore } from "@/store/book";
 import React from "react";
 
@@ -68,6 +68,12 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
     removeChapterMessagesAfterMessageId(chat.currentChapterId!, message.id)
   };
 
+  const onSave = async (content: string) => {
+    await saveChapterContent(chat?.currentChapterId!, content)
+    setMessages([])
+    router.refresh()
+  };
+
   const appendMessage = async (chapterId: number, message: CreateMessage) => {
     const updateMessage = await createChapterMessage(chapterId, message) as Message
     append(updateMessage, { body: { model: chat.model, book: chat } })
@@ -82,6 +88,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
   if (!book) {
     return
   }
+  
   return (
     <div className="flex bg-background text-foreground h-screen overflow-hidden">
       <Outline book={chat} handleSubmit={appendMessage} setMessages={setMessages} isStreaming={status === "streaming"} />
@@ -105,6 +112,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
               <ChatLog
                 messages={messages}
                 refresh={refresh}
+                onSave={onSave}
               />
               <ChatBox
                 onInputMessage={(message: CreateMessage | MessageClient) => {

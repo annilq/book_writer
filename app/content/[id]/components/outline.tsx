@@ -66,7 +66,8 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
                   </Button>
                 ) : <AlertDialog>
                   <AlertDialogTrigger asChild onClick={e => e.stopPropagation()}>
-                    <Button className={cn("rounded-full h-6 w-6 p-0 hover:scale-105", node.isSelected && " bg-card text-card-foreground")}><RefreshCw className="h-4 w-4" />
+                    <Button className={cn("rounded-full h-6 w-6 p-0 hover:scale-105", node.isSelected && "bg-card text-card-foreground hover:bg-card hover:text-card-foreground")}>
+                      <RefreshCw className="h-4 w-4" />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>

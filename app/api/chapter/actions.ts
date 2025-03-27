@@ -5,8 +5,41 @@ import { getI18n } from "@/utils/i18n/server";
 import { CoreMessage, CreateMessage, streamText } from "ai";
 import { getAIModel } from "@/utils/ai_providers";
 import { getPrisma } from "@/utils/prisma";
-import { notFound } from "next/navigation";
 import { cache } from "react";
+
+export async function fetchChapterContent(
+  model: string,
+  book: Book,
+  messages: CoreMessage[] = []
+) {
+  const i18n = getI18n(book.language);
+  const [provider, modelName] = model.split("/");
+
+  const systemPrompt = `${i18n.t("bookChapterPrompt")}
+      # General Instructions
+        ${book.prompt}
+      # Outline
+        ${JSON.stringify(book.chapters)}
+      # Write with Language: ${book.language}
+    `;
+
+  const eventStream = streamText({
+    model: getAIModel(provider, modelName),
+    messages: [
+      { role: 'system' as const, content: systemPrompt },
+      ...messages
+    ],
+    temperature: 0,
+    onFinish(result) {
+      if (result.response.messages) {
+        const message = result.response.messages[0]
+        const content = message.content[0].text
+        createChapterMessage(book.currentChapterId!, { role: "assistant", content: content } as CreateMessage);
+      }
+    },
+  });
+  return eventStream;
+}
 
 export async function createChapterMessage(
   chapterId: number,
@@ -55,36 +88,36 @@ export const getChapterById = cache(async (id: number) => {
   });
 });
 
-export async function fetchChapterContent(
-  model: string,
-  book: Book,
-  messages: CoreMessage[] = []
-) {
-  const i18n = getI18n(book.language);
-  const [provider, modelName] = model.split("/");
+export const saveChapterContent = cache(async (id: number, content: string) => {
+  const prisma = getPrisma();
+  const chapter = await prisma.chapter.update({
+    where: { id },
+    data: { content }
+  });
+  
+  const book = await prisma.book.findFirst({
+    where: { id: chapter.bookId },
+  });
 
-  const systemPrompt = `${i18n.t("bookChapterPrompt")}
-      # General Instructions
-        ${book.prompt}
-      # Outline
-        ${JSON.stringify(book.chapters)}
-      # Write with Language: ${book.language}
-    `;
-
-  const eventStream = streamText({
-    model: getAIModel(provider, modelName),
-    messages: [
-      { role: 'system' as const, content: systemPrompt },
-      ...messages
-    ],
-    temperature: 0,
-    onFinish(result) {
-      if (result.response.messages) {
-        const message = result.response.messages[0]
-        const content = message.content[0].text
-        createChapterMessage(book.currentChapterId!, { role: "assistant", content: content } as CreateMessage);
+  const nextLeafChapter = await prisma.chapter.findFirst({
+    where: {
+      bookId: book!.id,
+      leaf: true,
+      id: {
+        gt: book!.currentChapterId || 0
       }
     },
+    orderBy: {
+      id: 'asc'
+    }
   });
-  return eventStream;
-}
+
+  if (chapter) {
+    await prisma.book.update({
+      where: { id: chapter.bookId },
+      data: {
+        currentChapterId: nextLeafChapter?.id || book!.currentChapterId
+      }
+    })
+  }
+});
