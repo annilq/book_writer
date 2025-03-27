@@ -4,14 +4,14 @@ import * as React from "react"
 import { Tree } from "@/components/tree";
 import { Book, Chapter } from "@prisma/client";
 import { arrayToTree, cn } from "@/utils";
-import { Play, RefreshCw } from "lucide-react";
+import { LoaderCircle, Play, RefreshCw } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useTranslation } from "react-i18next";
 import { CreateMessage, Message } from "ai";
 import { Button } from "@/components/ui/button";
 import { clearMessageOfChapter, getMessageOfChapter } from "@/app/api/chapter/actions";
 
-export default function Outline({ book, handleSubmit, setMessages }: { book: Book & { chapters: Chapter[] }, setMessages: (message: Message[]) => void, handleSubmit: (chapterId: number, message: CreateMessage) => void }) {
+export default function Outline({ book, isStreaming, handleSubmit, setMessages }: { book: Book & { chapters: Chapter[] }, isStreaming: boolean, setMessages: (message: Message[]) => void, handleSubmit: (chapterId: number, message: CreateMessage) => void }) {
 
   const treeData = React.useMemo(() => {
     return arrayToTree(book?.chapters)
@@ -44,6 +44,11 @@ export default function Outline({ book, handleSubmit, setMessages }: { book: Boo
         renderSuffix={(node) => {
           const chapterId = Number(node.data.id)
           const isCurrentChapter = chapterId === book.currentChapterId
+
+          if (isStreaming && isCurrentChapter) {
+            return <LoaderCircle className="animate-spin w-4 h-4" />
+          }
+
           return !node.children?.length && (
             <>
               {isCurrentChapter || chapterId < book.currentChapterId! ? (

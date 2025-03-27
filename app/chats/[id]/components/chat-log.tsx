@@ -17,7 +17,7 @@ import { ForwardRefEditor } from "@/components/Editor/ForwardRefEditor";
 import { useBookStore } from "@/store/book";
 
 export default function ChatLog({
-  messages,
+  messages = [],
   refresh,
 }: {
   messages: UIMessage[];
@@ -164,12 +164,12 @@ export const AssistantText = ({ data, version = 1, isActive = false, onMessageCl
   const clipboard = useClipboard({
     copiedTimeout: 600
   });
-  
+
   return (
     <div className="my-4">
       {parts.map((part, i) => (
         <div key={i}>
-          {part.type === "text" && (
+          {part.type === "text" ? (
             <>
               <ForwardRefEditor markdown={part.content} readOnly />
               <div className="flex items-center gap-2">
@@ -180,12 +180,11 @@ export const AssistantText = ({ data, version = 1, isActive = false, onMessageCl
                 <FilePenLine onClick={onMessageClick} />
               </div>
             </>
-          )} {
-            part.type === "first-code-fence-generating" ? (
-              <StreamingCard version={version} />
-            ) : (
-              <VersionCard onMessageClick={onMessageClick} version={version} isActive={isActive} />
-            )}
+          ) : part.type === "first-code-fence-generating" ? (
+            <StreamingCard version={version} />
+          ) : (
+            <VersionCard onMessageClick={onMessageClick} version={version} isActive={isActive} />
+          )}
         </div>
       ))}
     </div>

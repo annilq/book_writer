@@ -20,6 +20,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronsRight } from "lucide-react";
 import ChapterContent from "./components/chapter-content";
 import { createChapterMessage } from "@/app/api/chapter/actions";
+import { useBookStore } from "@/store/book";
+import React from "react";
 
 export default function PageClient({ chat, messages: initialMessages }: { chat: Chat, messages: Message[] }) {
 
@@ -71,9 +73,18 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
     append(updateMessage, { body: { model: chat.model, book: chat } })
   };
 
+  const { book, setActiveBook } = useBookStore()
+
+  React.useEffect(() => {
+    setActiveBook(chat)
+  }, [chat.id, setActiveBook])
+
+  if (!book) {
+    return
+  }
   return (
     <div className="flex bg-background text-foreground h-screen overflow-hidden">
-      <Outline book={chat} handleSubmit={appendMessage} setMessages={setMessages} />
+      <Outline book={chat} handleSubmit={appendMessage} setMessages={setMessages} isStreaming={status === "streaming"} />
       <main className="flex flex-1 flex-col">
         <BookHeader>
           <div className="flex items-center flex-1">
@@ -92,7 +103,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
           <div className="flex flex-col flex-1  w-full shrink-0 overflow-hidden lg:w-2/5">
             <div className={cn("flex flex-col flex-1 overflow-auto w-full", !activeMessage && "max-w-3xl mx-auto")}>
               <ChatLog
-                chat={{ ...chat, messages }}
+                messages={messages}
                 refresh={refresh}
               />
               <ChatBox

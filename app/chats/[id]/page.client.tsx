@@ -25,11 +25,6 @@ export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
 
   const { message: activeMessage, setActiveMessage } = useMessageStore()
-  const { book, setActiveBook } = useBookStore()
-
-  React.useEffect(() => {
-    setActiveBook(chat)
-  }, [chat.id, setActiveBook])
 
   const { messages, status, append, reload, setMessages } = useChat({
     id: chat.id,
@@ -90,6 +85,13 @@ export default function PageClient({ chat }: { chat: Chat }) {
     const updateMessage = await createMessage(chat.id, message) as Message
     append(updateMessage, { body: { model: chat.model, chatId: chat.id, book: chat } })
   };
+  
+  const { book, setActiveBook } = useBookStore()
+
+  React.useEffect(() => {
+    setActiveBook(chat)
+  }, [chat.id, setActiveBook])
+
   if (!book) {
     return
   }
