@@ -3,11 +3,31 @@ import { Book, STEP } from "@prisma/client";
 import Image from "next/image"
 import Link from "next/link";
 import type React from "react"
+import { useMemo } from "react";
 import useSWR from "swr";
 
 function BookCard({ bookId, title, metadata, step, thumbnail }: { bookId: string; step: STEP, title: string; metadata: string; thumbnail: string }) {
+
+  const url = useMemo(() => {
+    let url = `/chats/${bookId}`
+    switch (step) {
+      case "OUTLINE":
+        url = `/chat/${bookId}`
+        break;
+      case "CHAPTER":
+        url = `/content/${bookId}`
+        break;
+      case "COMPLETE":
+        url = `/books/${bookId}`
+        break;
+      default:
+        break;
+    }
+    return url
+  }, [bookId, step])
+
   return (
-    <Link href={step === "CHAPTER" ? `/content/${bookId}` : `/chats/${bookId}`} className="group relative overflow-hidden rounded-lg border bg-background">
+    <Link href={url} className="group relative overflow-hidden rounded-lg border bg-background">
       <div className="aspect-[4/3] overflow-hidden">
         <Image
           src={thumbnail || "/placeholder.svg"}
