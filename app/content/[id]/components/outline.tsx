@@ -4,7 +4,7 @@ import * as React from "react"
 import { Tree } from "@/components/tree";
 import { Book, Chapter } from "@prisma/client";
 import { arrayToTree, cn } from "@/utils";
-import { LoaderCircle, Play, RefreshCw } from "lucide-react";
+import { Loader, Play, RefreshCw } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useTranslation } from "react-i18next";
 import { CreateMessage, Message } from "ai";
@@ -22,6 +22,7 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
   return (
     !!treeData.length ? (
       <Tree
+        selection={book.currentChapterId?.toString()}
         data={treeData}
         disableDrag
         disableMultiSelection
@@ -29,7 +30,7 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
           return data.id.toString()
         }}
         onSelect={async ([node]) => {
-          if (node) {
+          if (node && node.children?.length === 0) {
             const chapterId = Number(node.data.id)
             // only the current chapter and previous chapters have history messages
             const isCurrentChapter = chapterId === book.currentChapterId
@@ -46,13 +47,13 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
           const isCurrentChapter = chapterId === book.currentChapterId
 
           if (isStreaming && isCurrentChapter) {
-            return <LoaderCircle className="animate-spin w-4 h-4" />
+            return <Loader className="animate-spin w-4 h-4" />
           }
 
           return !node.children?.length && (
             <>
               {isCurrentChapter || chapterId < book.currentChapterId! ? (
-                isCurrentChapter ? (
+                isCurrentChapter && book.step !== "COMPLETE" ? (
                   <Button
                     onClick={async e => {
                       e.stopPropagation()

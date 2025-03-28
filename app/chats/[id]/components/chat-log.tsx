@@ -3,7 +3,7 @@
 import { Fragment } from "react";
 import { StickToBottom } from "use-stick-to-bottom";
 import { useClipboard } from 'use-clipboard-copy';
-import { ArrowLeft, CopyCheck, Copy, Edit, ArrowRight, FilePenLine, Check } from "lucide-react";
+import { ArrowLeft, CopyCheck, Copy, Edit, ArrowRight, FilePenLine } from "lucide-react";
 
 import type { Message } from "../../../books/[id]/page";
 
@@ -19,11 +19,11 @@ import { useBookStore } from "@/store/book";
 export default function ChatLog({
   messages = [],
   refresh,
-  onSave
+  action
 }: {
   messages: UIMessage[];
   refresh: (v: Message & { model: string }) => void;
-  onSave?: (content: string) => void;
+  action?: (content: string) => React.ReactNode;
 }) {
   const { message: activeMessage, setActiveMessage } = useMessageStore()
 
@@ -33,7 +33,7 @@ export default function ChatLog({
       resize="smooth"
       initial="smooth"
     >
-      <StickToBottom.Content className="mx-auto flex w-full flex-col gap-8 p-4 text-sm">
+      <StickToBottom.Content className="mx-auto flex w-full flex-col gap-4 p-4 text-sm">
         {messages.filter(message => message.role !== "system").map((message) => (
           <Fragment key={message.id}>
             {message.role === "user" ? (
@@ -44,7 +44,7 @@ export default function ChatLog({
                 messages={messages}
                 message={message}
                 isActive={message.id === activeMessage?.id}
-                onSave={onSave}
+                action={action}
                 onMessageClick={() => {
                   if (message.id !== activeMessage?.id) {
                     setActiveMessage(message as unknown as Message);
@@ -96,14 +96,14 @@ function AssistantMessage({
   message,
   refresh,
   onMessageClick,
-  onSave
+  action
 }: {
   isActive: boolean,
   messages: UIMessage[],
   message: UIMessage;
   refresh: (v: Message & { model: string }) => void;
   onMessageClick: () => void;
-  onSave?: (content: string) => void;
+  action?: (content: string) => React.ReactNode;
 }) {
 
   const assistantMessages = messages.filter((m) => m.role === "assistant");
@@ -123,7 +123,7 @@ function AssistantMessage({
                 version={version}
                 isActive={isActive}
                 onMessageClick={onMessageClick}
-                onSave={onSave}
+                action={action}
               />)
             break;
           case "reasoning":
@@ -140,7 +140,7 @@ function AssistantMessage({
                   version={version}
                   isActive={isActive}
                   onMessageClick={onMessageClick}
-                  onSave={onSave}
+                  action={action}
                 />)
             }
             break;
@@ -158,13 +158,13 @@ function AssistantMessage({
 }
 
 
-export const AssistantText = ({ data, version = 1, isActive = false, onMessageClick, refresh, onSave }: {
+export const AssistantText = ({ data, version = 1, isActive = false, onMessageClick, refresh, action }: {
   data: string,
   version: number,
   isActive: boolean,
   refresh: (model: string) => void
   onMessageClick?: () => void
-  onSave?: (content: string) => void
+  action?: (content: string) => React.ReactNode
 }) => {
 
   const parts = splitByFirstCodeFence(data);
@@ -174,7 +174,7 @@ export const AssistantText = ({ data, version = 1, isActive = false, onMessageCl
   });
 
   return (
-    <div className="my-4">
+    <>
       {parts.map((part, i) => (
         <div key={part.content}>
           {part.type === "text" ? (
@@ -184,18 +184,11 @@ export const AssistantText = ({ data, version = 1, isActive = false, onMessageCl
                 <Button variant="ghost" size="icon" onClick={() => clipboard.copy(part.content)}>
                   {clipboard.copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
-
                 <Button variant="ghost" size="icon" onClick={onMessageClick}>
                   <FilePenLine className="h-4 w-4" />
                 </Button>
                 <RefreashMessage refresh={refresh} />
-                {onSave && (
-                  <div className="flex flex-1 justify-end">
-                    <Button variant="ghost" size="icon" onClick={() => onSave(part.content)}>
-                      <Check className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )
+                {action?.(part.content)
                 }
               </div>
             </>
@@ -206,7 +199,7 @@ export const AssistantText = ({ data, version = 1, isActive = false, onMessageCl
           )}
         </div>
       ))}
-    </div>
+    </>
   );
 };
 

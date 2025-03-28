@@ -94,7 +94,7 @@ export const saveChapterContent = cache(async (id: number, content: string) => {
     where: { id },
     data: { content }
   });
-  
+
   const book = await prisma.book.findFirst({
     where: { id: chapter.bookId },
   });
@@ -113,11 +113,20 @@ export const saveChapterContent = cache(async (id: number, content: string) => {
   });
 
   if (chapter) {
-    await prisma.book.update({
-      where: { id: chapter.bookId },
-      data: {
-        currentChapterId: nextLeafChapter?.id || book!.currentChapterId
-      }
-    })
+    if (nextLeafChapter?.id) {
+      return await prisma.book.update({
+        where: { id: chapter.bookId },
+        data: {
+          currentChapterId: nextLeafChapter.id,
+        }
+      })
+    } else {
+      return await prisma.book.update({
+        where: { id: chapter.bookId },
+        data: {
+          step: "COMPLETE"
+        }
+      })
+    }
   }
 });

@@ -1,3 +1,4 @@
+import Spinner from "@/components/Spinner";
 import { Book, STEP } from "@prisma/client";
 import Image from "next/image"
 import Link from "next/link";
@@ -26,8 +27,10 @@ function BookCard({ bookId, title, metadata, step, thumbnail }: { bookId: string
 
 export default function Books() {
 
-  const { data: books } = useSWR<Book[]>('/api/book')
-
+  const { data: books, isLoading } = useSWR<Book[]>('/api/book')
+  if (isLoading) {
+    return <Spinner />
+  }
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6">
       {books?.map(book => <BookCard key={book.id} title={book.title} step={book.step} bookId={book.id} metadata={book.description} thumbnail={book.coverImage || "/placeholder.svg"} />)}

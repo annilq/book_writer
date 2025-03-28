@@ -17,18 +17,20 @@ import { cn } from "@/utils";
 import { Message as MessageClient } from '@prisma/client'
 import { useMessageStore } from "@/store/message";
 import { Button } from "@/components/ui/button";
-import { ChevronsRight } from "lucide-react";
+import { Check, ChevronLeft, ChevronsRight, Loader } from "lucide-react";
 import ChapterContent from "./components/chapter-content";
 import { createChapterMessage, saveChapterContent } from "@/app/api/chapter/actions";
 import { useBookStore } from "@/store/book";
 import React from "react";
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@radix-ui/react-toast";
+import { useTranslation } from "react-i18next"
 
 export default function PageClient({ chat, messages: initialMessages }: { chat: Chat, messages: Message[] }) {
-
+  const { toast } = useToast()
   const router = useRouter();
-
+  const { t } = useTranslation()
   const { message: activeMessage, setActiveMessage } = useMessageStore()
-
   const { messages, status, append, reload, setMessages } = useChat({
     api: "/api/chapter",
     id: chat.id,
@@ -69,9 +71,20 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
   };
 
   const onSave = async (content: string) => {
-    await saveChapterContent(chat?.currentChapterId!, content)
-    setMessages([])
-    router.refresh()
+
+    const book = await saveChapterContent(chat?.currentChapterId!, content)
+    if (book?.step === "COMPLETE") {
+      toast({
+        title: t("congratulationsTitle"),
+        description: t("congratulationsDesc"),
+        action: (
+          <ToastAction altText="Goto read book">Okay!</ToastAction>
+        ),
+      })
+    } else {
+      setMessages([])
+      router.refresh()
+    }
   };
 
   const appendMessage = async (chapterId: number, message: CreateMessage) => {
@@ -88,54 +101,69 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
   if (!book) {
     return
   }
-  
+
   return (
-    <div className="flex bg-background text-foreground h-screen overflow-hidden">
-      <Outline book={chat} handleSubmit={appendMessage} setMessages={setMessages} isStreaming={status === "streaming"} />
-      <main className="flex flex-1 flex-col">
-        <BookHeader>
-          <div className="flex items-center flex-1">
-            {chat.title}
-          </div>
-          <div className="flex items-center">
-            <SettingsModal book={chat} />
-            {!!activeMessage && (
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setActiveMessage(undefined)}>
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </BookHeader>
-        <div className="flex flex-1 overflow-auto">
-          <div className="flex flex-col flex-1  w-full shrink-0 overflow-hidden lg:w-2/5">
-            <div className={cn("flex flex-col flex-1 overflow-auto w-full", !activeMessage && "max-w-3xl mx-auto")}>
-              <ChatLog
-                messages={messages}
-                refresh={refresh}
-                onSave={onSave}
-              />
-              <ChatBox
-                onInputMessage={(message: CreateMessage | MessageClient) => {
-                  if (message.id) {
-                    refresh(message as MessageClient, true)
-                  } else {
-                    appendMessage(chat.currentChapterId!, message as CreateMessage)
-                  }
-                }}
-                isStreaming={status === "streaming"}
-              />
-            </div>
-          </div>
+    <div className="flex flex-col h-screen">
+      <BookHeader className="px-4">
+        <div className="flex items-center flex-1 gap-2">
+          <Button size="icon" variant="ghost" onClick={() => router.back()}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          {chat.title}
+        </div>
+        <div className="flex items-center">
+          <SettingsModal book={chat} />
           {!!activeMessage && (
-            <ChapterContent
-              chat={{ ...chat, messages }}
-              onMessageChange={setActiveMessage}
-              isShowing={!!activeMessage}
-              message={activeMessage as Message}
-            />
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setActiveMessage(undefined)}>
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
           )}
         </div>
-      </main>
+      </BookHeader>
+      <div className="flex flex-1 bg-background text-foreground overflow-hidden">
+        <Outline book={chat} handleSubmit={appendMessage} setMessages={setMessages} isStreaming={status === "streaming"} />
+        <main className="flex flex-1 flex-col">
+          <div className="flex flex-1 overflow-auto">
+            <div className="flex flex-col flex-1  w-full shrink-0 overflow-hidden lg:w-2/5">
+              <div className={cn("flex flex-col flex-1 overflow-auto w-full", !activeMessage && "max-w-3xl mx-auto")}>
+                <ChatLog
+                  messages={messages}
+                  refresh={refresh}
+                  action={(content => {
+                    return (
+                      <div className="flex flex-1 justify-end">
+                        {status === "streaming" ? <Loader className="animate-spin w-4 h-4" /> : (
+                          <Button variant="ghost" size="icon" onClick={() => onSave(content)}>
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    )
+                  })}
+                />
+                <ChatBox
+                  onInputMessage={(message: CreateMessage | MessageClient) => {
+                    if (message.id) {
+                      refresh(message as MessageClient, true)
+                    } else {
+                      appendMessage(chat.currentChapterId!, message as CreateMessage)
+                    }
+                  }}
+                  isStreaming={status === "streaming"}
+                />
+              </div>
+            </div>
+            {!!activeMessage && (
+              <ChapterContent
+                chat={{ ...chat, messages }}
+                onMessageChange={setActiveMessage}
+                isShowing={!!activeMessage}
+                message={activeMessage as Message}
+              />
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
