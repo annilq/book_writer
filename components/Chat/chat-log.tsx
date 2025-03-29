@@ -5,25 +5,27 @@ import { StickToBottom } from "use-stick-to-bottom";
 import { useClipboard } from 'use-clipboard-copy';
 import { CopyCheck, Copy, FilePenLine } from "lucide-react";
 
-import type { Message } from "../../app/books/[id]/page";
-
 import { Button } from "@/components/ui/button";
 import { RefreashMessage } from "@/components/Refreash";
 import { useMessageStore } from "@/store/message";
 import { UIMessage } from "ai";
 import { ForwardRefEditor } from "@/components/Editor/ForwardRefEditor";
 
+interface ToolbarActions {
+  onRefresh: (model: string) => void
+  onEdit?: () => void
+  onSave?: () => void
+  action?: (content: string) => React.ReactNode
+}
+
 export default function ChatLog({
   messages = [],
-  refresh,
   renderAssistantText,
-  action
+  toolConfig
 }: {
   messages: UIMessage[];
-  refresh: (v: Message & { model: string }) => void;
   renderAssistantText?: ({ data, messages, message }: { data: string, messages: UIMessage[], message: UIMessage }) => React.ReactNode;
-  // renderMessageToolBar?: ({ data, messages, message }: { data: string, messages: UIMessage[], message: UIMessage }) => React.ReactNode;
-  action?: (content: string) => React.ReactNode;
+  toolConfig?: ToolbarActions
 }) {
 
   return (
@@ -36,14 +38,13 @@ export default function ChatLog({
         {messages.filter(message => message.role !== "system").map((message) => (
           <Fragment key={message.id}>
             {message.role === "user" ? (
-              <UserMessage message={message} refresh={refresh} />
+              <UserMessage message={message} toolConfig={toolConfig} />
             ) : (
               <AssistantMessage
                 messages={messages}
                 message={message}
-                refresh={refresh}
-                action={action}
                 renderAssistantText={renderAssistantText}
+                toolConfig={toolConfig}
               />
             )}
           </Fragment>
@@ -53,16 +54,15 @@ export default function ChatLog({
   );
 }
 
-export function UserMessage({ message, refresh }: { message: UIMessage, refresh: (message: Message & { model: string }) => void }) {
+export function UserMessage({ message, toolConfig }: { message: UIMessage, toolConfig?: ToolbarActions }) {
   const { setEditMessage } = useMessageStore()
 
   return (
     <div className="self-end  max-w-[80%]">
-      <ForwardRefEditor markdown={message.content} readOnly className="whitespace-pre-wrap rounded bg-background text-foreground p-2 flex-1" />
-      <AssistantToolBar
+      <TextRender
+        message={message}
         data={message.content}
-        onRefresh={(model) => refresh({ ...message, model })}
-        onEdit={() => setEditMessage(message)}
+        toolConfig={toolConfig}
       />
     </div>
   );
@@ -71,15 +71,13 @@ export function UserMessage({ message, refresh }: { message: UIMessage, refresh:
 export function AssistantMessage({
   messages,
   message,
-  refresh,
-  action,
-  renderAssistantText
+  renderAssistantText,
+  toolConfig
 }: {
   messages: UIMessage[],
   message: UIMessage;
-  refresh: (v: Message & { model: string }) => void;
-  action?: (content: string) => React.ReactNode;
   renderAssistantText?: ({ data, messages, message }: { data: string, messages: UIMessage[], message: UIMessage }) => React.ReactNode;
+  toolConfig?: ToolbarActions
 }) {
 
   return (
@@ -88,13 +86,12 @@ export function AssistantMessage({
         let contentCom: React.ReactNode = <div>{JSON.stringify(part)}</div>
         switch (part.type) {
           case "text":
-            contentCom = renderAssistantText ? renderAssistantText({ message, messages, data: part.text }) : (
-              <AssistantTextRender
+            contentCom = renderAssistantText ? renderAssistantText({ message, messages, data: part.text, toolConfig }) : (
+              <TextRender
                 message={message}
                 messages={messages}
                 data={part.text}
-                onRefresh={(model) => refresh({ ...message, model })}
-                action={action}
+                toolConfig={toolConfig}
               />)
             break;
           case "reasoning":
@@ -103,13 +100,12 @@ export function AssistantMessage({
           case "tool-invocation":
             const { toolName, toolCallId, state } = part.toolInvocation;
             if (toolName === "result" && state === "result") {
-              contentCom = renderAssistantText ? renderAssistantText({ message, messages, data: part.toolInvocation.result }) : (
-                <AssistantTextRender
+              contentCom = renderAssistantText ? renderAssistantText({ message, messages, data: part.toolInvocation.result, toolConfig }) : (
+                <TextRender
                   message={message}
                   messages={messages}
                   data={part.toolInvocation.result}
-                  onRefresh={(model) => refresh({ ...message, model })}
-                  action={action}
+                  toolConfig={toolConfig}
                 />)
             }
             break;
@@ -126,29 +122,23 @@ export function AssistantMessage({
   );
 }
 
-export const AssistantTextRender = ({ data, onEdit, onRefresh, action }: {
+export const TextRender = ({ data, toolConfig }: {
   data: string,
-  onRefresh: (model: string) => void
   messages?: UIMessage[];
   message?: UIMessage;
-  onEdit?: () => void
-  action?: (content: string) => React.ReactNode
-}) => {  
+  toolConfig?: ToolbarActions
+}) => {
   return (
     <>
       <ForwardRefEditor markdown={data} readOnly key={data} />
-      <AssistantToolBar onRefresh={onRefresh} action={action} data={data} />
+      {toolConfig ? <AssistantToolBar data={data} {...toolConfig} /> : false}
     </>
   );
 };
 
 export const AssistantToolBar = ({ data, onEdit, onRefresh, action }: {
   data: string,
-  // message: Message,
-  onRefresh: (model: string) => void
-  onEdit?: () => void
-  action?: (content: string) => React.ReactNode
-}) => {
+} & ToolbarActions) => {
 
   const clipboard = useClipboard({
     copiedTimeout: 600
