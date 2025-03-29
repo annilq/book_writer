@@ -30,7 +30,7 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
           return data.id.toString()
         }}
         onSelect={async ([node]) => {
-          if (node && node.children?.length === 0) {
+          if (node && (!node.children || node.children?.length === 0)) {
             const chapterId = Number(node.data.id)
             // only the current chapter and previous chapters have history messages
             const isCurrentChapter = chapterId === book.currentChapterId

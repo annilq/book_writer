@@ -9,8 +9,7 @@ import { removeChapterMessagesAfterMessageId, updateMessage } from "@/app/api/ch
 import BookHeader from "@/app/chats/[id]/components/chat-header";
 import Outline from "./components/outline";
 import { SettingsModal } from "@/app/chats/[id]/components/setting-modal";
-import ChatBox from "@/app/chats/[id]/components/chat-box";
-import ChatLog from "@/app/chats/[id]/components/chat-log";
+import ChatBox from "@/components/Chat/chat-box";
 import type { Chat } from "./page";
 import { cn } from "@/utils";
 
@@ -25,6 +24,7 @@ import React from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@radix-ui/react-toast";
 import { useTranslation } from "react-i18next"
+import ChatLog from "@/components/Chat/chat-log";
 
 export default function PageClient({ chat, messages: initialMessages }: { chat: Chat, messages: Message[] }) {
   const { toast } = useToast()
@@ -125,7 +125,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
         <main className="flex flex-1 flex-col">
           <div className="flex flex-1 overflow-auto">
             <div className="flex flex-col flex-1  w-full shrink-0 overflow-hidden lg:w-2/5">
-              <div className={cn("flex flex-col flex-1 overflow-auto w-full", !activeMessage && "max-w-3xl mx-auto")}>
+              <div className={cn("flex flex-col flex-1 overflow-auto w-full", !activeMessage && "max-w-4xl mx-auto")}>
                 <ChatLog
                   messages={messages}
                   refresh={refresh}

@@ -9,8 +9,8 @@ import { createMessage, removeMessagesAfterMessageId, updateMessage } from "@/ap
 import BookHeader from "@/app/chats/[id]/components/chat-header";
 import Outline from "./components/outline";
 import { SettingsModal } from "@/app/chats/[id]/components/setting-modal";
-import ChatBox from "@/app/chats/[id]/components/chat-box";
-import ChatLog from "@/app/chats/[id]/components/chat-log";
+import ChatBox from "@/components/Chat/chat-box";
+import ChatLog from "@/components/Chat/chat-log";
 import type { Chat } from "./page";
 import { cn } from "@/utils";
 

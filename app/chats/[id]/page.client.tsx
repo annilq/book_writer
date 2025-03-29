@@ -9,8 +9,8 @@ import { createMessage, removeMessagesAfterMessageId, updateMessage } from "@/ap
 
 import BookHeader from "@/app/chats/[id]/components/chat-header";
 import { SettingsModal } from "@/app/chats/[id]/components/setting-modal";
-import ChatBox from "@/app/chats/[id]/components/chat-box";
-import ChatLog from "@/app/chats/[id]/components/chat-log";
+import ChatBox from "@/components/Chat/chat-box";
+import ChatLog, { AssistantMessage, AssistantTextRender } from "@/components/Chat/chat-log";
 import OutlineViewerLayout from "@/app/chats/[id]/components/book-viewer-layout";
 import type { Chat } from "./page";
 import { cn } from "@/utils";
@@ -20,6 +20,7 @@ import { useMessageStore } from "@/store/message";
 import { Button } from "@/components/ui/button";
 import { ChevronsRight, ChevronLeft } from "lucide-react";
 import { useBookStore } from "@/store/book";
+import { AssistantText } from "./components/assistant-text-render";
 
 export default function PageClient({ chat }: { chat: Chat }) {
   const router = useRouter();
@@ -85,7 +86,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
     const updateMessage = await createMessage(chat.id, message) as Message
     append(updateMessage, { body: { model: chat.model, chatId: chat.id, book: chat } })
   };
-  
+
   const { book, setActiveBook } = useBookStore()
 
   React.useEffect(() => {
@@ -119,6 +120,9 @@ export default function PageClient({ chat }: { chat: Chat }) {
               <ChatLog
                 messages={messages}
                 refresh={refresh}
+                renderAssistantText={({ messages, message, data }) => {
+                  return <AssistantText message={message} messages={messages} data={data} onRefresh={(model) => refresh({ ...message, model })} />
+                }}
               />
               <ChatBox
                 onInputMessage={(message: CreateMessage | MessageClient) => {
