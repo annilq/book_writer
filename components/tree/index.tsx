@@ -1,5 +1,6 @@
 import { cn } from "@/utils";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import React from "react";
 import { NodeApi, NodeRendererProps, Tree as ArboristTree } from "react-arborist";
 import { TreeProps } from "react-arborist/dist/module/types/tree-props";
 import useResizeObserver from "use-resize-observer";
@@ -8,11 +9,11 @@ export type Data = { id: string; title: string; content: string; children?: Data
 
 const INDENT_STEP = 16;
 
-export function Tree(props: TreeProps<Data>) {
+export function Tree(props: TreeProps<Data> & { renderSuffix: (node: NodeApi<Data>) => React.ReactNode }) {
   const { ref, width, height } = useResizeObserver();
 
   return (
-    <div ref={ref} className="h-full">
+    <div ref={ref} className={cn("h-full", props.className)}>
       <ArboristTree
         {...props}
         width={width}
@@ -22,26 +23,28 @@ export function Tree(props: TreeProps<Data>) {
         rowHeight={30}
         indent={INDENT_STEP}
       >
-        {Node}
+        {(nodeProps) => {
+          return <Node {...nodeProps} renderSuffix={props.renderSuffix} />
+        }}
       </ArboristTree>
     </div>
-
   );
 }
 
-function Node({ node, style, dragHandle }: NodeRendererProps<Data>) {
+function Node({ node, style, dragHandle, renderSuffix = (node) => false }: NodeRendererProps<Data> & { renderSuffix: (node: NodeApi<Data>) => React.ReactNode }) {
 
   return (
     <div
       ref={dragHandle}
-      className={cn(node.isInternal && "font-bold", "flex gap-2 items-center justify-between cursor-pointer hover:underline mx-4")}
+      className={cn((node.level === 0) && "font-bold", !node.isInternal && node.isSelected && "rounded bg-card-foreground text-card", "h-full flex gap-2 items-center justify-between cursor-pointer hover:underline px-2 mx-2")}
       style={style}
       onClick={() => node.isInternal && node.toggle()}
     >
       <span className="flex-1" >
         {node.data.title}
       </span>
-      <FolderArrow node={node} />
+      {!!node.children?.length && <FolderArrow node={node} />}
+      {renderSuffix(node)}
     </div>
   );
 }
@@ -52,9 +55,9 @@ function FolderArrow({ node }: { node: NodeApi<Data> }) {
     <span>
       {node.isInternal ? (
         node.isOpen ? (
-          <ChevronDown />
+          <ChevronDown className="h-4 w-4" />
         ) : (
-          <ChevronRight />
+          <ChevronRight className="h-4 w-4" />
         )
       ) : null}
     </span>

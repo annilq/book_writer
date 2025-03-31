@@ -1,4 +1,5 @@
 import { HumanMessage, AIMessage, ChatMessage } from "@langchain/core/messages";
+import { Chapter } from "@prisma/client";
 import { Message } from "ai";
 
 export * from "./cn"
@@ -224,6 +225,7 @@ export function flattenChaptersWithPosition(
       title: chapter.title,
       content: chapter.content,
       position: currentPosition,
+      leaf: !(chapter.children && chapter.children.length > 0)
     };
 
     result.push(flatChapter);
@@ -236,14 +238,14 @@ export function flattenChaptersWithPosition(
   return result;
 }
 
-export function arrayToTree(items: ChapterInput[]): ChapterInput[] {
-  const result: ChapterInput[] = [];
-  const map: { [key: string]: ChapterInput } = {};
+export function arrayToTree(items: Chapter[]): Chapter[] {
+  const result: Chapter[] = [];
+  const map: { [key: string]: Chapter } = {};
 
   const sortedItems = [...items].sort((a, b) => a.position.localeCompare(b.position));
 
   for (const item of sortedItems) {
-    const newItem: ChapterInput = { ...item };
+    const newItem: Chapter = { ...item };
     map[item.position] = newItem;
 
     const lastDotIndex = item.position.lastIndexOf('.');
@@ -251,7 +253,7 @@ export function arrayToTree(items: ChapterInput[]): ChapterInput[] {
       result.push(newItem);
     } else {
       const parentPosition = item.position.substring(0, lastDotIndex);
-      const parent = map[parentPosition];
+      const parent = map[parentPosition] as ChapterInput;
       if (parent) {
         if (!parent.children) {
           parent.children = [];
@@ -262,4 +264,12 @@ export function arrayToTree(items: ChapterInput[]): ChapterInput[] {
   }
 
   return result;
+}
+
+export function getOutlineMessage(outline: ChapterInput[]) {
+
+  const outLineMessageStirng = `\`\`\`json
+${JSON.stringify(outline)}
+\`\`\``
+  return outLineMessageStirng;
 }

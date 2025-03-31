@@ -1,11 +1,9 @@
 "use client"
 
 import * as React from "react"
-// import { Tree, TreeData } from "./tree";
 import { Tree, Data as TreeData } from "@/components/tree";
 
-import { v4 as uuidv4 } from 'uuid';
-import { ChapterInput } from "@/utils";
+import { extractFirstCodeBlock, getOutlineMessage } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -15,15 +13,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { moveNode, updateNode } from "@/components/tree/util";
-
-const transformData = (chapter: ChapterInput): TreeData => {
-  return {
-    id: uuidv4(),
-    title: chapter.title,
-    content: chapter.content,
-    ...(chapter.children && chapter.children?.length > 0 && { children: chapter.children?.map(transformData) })
-  }
-}
+import { updateMessage } from "@/app/api/chat/actions";
+import { useMessageStore } from "@/store/message";
 
 const FormSchema = z.object({
   title: z.string().min(2, {
@@ -32,17 +23,18 @@ const FormSchema = z.object({
   content: z.string().optional(),
 })
 
-export default function SidebarPreview({ data }: { data: string }) {
-  const treeRef = React.useRef()
+export default function SidebarPreview() {
   const [treeData, setTreeData] = React.useState<TreeData[]>([])
   const [chapter, setChapter] = React.useState<TreeData>()
+  const { message, setActiveMessage } = useMessageStore()
 
   React.useEffect(() => {
-    if (data) {
-      const newdata = JSON.parse(data)
-      setTreeData(newdata.map(transformData))
+    if (message) {
+      const app = extractFirstCodeBlock(message.content)!;
+      const newdata = JSON.parse(app.code)
+      setTreeData(newdata)
     }
-  }, [data])
+  }, [message])
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -54,19 +46,21 @@ export default function SidebarPreview({ data }: { data: string }) {
 
   async function onSubmit(values: z.infer<typeof FormSchema>) {
     const updateData = updateNode(treeData, { ...chapter!, ...values })
-    setTreeData(updateData)
+    const content = getOutlineMessage(updateData)
+    const newMessage = await updateMessage(message!.id, content)
+    if (newMessage) {
+      setActiveMessage(newMessage)
+    }
   }
 
   return (
-    <div className="flex h-full gap-2">
+    <div className="flex flex-1 gap-2 overflow-y-auto bg-background">
       {treeData?.length > 0 ? (
         <Tree
-          ref={treeRef}
           data={treeData}
-          className="min-w-1/3 bg-muted h-full overflow-y-auto text-sm px-2"
+          className="w-1/3 bg-muted overflow-y-auto text-sm px-2"
           onActivate={(node) => { setChapter(node.data); form.reset(node.data) }}
           onMove={async (data) => {
-            console.log(data);
             const updateData = moveNode(treeData, data)
             setTreeData(updateData)
           }}
@@ -74,12 +68,12 @@ export default function SidebarPreview({ data }: { data: string }) {
       ) : false}
       <div className="flex-1">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="mx-auto space-y-4 p-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="mx-auto space-y-4 p-4 flex flex-col">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
-                <FormItem className="flex-1">
+                <FormItem>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -91,9 +85,10 @@ export default function SidebarPreview({ data }: { data: string }) {
               control={form.control}
               name="content"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col flex-1">
                   <FormControl>
                     <Textarea
+                      className="flex-1"
                       rows={8}
                       {...field}
                     />

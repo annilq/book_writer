@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { cn } from "@/utils"
 
-export default function BookHeader({ children }: { children: React.ReactNode }) {
+export default function BookHeader({ children, className }: { children: React.ReactNode, className?: string }) {
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function BookHeader({ children }: { children: React.ReactNode }) 
 
   return (
     <div
-      className={cn("flex justify-between sticky w-full top-0 z-50 transition-all duration-300 bg-background border-b px-4 h-12 text-sm", isScrolled && "border-b")}
+      className={cn("flex justify-between items-center sticky w-full top-0 z-50 transition-all duration-300 border-b px-1 h-12 text-sm", isScrolled && "border-b", className)}
     >
       {children}
     </div>

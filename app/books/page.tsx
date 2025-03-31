@@ -10,9 +10,13 @@ import { Input } from "@/components/ui/input"
 
 import BookList from "./components/Books"
 import SideBar from "./components/Sidebar"
+import { useSession } from "next-auth/react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function BookManager() {
   const { t } = useTranslation()
+  const session = useSession()
 
   return (
     <div className="flex h-screen">
@@ -35,21 +39,17 @@ export default function BookManager() {
             <Button variant="ghost" size="icon">
               <Bell className="h-4 w-4" />
             </Button>
-            <div className="h-8 w-8 overflow-hidden rounded-full">
-              <Image
-                src="/placeholder.svg"
-                alt="Avatar"
-                width={32}
-                height={32}
-                className="h-full w-full object-cover"
-              />
-            </div>
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={session.data?.user?.image!} alt={session.data?.user?.name!} />
+              <AvatarFallback>{session.data?.user?.name}</AvatarFallback>
+            </Avatar>
+            <ThemeToggle />
           </div>
         </header>
 
         <div className="p-6">
           <div className="mb-6 flex items-center gap-4">
-            <Button className="gap-2">
+            <Button className="gap-2 rounded">
               <Plus className="h-4 w-4" />
               {t("create")}
             </Button>

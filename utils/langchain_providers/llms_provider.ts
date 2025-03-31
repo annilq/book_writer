@@ -2,7 +2,7 @@ import { ChatOllama } from "@langchain/ollama";
 import { ChatDeepSeek } from "@langchain/deepseek";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { ChatOpenAI } from "@langchain/openai";
-import { ChatAlibaba } from "./providers";
+import { ChatAlibaba } from ".";
 
 // Interface for model configurations
 interface ModelConfig {
@@ -12,16 +12,16 @@ interface ModelConfig {
     // Add other common configuration options here
 }
 
-export class ModelsProvider {
-    private static instance: ModelsProvider;
+export class LangchainProvider {
+    private static instance: LangchainProvider;
 
     private constructor() { }
 
-    public static getInstance(): ModelsProvider {
-        if (!ModelsProvider.instance) {
-            ModelsProvider.instance = new ModelsProvider();
+    public static getInstance(): LangchainProvider {
+        if (!LangchainProvider.instance) {
+            LangchainProvider.instance = new LangchainProvider();
         }
-        return ModelsProvider.instance;
+        return LangchainProvider.instance;
     }
 
     public getChatOllama(config: ModelConfig = {}): BaseChatModel {
@@ -74,4 +74,4 @@ export class ModelsProvider {
     }
 }
 
-export default ModelsProvider.getInstance()
+export default LangchainProvider.getInstance()

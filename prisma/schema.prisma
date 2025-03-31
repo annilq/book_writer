@@ -89,26 +89,36 @@ enum BookStatus {
   PENDINGREVIEW
 }
 
+// step
+enum STEP {
+  INIT
+  OUTLINE
+  CHAPTER
+  COMPLETE
+}
+
 model Book {
-  id              String     @id @default(nanoid(16))
-  title           String
-  model           String
-  description     String
-  prompt          String
-  publicationDate DateTime?
-  isbn            String?    @unique
-  coverImage      String?
-  language        String
-  chapters        Chapter[]
-  messages        Message[]
-  authors         User[]     @relation("BookAuthors")
-  tags            Tag[]      @relation("BookTags")
-  reviews         Review[]
-  publisherId     Int?
-  publisher       Publisher? @relation(fields: [publisherId], references: [id])
-  categories      Category[] @relation("BookCategories")
-  status          BookStatus @default(DRAFT)
-  createdAt       DateTime   @default(now())
+  id               String     @id @default(nanoid(16))
+  title            String
+  model            String
+  description      String
+  prompt           String
+  publicationDate  DateTime?
+  isbn             String?    @unique
+  coverImage       String?
+  language         String
+  currentChapterId Int?
+  chapters         Chapter[]
+  messages         Message[]
+  authors          User[]     @relation("BookAuthors")
+  tags             Tag[]      @relation("BookTags")
+  reviews          Review[]
+  publisherId      Int?
+  publisher        Publisher? @relation(fields: [publisherId], references: [id])
+  categories       Category[] @relation("BookCategories")
+  status           BookStatus @default(DRAFT)
+  step             STEP       @default(INIT)
+  createdAt        DateTime   @default(now())
 }
 
 model Message {
@@ -127,23 +137,16 @@ model Message {
 }
 
 model Chapter {
-  id         Int         @id @default(autoincrement())
-  title      String
-  content    String
-  position   String      @default("0") // Path enumeration field (e.g., "1", "1.1", "1.1.1")
-  bookId     String
-  book       Book        @relation(fields: [bookId], references: [id])
-  paragraphs Paragraph[]
-  Message    Message[]
+  id       Int       @id @default(autoincrement())
+  title    String
+  content  String
+  leaf     Boolean   @default(true)
+  position String    @default("0") // Path enumeration field (e.g., "1", "1.1", "1.1.1")
+  bookId   String
+  book     Book      @relation(fields: [bookId], references: [id])
+  messages Message[]
 
   @@index([position])
-}
-
-model Paragraph {
-  id        Int     @id @default(autoincrement())
-  content   String
-  chapterId Int
-  chapter   Chapter @relation(fields: [chapterId], references: [id])
 }
 
 model Tag {

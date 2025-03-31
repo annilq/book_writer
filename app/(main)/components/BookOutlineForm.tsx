@@ -102,7 +102,7 @@ export default function BookOutlineForm() {
         }
       })
       startTransition(() => {
-        router.push(`/books/${chat?.id}`);
+        router.push(`/chats/${chat?.id}`);
       });
     }
   }
@@ -120,12 +120,7 @@ export default function BookOutlineForm() {
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
+      title: "Generating book info ,this will speend some time , please wait a moment",
     })
     await handleSubmit(data)
   }

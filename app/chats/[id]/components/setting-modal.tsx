@@ -30,7 +30,7 @@ import { Book, Category } from "@prisma/client"
 import useSWR from "swr"
 import { Model } from "@/app/api/model/models"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import Markdown from "react-markdown"
+import { ForwardRefEditor } from "@/components/Editor/ForwardRefEditor"
 
 export function SettingsModal({ book }: { book: Book }) {
   const [open, setOpen] = useState(false)
@@ -161,7 +161,7 @@ export function SettingsModal({ book }: { book: Book }) {
             </Form>
           </TabsContent>
           <TabsContent value="prompt">
-            <Markdown className={"text-sm"}>{book.prompt}</Markdown>
+            <ForwardRefEditor markdown={book.prompt} readOnly className={"text-sm"} />
           </TabsContent>
         </Tabs>
       </SheetContent>

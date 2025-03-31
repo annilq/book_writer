@@ -12,7 +12,11 @@ export default async function Page({
 
   if (!book) notFound();
 
-  return <PageClient book={book} />;
+  return <PageClient chat={book} />;
 }
 
+export type Chat = NonNullable<Awaited<ReturnType<typeof getBookById>>>;
+export type Message = Chat["messages"][number];
+
+// export const runtime = "edge";
 export const maxDuration = 45;
