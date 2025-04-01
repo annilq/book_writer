@@ -38,8 +38,8 @@ function BookCard({ bookId, title, metadata, step, thumbnail }: { bookId: string
         />
       </div>
       <div className="p-4">
-        <h3 className="font-medium text-gray-900">{title}</h3>
-        <p className="text-sm text-gray-500 truncate" title={metadata}>{metadata}</p>
+        <h3 className="font-medium text-foreground">{title}</h3>
+        <p className="text-sm text-secondary-foreground truncate" title={metadata}>{metadata}</p>
       </div>
     </Link>
   )
@@ -52,7 +52,7 @@ export default function Books() {
     return <Spinner />
   }
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 2xl:grid-cols-4">
       {books?.map(book => <BookCard key={book.id} title={book.title} step={book.step} bookId={book.id} metadata={book.description} thumbnail={book.coverImage || "/placeholder.svg"} />)}
     </div>
   )
