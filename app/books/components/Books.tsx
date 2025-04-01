@@ -28,7 +28,7 @@ function BookCard({ bookId, title, metadata, step, thumbnail }: { bookId: string
 
   return (
     <Link href={url} className="group relative overflow-hidden rounded-lg border bg-background">
-      <div className="aspect-[4/3] overflow-hidden">
+      <div className="aspect-4/3 overflow-hidden">
         <Image
           src={thumbnail || "/placeholder.svg"}
           alt={title}

@@ -4,7 +4,7 @@ import type React from "react" // Import React
 function BookCard({ title, metadata, thumbnail }: { title: string; metadata: string; thumbnail: string }) {
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-background">
-      <div className="aspect-[4/3] overflow-hidden">
+      <div className="aspect-4/3 overflow-hidden">
         <Image
           src={thumbnail || "/placeholder.svg"}
           alt={title}
