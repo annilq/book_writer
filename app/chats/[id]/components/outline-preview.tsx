@@ -58,7 +58,7 @@ export default function SidebarPreview() {
       {treeData?.length > 0 ? (
         <Tree
           data={treeData}
-          className="w-1/3 bg-muted overflow-y-auto text-sm px-2"
+          className="w-1/3 bg-secondary overflow-y-auto text-sm px-2"
           onActivate={(node) => { setChapter(node.data); form.reset(node.data) }}
           onMove={async (data) => {
             const updateData = moveNode(treeData, data)

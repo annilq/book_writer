@@ -95,7 +95,7 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
 
           )
         }}
-        className="w-1/5 bg-muted overflow-y-auto text-sm px-2"
+        className="w-1/5 bg-secondary overflow-y-auto text-sm px-2"
       />
     ) : false
   )

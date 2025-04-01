@@ -88,6 +88,7 @@
     "postcss": "^8.5.2",
     "prettier": "^3.4.2",
     "prisma": "6.4.1",
+    "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "latest",
     "ts-node": "^10.9.2",
     "typescript": "5.1.6"
