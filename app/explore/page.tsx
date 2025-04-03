@@ -4,7 +4,6 @@ import { Grid, Search } from "lucide-react"
 import type React from "react"
 import { useTranslation } from "react-i18next";
 
-import SideBar from "../books/components/Sidebar";
 import Books from "../books/components/Books";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,7 @@ export default function BookManager() {
   const { t } = useTranslation()
 
   return (
-    <div className="flex flex-col gap-4 h-screen bg-secondary">
+    <div className="flex flex-col gap-4 h-screen bg-background">
       <Header className="border-b" />
       <div className="flex flex-1 flex-col gap-4 w-[1000px] mx-auto">
         <div className="flex items-center justify-between">

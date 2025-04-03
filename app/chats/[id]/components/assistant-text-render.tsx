@@ -23,7 +23,7 @@ const VersionCard = ({ messages, message, isActive = false, onMessageClick }: {
   return (
     <div className="my-4">
       <button
-        className={`${isActive ? "bg-background" : " hover:border-gray-400 hover:bg-secondary hover:text-secondary-foreground"} inline-flex w-full items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5`}
+        className={`${isActive ? "bg-background" : " hover:border-gray-400 hover:bg-secondary hover:text-secondary-foreground"} inline-flex w-full items-center gap-2 rounded border-4 border-gray-300 p-1.5`}
         onClick={onMessageClick}
       >
         <div
@@ -51,7 +51,7 @@ const StreamingCard = ({ messages, message }: {
     <div className="my-4">
       <button
         disabled
-        className="inline-flex w-full animate-pulse items-center gap-2 rounded-lg border-4 border-gray-300 p-1.5"
+        className="inline-flex w-full animate-pulse items-center gap-2 rounded border-4 border-gray-300 p-1.5"
       >
         <div className="flex size-8 items-center justify-center rounded font-bold">
           V{version}

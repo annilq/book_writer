@@ -118,6 +118,7 @@ model Book {
   categories       Category[] @relation("BookCategories")
   status           BookStatus @default(DRAFT)
   step             STEP       @default(INIT)
+  isPublic         Boolean    @default(false)
   createdAt        DateTime   @default(now())
 }
 

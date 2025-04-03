@@ -1,6 +1,5 @@
 'use client';
 
-import Link from "next/link";
 import { signIn, useSession } from 'next-auth/react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -10,14 +9,10 @@ export default function SignIn() {
 
   if (session.data?.user) {
     return (
-      <Link
-        href="/books"
-      >
-        <Avatar className="h-9 w-9">
-          <AvatarImage src={session.data?.user?.image!} alt={session.data?.user?.name!} />
-          <AvatarFallback>{session.data?.user?.name}</AvatarFallback>
-        </Avatar>
-      </Link>
+      <Avatar className="h-9 w-9">
+        <AvatarImage src={session.data?.user?.image!} alt={session.data?.user?.name!} />
+        <AvatarFallback>{session.data?.user?.name}</AvatarFallback>
+      </Avatar>
     )
   } else {
     return (

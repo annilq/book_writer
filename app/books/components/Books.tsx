@@ -1,4 +1,5 @@
 import Spinner from "@/components/Spinner";
+import { Button } from "@/components/ui/button";
 import { Book, STEP } from "@prisma/client";
 import Image from "next/image"
 import Link from "next/link";
@@ -27,21 +28,29 @@ function BookCard({ bookId, title, metadata, step, thumbnail }: { bookId: string
   }, [bookId, step])
 
   return (
-    <Link href={url} className="group relative overflow-hidden rounded-lg border bg-background">
-      <div className="aspect-4/3 overflow-hidden">
-        <Image
-          src={thumbnail || "/placeholder.svg"}
-          alt={title}
-          width={400}
-          height={300}
-          className="h-full w-full object-cover transition-transform group-hover:scale-105"
-        />
+    <div className="group rounded border bg-background flex flex-col gap-2 pb-2">
+      <Link href={url} className="flex flex-col gap-2 pb-2 border-b">
+        <div className="aspect-4/3 overflow-hidden">
+          <Image
+            src={thumbnail || "/placeholder.svg"}
+            alt={title}
+            width={400}
+            height={300}
+            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+          />
+        </div>
+        <div className="px-2">
+          <div className="font-medium text-foreground">{title}</div>
+          <div className="text-sm text-secondary-foreground truncate" title={metadata}>{metadata}</div>
+        </div>
+      </Link>
+      <div className="flex gap-4 px-2">
+        <Button className="rounded">状态</Button>
+        <Button className="rounded">标签</Button>
+        <Button className="rounded">公开</Button>
       </div>
-      <div className="p-4">
-        <h3 className="font-medium text-foreground">{title}</h3>
-        <p className="text-sm text-secondary-foreground truncate" title={metadata}>{metadata}</p>
-      </div>
-    </Link>
+    </div>
+
   )
 }
 
