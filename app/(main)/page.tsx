@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/components/Header";
-import BookOutlineForm from "./components/BookOutlineForm"
+import { BookOutlineCard } from "./components/BookOutlineForm"
 import { useTranslation } from "react-i18next";
 import Footer from "@/components/Footer";
 
@@ -18,7 +18,7 @@ export default function Home() {
             {t("welcome")} BookCraft
           </h1>
           <p className="mt-3 text-2xl"> {t("appDesc")}</p>
-          <BookOutlineForm />
+          <BookOutlineCard />
         </main>
       </div>
       <Footer />

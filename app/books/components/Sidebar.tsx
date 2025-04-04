@@ -8,6 +8,7 @@ import Tags from "./Tags"
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { BookDialog } from "./BookDialog"
 
 interface NavItemProps {
   href: string
@@ -35,10 +36,7 @@ export default function SideBar() {
 
   return (
     <div className={cn("flex flex-col gap-2 p-2 w-56 transition-all duration-100 bg-background border-r", collapse && "w-12 overflow-hidden")}>
-      <Button className="rounded">
-        <Plus className="h-4 w-4" />
-        {!collapse && t("create")}
-      </Button>
+      <BookDialog collapse={collapse} />
       <nav className="flex-1 flex flex-col gap-2">
         <NavItem href="/books" icon={<LayoutGrid className="h-4 w-4" />} active>
           {!collapse && t("AllBooks")}

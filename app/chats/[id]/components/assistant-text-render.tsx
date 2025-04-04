@@ -27,7 +27,7 @@ const VersionCard = ({ messages, message, isActive = false, onMessageClick }: {
         onClick={onMessageClick}
       >
         <div
-          className={`flex size-8 items-center justify-center rounded font-bold`}
+          className={`flex items-center justify-center rounded font-bold`}
         >
           V{version}-{book!.title}
         </div>
@@ -53,7 +53,7 @@ const StreamingCard = ({ messages, message }: {
         disabled
         className="inline-flex w-full animate-pulse items-center gap-2 rounded border-4 border-gray-300 p-1.5"
       >
-        <div className="flex size-8 items-center justify-center rounded font-bold">
+        <div className="flex items-center justify-center rounded font-bold">
           V{version}
         </div>
         <div className="flex flex-col gap-0.5 text-left leading-none">

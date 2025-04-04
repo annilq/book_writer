@@ -2,7 +2,6 @@
 create Book->(create prompt for entire book)->generate chapters outline->confirm chapters outline->generate content->confirm content
 #### todo
 1. sign in :user need sign in when save book outline
-2. books page: create new book
 3. make book public
 4. explore page data
 5. data filter

@@ -45,20 +45,35 @@ function Example(props: { handleSubmit: (data: Partial<Book>) => void }) {
   return (
     <div className="px-6 pb-6 flex w-full flex-wrap justify-center gap-3">
       {SUGGESTED_PROMPTS.map((v) => (
-        <button
+        <Button
           key={v.title}
-          type="button"
+          variant="secondary"
           onClick={() => props.handleSubmit(v)}
-          className="rounded bg-secondary px-2.5 py-1.5 text-xs hover:outline hover:outline-1"
         >
           {v.title}
-        </button>
+        </Button>
       ))}
     </div>
   )
 }
 
-export default function BookOutlineForm() {
+export function BookOutlineCard() {
+
+  const { t } = useTranslation()
+
+  return (
+    <Card className="mx-auto xs:w-full lg:w-[560px] min-w-fit mt-8 relative" >
+      <CardHeader>
+        <CardTitle className="text-3xl font-bold text-center">{t("appName")}</CardTitle>
+        <CardDescription className="font-bold text-center mb-8">{t("appTip")}</CardDescription>
+      </CardHeader>
+      <BookOutlineForm />
+    </Card>
+  )
+}
+
+
+export function BookOutlineForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const { id, setMessages, reload } = useChat({
@@ -126,11 +141,7 @@ export default function BookOutlineForm() {
   }
 
   return (
-    <Card className="mx-auto xs:w-full lg:w-[560px] min-w-fit mt-8 relative" >
-      <CardHeader>
-        <CardTitle className="text-3xl font-bold text-center">{t("appName")}</CardTitle>
-        <CardDescription className="font-bold text-center mb-8">{t("appTip")}</CardDescription>
-      </CardHeader>
+    <div className="w-full">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-2xl mx-auto space-y-4 px-6 pb-6">
           <div className="flex items-center w-full justify-between gap-2">
@@ -214,7 +225,7 @@ export default function BookOutlineForm() {
       </Form>
       <Example handleSubmit={(data) => { form.reset(data) }} />
       {loading && <Spinner />}
-    </Card>
+    </div>
   )
 }
 
