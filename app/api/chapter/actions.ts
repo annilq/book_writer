@@ -1,15 +1,15 @@
 "use server";
 
-import { Book } from "@prisma/client";
 import { getI18n } from "@/utils/i18n/server";
 import { CoreMessage, CreateMessage, streamText } from "ai";
 import { getAIModel } from "@/utils/ai_providers";
 import { getPrisma } from "@/utils/prisma";
 import { cache } from "react";
+import { BookWithChapters } from "@/app/books/[id]/page.client";
 
 export async function fetchChapterContent(
   model: string,
-  book: Book,
+  book: BookWithChapters,
   messages: CoreMessage[] = []
 ) {
   const i18n = getI18n(book.language);
@@ -29,11 +29,11 @@ export async function fetchChapterContent(
       { role: 'system' as const, content: systemPrompt },
       ...messages
     ],
+    maxSteps: 5,
     temperature: 0,
     onFinish(result) {
-      if (result.response.messages) {
-        const message = result.response.messages[0]
-        const content = message.content[0].text
+      if (result.text) {
+        const content = result.text
         createChapterMessage(book.currentChapterId!, { role: "assistant", content: content } as CreateMessage);
       }
     },

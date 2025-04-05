@@ -94,6 +94,10 @@ export default function PageClient({ chat }: { chat: Chat }) {
     setActiveBook(chat)
   }, [chat.id, setActiveBook])
 
+  React.useEffect(() => {
+    setActiveMessage()
+  }, [chat.id,setActiveMessage])
+
   if (!book) {
     return
   }

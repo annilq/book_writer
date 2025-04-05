@@ -95,7 +95,7 @@ export function AssistantMessage({
               />)
             break;
           case "reasoning":
-            <pre className="part-reasoning" key={i}>{part.reasoning}</pre>
+            contentCom = <Reasoning reasoning={part.reasoning} />
             break;
           case "tool-invocation":
             const { toolName, toolCallId, state } = part.toolInvocation;
@@ -105,7 +105,6 @@ export function AssistantMessage({
                   message={message}
                   messages={messages}
                   data={part.toolInvocation.result}
-                  toolConfig={toolConfig}
                 />)
             }
             break;
@@ -175,3 +174,15 @@ export const TextRender = ({ data, message, toolConfig }: {
     </>
   );
 };
+
+
+export const Reasoning = ({ reasoning }: { reasoning: string }) => {
+  return (
+    <div className="mt-1">
+      <div className="bg-muted/50 rounded-md p-3 text-xs font-mono">
+        <div className="text-xs text-muted-foreground mb-1 font-sans">Reasoning:</div>
+        <pre className="whitespace-pre-wrap">{reasoning}</pre>
+      </div>
+    </div>
+  )
+}
