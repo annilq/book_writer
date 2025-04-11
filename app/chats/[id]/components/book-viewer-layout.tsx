@@ -3,23 +3,25 @@
 import { ChevronLeftIcon, ChevronRightIcon, SaveIcon } from "lucide-react";
 import { cn, splitByFirstCodeFence, extractFirstCodeBlock } from "@/utils";
 import { Button } from "@/components/ui/button";
-import { Chat, Message } from "../../../books/[id]/page";
 import OutlinePreview from "./outline-preview";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { useTranslation } from "react-i18next"
 import { createBookOutline } from "@/app/api/chat/actions";
 import { useRouter } from "next/navigation";
+import { Chat, Message } from "../page";
 
 export default function OutlineViewerLayout({
   chat,
   message,
   onMessageChange,
   isShowing,
+  onRequestFix
 }: {
   chat: Chat;
   message?: Message;
   onMessageChange: (v: Message) => void;
   isShowing: boolean,
+  onRequestFix: (message: string) => void
 }) {
   const { t } = useTranslation()
 
@@ -39,9 +41,9 @@ export default function OutlineViewerLayout({
 
   return (
     <div
-      className={cn(`h-full hidden overflow-hidden transition-[width] lg:flex bg-muted relative flex-col`, isShowing ? "w-3/5 border-l" : "w-0", chat.step === "CHAPTER" ? "flex-1" : "")}
+      className={cn(`h-full hidden overflow-hidden transition-[width] lg:flex bg-secondary relative flex-col`, isShowing ? "w-3/5 border-l" : "w-0", chat.step === "CHAPTER" ? "flex-1" : "")}
     >
-      <OutlinePreview />
+      <OutlinePreview onRequestFix={onRequestFix} />
       {chat.step === "OUTLINE" && <div className="flex items-center justify-between border-t border-gray-300 px-4 py-4 h-10 w-full bg-background">
         <div className="flex items-center justify-end gap-3">
           {previousMessage ? (

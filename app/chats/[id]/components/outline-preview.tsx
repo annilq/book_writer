@@ -15,6 +15,8 @@ import { z } from "zod";
 import { moveNode, updateNode } from "@/components/tree/util";
 import { updateMessage } from "@/app/api/chat/actions";
 import { useMessageStore } from "@/store/message";
+import { useErrorStore } from "@/store/error";
+import { ErrorMessage } from "@/components/GenerateErrorhandle";
 
 const FormSchema = z.object({
   title: z.string().min(2, {
@@ -23,16 +25,23 @@ const FormSchema = z.object({
   content: z.string().optional(),
 })
 
-export default function SidebarPreview() {
+export default function SidebarPreview({ onRequestFix }: { onRequestFix: (message: string) => void }) {
   const [treeData, setTreeData] = React.useState<TreeData[]>([])
   const [chapter, setChapter] = React.useState<TreeData>()
   const { message, setActiveMessage } = useMessageStore()
+  const { setError } = useErrorStore()
 
   React.useEffect(() => {
     if (message) {
       const app = extractFirstCodeBlock(message.content)!;
-      const newdata = JSON.parse(app.code)
-      setTreeData(newdata)
+      try {
+        const newdata = JSON.parse(app.code)
+        setTreeData(newdata)
+        setError()
+      } catch (e: Error) {
+        setError(e.message)
+      }
+
     }
   }, [message])
 
@@ -58,7 +67,7 @@ export default function SidebarPreview() {
       {treeData?.length > 0 ? (
         <Tree
           data={treeData}
-          className="w-1/3 bg-muted overflow-y-auto text-sm px-2"
+          className="w-1/3 bg-secondary overflow-y-auto text-sm px-2"
           onActivate={(node) => { setChapter(node.data); form.reset(node.data) }}
           onMove={async (data) => {
             const updateData = moveNode(treeData, data)
@@ -105,6 +114,7 @@ export default function SidebarPreview() {
           </form>
         </Form>
       </div>
+      {onRequestFix && <ErrorMessage onRequestFix={onRequestFix} />}
     </div>
   )
 }

@@ -1,15 +1,21 @@
 "use server";
 
-import { Book } from "@prisma/client";
 import { getI18n } from "@/utils/i18n/server";
 import { CoreMessage, CreateMessage, streamText } from "ai";
 import { getAIModel } from "@/utils/ai_providers";
 import { getPrisma } from "@/utils/prisma";
 import { cache } from "react";
+import { BookWithChapters } from "@/app/books/[id]/page.client";
+import { Message, Prisma } from "@prisma/client";
+
+export type MessageWithParts = Message & {
+  parts: Prisma.MessagePartCreateInput[];
+};
 
 export async function fetchChapterContent(
+  chapterId: number,
   model: string,
-  book: Book,
+  book: BookWithChapters,
   messages: CoreMessage[] = []
 ) {
   const i18n = getI18n(book.language);
@@ -29,12 +35,13 @@ export async function fetchChapterContent(
       { role: 'system' as const, content: systemPrompt },
       ...messages
     ],
+    maxSteps: 5,
     temperature: 0,
     onFinish(result) {
-      if (result.response.messages) {
-        const message = result.response.messages[0]
-        const content = message.content[0].text
-        createChapterMessage(book.currentChapterId!, { role: "assistant", content: content } as CreateMessage);
+      if (result.text) {
+        const content = result.text;
+        const parts = result.response.messages[0].content
+        createChapterMessage(chapterId, { role: "assistant", content: content, parts } as CreateMessage);
       }
     },
   });
@@ -60,9 +67,16 @@ export async function createChapterMessage(
       content: message.content,
       position: maxPosition + 1,
       chapterId,
+      parts: {
+        createMany: {
+          data: (message.parts ? message.parts : [{ type: "text", text: message.content }])! as unknown as Prisma.MessagePartCreateInput[]
+        }
+      }
     },
+    include: {
+      parts: true
+    }
   });
-
   return newMessage;
 }
 
@@ -77,6 +91,7 @@ export const getMessageOfChapter = cache(async (id: number) => {
   const prisma = getPrisma();
   return await prisma.message.findMany({
     where: { chapterId: id },
+    include: { parts: true }
   });
 });
 

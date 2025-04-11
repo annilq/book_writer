@@ -3,6 +3,7 @@
   "appName": "BookCraft",
   "welcome": "欢迎来到",
   "home": "首页",
+  "explore": "探索",
   "bookshelf": "书架",
   "appDesc": "在BookCraft的帮助下，创作你的下一个杰作吧！",
   "appTip": "输入书籍的标题和简介来生成大纲",

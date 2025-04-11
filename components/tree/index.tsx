@@ -5,7 +5,7 @@ import { NodeApi, NodeRendererProps, Tree as ArboristTree } from "react-arborist
 import { TreeProps } from "react-arborist/dist/module/types/tree-props";
 import useResizeObserver from "use-resize-observer";
 
-export type Data = { id: string; title: string; content: string; children?: Data[] };
+export type Data = { id: string; title: string; content: string; description: string; children?: Data[] };
 
 const INDENT_STEP = 16;
 

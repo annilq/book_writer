@@ -118,35 +118,56 @@ model Book {
   categories       Category[] @relation("BookCategories")
   status           BookStatus @default(DRAFT)
   step             STEP       @default(INIT)
+  isPublic         Boolean    @default(false)
   createdAt        DateTime   @default(now())
 }
 
+model Chapter {
+  id          Int       @id @default(autoincrement())
+  title       String
+  content     String?
+  description String
+  leaf        Boolean   @default(true)
+  position    String    @default("0") // Path enumeration field (e.g., "1", "1.1", "1.1.1")
+  bookId      String
+  book        Book      @relation(fields: [bookId], references: [id])
+  messages    Message[]
+
+  @@index([position])
+}
+
 model Message {
-  id        String   @id @default(nanoid(16))
+  id        String        @id @default(nanoid(16))
   role      String
   content   String
   bookId    String?
   model     String?
   chapterId Int?
-  book      Book?    @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  book      Book?         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  chapter   Chapter?      @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  parts     MessagePart[]
   position  Int
-  createdAt DateTime @default(now())
+  createdAt DateTime      @default(now())
 
   @@index([bookId])
 }
 
-model Chapter {
-  id       Int       @id @default(autoincrement())
-  title    String
-  content  String
-  leaf     Boolean   @default(true)
-  position String    @default("0") // Path enumeration field (e.g., "1", "1.1", "1.1.1")
-  bookId   String
-  book     Book      @relation(fields: [bookId], references: [id])
-  messages Message[]
+enum PartType {
+  text
+  tool_invocation
+  reasoning
+}
 
-  @@index([position])
+model MessagePart {
+  id        String   @id @default(nanoid(16))
+  type      PartType
+  text      String
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([messageId])
 }
 
 model Tag {

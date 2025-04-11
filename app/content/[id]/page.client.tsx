@@ -18,20 +18,22 @@ import { useMessageStore } from "@/store/message";
 import { Button } from "@/components/ui/button";
 import { Check, ChevronLeft, ChevronsRight, Loader } from "lucide-react";
 import ChapterContent from "./components/chapter-content";
-import { createChapterMessage, saveChapterContent } from "@/app/api/chapter/actions";
+import { createChapterMessage, MessageWithParts, saveChapterContent } from "@/app/api/chapter/actions";
 import { useBookStore } from "@/store/book";
-import React from "react";
+import React, { startTransition } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@radix-ui/react-toast";
 import { useTranslation } from "react-i18next"
 import ChatLog from "@/components/Chat/chat-log";
+import { useChaperStore } from "@/store/chapter";
 
-export default function PageClient({ chat, messages: initialMessages }: { chat: Chat, messages: Message[] }) {
+export default function PageClient({ chat, messages: initialMessages }: { chat: Chat, messages: MessageWithParts[] }) {
 
   const { toast } = useToast()
   const router = useRouter();
   const { t } = useTranslation()
   const { message: activeMessage, setActiveMessage, setEditMessage } = useMessageStore()
+  const { chapter } = useChaperStore()
 
   const { messages, status, append, reload, setMessages } = useChat({
     api: "/api/chapter",
@@ -45,8 +47,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
     }
   });
 
-  const refresh = async (message: Pick<MessageClient, "id" | "content" | "model">, updateCurrentMessage: boolean = false) => {
-    // fliter message  and reload
+  const refresh = async (message: Pick<MessageClient, "id" | "content" | "model" | "chapterId">, updateCurrentMessage: boolean = false) => {
     const currentMessageIndex = messages.findIndex(msg => msg.id === message.id)
     let updateMessages = messages.slice(0, currentMessageIndex + 1)
     if (updateCurrentMessage) {
@@ -63,18 +64,19 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
         chatId: chat.id,
         book: chat,
         messages,
-        messageId: message.id
+        messageId: message.id,
+        chapterId: message.chapterId
       }
     })
     if (updateCurrentMessage) {
       updateMessage(message.id, message.content)
     }
-    removeChapterMessagesAfterMessageId(chat.currentChapterId!, message.id)
+    removeChapterMessagesAfterMessageId(chapter?.id!, message.id)
   };
 
   const onSave = async (message: Message) => {
 
-    const book = await saveChapterContent(chat?.currentChapterId!, message.content)
+    const book = await saveChapterContent(chapter?.id!, message.content)
     if (book?.step === "COMPLETE") {
       toast({
         title: t("congratulationsTitle"),
@@ -91,7 +93,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
 
   const appendMessage = async (chapterId: number, message: CreateMessage) => {
     const updateMessage = await createChapterMessage(chapterId, message) as Message
-    append(updateMessage, { body: { model: chat.model, book: chat } })
+    append(updateMessage, { body: { model: chat.model, book: chat, chapterId: chapter?.id } })
   };
 
   const { book, setActiveBook } = useBookStore()
@@ -147,7 +149,12 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
                         // 
                       }
                     },
-                    markdownEditable:true,
+                    // onFix: (newMessageText) => {
+                    //   startTransition(async () => {
+                    //     appendMessage(chapter?.id!, { content: newMessageText, role: 'user' });
+                    //   });
+                    // },
+                    markdownEditable: true,
                     action: (message => {
                       if (message.role === "user") {
                         return false
@@ -170,7 +177,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
                     if (message.id) {
                       refresh(message as MessageClient, true)
                     } else {
-                      appendMessage(chat.currentChapterId!, message as CreateMessage)
+                      appendMessage(chapter?.id!, message as CreateMessage)
                     }
                   }}
                   isStreaming={status === "streaming"}

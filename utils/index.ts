@@ -17,7 +17,7 @@ export const convertVercelMessageToLangChainMessage = (message: Message) => {
 
 export interface ChapterInput {
   title: string;
-  content: string;
+  description: string;
   position: string;
   children?: ChapterInput[];
 }
@@ -223,7 +223,7 @@ export function flattenChaptersWithPosition(
 
     const flatChapter = {
       title: chapter.title,
-      content: chapter.content,
+      description: chapter.description,
       position: currentPosition,
       leaf: !(chapter.children && chapter.children.length > 0)
     };

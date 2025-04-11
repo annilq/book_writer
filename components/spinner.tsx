@@ -22,4 +22,3 @@ export const Spinner = ({ className }: { className?: string }) => {
     </div>
   )
 }
-export default Spinner

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { getOutlinePrompt, getStandardBookPrompt } from "@/utils/prompts";
 import { ChapterInput, flattenChaptersWithPosition } from "@/utils";
 import { FormSchema } from "@/app/(main)/components/BookOutlineForm";
-import { Book } from "@prisma/client";
+import { Book, Prisma } from "@prisma/client";
 import { getI18n } from "@/utils/i18n/server";
 import { CoreMessage, CreateMessage, generateText, streamText } from "ai";
 import { getAIModel } from "@/utils/ai_providers";
@@ -104,7 +104,7 @@ export async function fetchBookOutline(
   const [provider, modelName] = model.split("/");
   const outlinePrompt = getOutlinePrompt(book);
 
-  const eventStream = await streamText({
+  const eventStream = streamText({
     model: getAIModel(provider, modelName),
     messages: [
       { role: 'system' as const, content: outlinePrompt },
@@ -115,6 +115,16 @@ export async function fetchBookOutline(
     //   parseBookOutline
     // },
     // maxSteps: 5
+    onStepFinish: (data) => {
+      // console.log(data);
+    },
+    onFinish(result) {
+      if (result.text) {
+        const content = result.text;
+        const parts = result.response.messages[0].content
+        createMessage(book.id!, { role: "assistant", content: content, parts } as CreateMessage);
+      }
+    },
   });
   return eventStream;
 }
@@ -139,6 +149,11 @@ export async function createMessage(
       content: message.content,
       position: maxPosition + 1,
       bookId,
+      parts: {
+        createMany: {
+          data: (message.parts ? message.parts : [{ type: "text", text: message.content }])! as unknown as Prisma.MessagePartCreateInput[]
+        }
+      }
     },
   });
 

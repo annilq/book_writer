@@ -1,23 +1,18 @@
 'use client';
 
-import Link from "next/link";
-import { User2 } from 'lucide-react';
-import { signIn, signOut, useSession } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { Button } from './ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export default function SignIn() {
   const session = useSession()
 
   if (session.data?.user) {
     return (
-      <Button asChild variant="secondary" size="default">
-        <Link
-          href="/books"
-        >
-          <User2 className="size-3" />
-          {session.data?.user.name}
-        </Link>
-      </Button>
+      <Avatar className="h-9 w-9">
+        <AvatarImage src={session.data?.user?.image!} alt={session.data?.user?.name!} />
+        <AvatarFallback>{session.data?.user?.name}</AvatarFallback>
+      </Avatar>
     )
   } else {
     return (

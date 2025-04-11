@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { CreateMessage, Message } from "ai";
 import { Button } from "@/components/ui/button";
 import { clearMessageOfChapter, getMessageOfChapter } from "@/app/api/chapter/actions";
+import { useChaperStore } from "@/store/chapter";
 
 export default function Outline({ book, isStreaming, handleSubmit, setMessages }: { book: Book & { chapters: Chapter[] }, isStreaming: boolean, setMessages: (message: Message[]) => void, handleSubmit: (chapterId: number, message: CreateMessage) => void }) {
 
@@ -18,7 +19,7 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
   }, [book?.chapters])
 
   const { t } = useTranslation()
-
+  const { setChapter } = useChaperStore()
   return (
     !!treeData.length ? (
       <Tree
@@ -37,6 +38,7 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
             if (isCurrentChapter || chapterId < book.currentChapterId!) {
               const messages = await getMessageOfChapter(chapterId)
               setMessages(messages)
+              setChapter(node.data as unknown as Chapter)
             } else {
               setMessages([])
             }
@@ -53,49 +55,23 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
           return !node.children?.length && (
             <>
               {isCurrentChapter || chapterId < book.currentChapterId! ? (
-                isCurrentChapter && book.step !== "COMPLETE" ? (
-                  <Button
-                    onClick={async e => {
-                      e.stopPropagation()
-                      await clearMessageOfChapter(chapterId)
-                      setMessages([])
-                      handleSubmit(chapterId, { role: "user", content: node.data.title + node.data.content })
-                    }}
-                    className={cn("rounded-full h-6 w-6 p-0 hover:scale-105", node.isSelected && " bg-card text-card-foreground hover:bg-card hover:text-card-foreground")}
-                  >
-                    <Play className="h-4 w-4" />
-                  </Button>
-                ) : <AlertDialog>
-                  <AlertDialogTrigger asChild onClick={e => e.stopPropagation()}>
-                    <Button className={cn("rounded-full h-6 w-6 p-0 hover:scale-105", node.isSelected && "bg-card text-card-foreground hover:bg-card hover:text-card-foreground")}>
-                      <RefreshCw className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{t("booklineConfirmTip")}</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {t("booklineConfirmContent")}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel onClick={e => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={async (e) => {
-                          e.stopPropagation()
-                          setMessages([])
-                          handleSubmit(chapterId, { role: "user", content: node.data.title + node.data.content })
-                        }}>
-                        {t("save")}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>) : false}
+                <Button
+                  onClick={async e => {
+                    e.stopPropagation()
+                    await clearMessageOfChapter(chapterId)
+                    setMessages([])
+                    handleSubmit(chapterId, { role: "user", content: node.data.title + node.data.description })
+                    setChapter(node.data as unknown as Chapter)
+                  }}
+                  className={cn("rounded-full h-6 w-6 p-0 hover:scale-105", node.isSelected && " bg-card text-card-foreground hover:bg-card hover:text-card-foreground")}
+                >
+                  <Play className="h-4 w-4" />
+                </Button>
+              ) : false}
             </>
-
           )
         }}
-        className="w-1/5 bg-muted overflow-y-auto text-sm px-2"
+        className="w-1/5 bg-secondary overflow-y-auto text-sm px-2"
       />
     ) : false
   )

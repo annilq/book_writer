@@ -3,7 +3,7 @@
 import { produce } from "immer";
 import { CreateMessage, Message, useChat } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { startTransition } from "react";
 
 import { createMessage, removeMessagesAfterMessageId, updateMessage } from "@/app/api/chat/actions";
 
@@ -23,7 +23,7 @@ import { useBookStore } from "@/store/book";
 import { AssistantText } from "./components/assistant-text-render";
 
 export default function PageClient({ chat }: { chat: Chat }) {
-  
+
   const router = useRouter();
 
   const { message: activeMessage, setActiveMessage, setEditMessage } = useMessageStore()
@@ -45,9 +45,6 @@ export default function PageClient({ chat }: { chat: Chat }) {
       }
     },
     async onFinish(message, options) {
-      console.log(message);
-
-      await createMessage(chat.id, message) as Message
       router.refresh();
     },
     onError: (e) => {
@@ -93,6 +90,10 @@ export default function PageClient({ chat }: { chat: Chat }) {
   React.useEffect(() => {
     setActiveBook(chat)
   }, [chat.id, setActiveBook])
+
+  React.useEffect(() => {
+    setActiveMessage()
+  }, [chat.id, setActiveMessage])
 
   if (!book) {
     return
@@ -153,6 +154,13 @@ export default function PageClient({ chat }: { chat: Chat }) {
             onMessageChange={setActiveMessage}
             isShowing={!!activeMessage}
             message={activeMessage as Message}
+            onRequestFix={(error: string) => {
+              startTransition(async () => {
+                let newMessageText = `The outline json can't be parse. Can you fix it? Here's the error:\n\n`;
+                newMessageText += error.trimStart();
+                appendMessage({ content: newMessageText, role: 'user' });
+              });
+            }}
           />
         </div>
       </main>

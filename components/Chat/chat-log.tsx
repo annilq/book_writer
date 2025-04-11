@@ -8,14 +8,15 @@ import { CopyCheck, Copy, FilePenLine, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RefreashMessage } from "@/components/Refreash";
 import { UIMessage } from "ai";
-import { ForwardRefEditor } from "@/components/Editor/ForwardRefEditor";
 import { Message } from "@prisma/client";
+import Markdown from 'react-markdown'
 
 export interface ToolbarActions {
   onRefresh: (message: Pick<Message, "id" | "content" | "model">) => void
   onEdit?: (message: UIMessage | Message) => void
   onSave?: (message: Message | Message) => void
   action?: (message: UIMessage | Message) => React.ReactNode
+  onFix?: (message: string) => void
   markdownEditable?: boolean
 }
 
@@ -95,7 +96,7 @@ export function AssistantMessage({
               />)
             break;
           case "reasoning":
-            <pre className="part-reasoning" key={i}>{part.reasoning}</pre>
+            contentCom = <Reasoning reasoning={part.reasoning || part.text} />
             break;
           case "tool-invocation":
             const { toolName, toolCallId, state } = part.toolInvocation;
@@ -105,7 +106,6 @@ export function AssistantMessage({
                   message={message}
                   messages={messages}
                   data={part.toolInvocation.result}
-                  toolConfig={toolConfig}
                 />)
             }
             break;
@@ -137,7 +137,7 @@ export const TextRender = ({ data, message, toolConfig }: {
 
   return (
     <>
-      <ForwardRefEditor markdown={data} readOnly={!editAble} key={data} />
+      <Markdown>{data}</Markdown>
       {toolConfig ? (
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => clipboard.copy(data)}>
@@ -169,9 +169,30 @@ export const TextRender = ({ data, message, toolConfig }: {
               <FilePenLine className="h-4 w-4" />
             </Button>)}
           <RefreashMessage refresh={(model) => toolConfig.onRefresh({ ...message, model })} />
+          {/* <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              // toolConfig?.onFix?.()
+            }
+            }>
+            <Hammer className="h-4 w-4 text-destructive" />
+          </Button> */}
           {toolConfig.action?.(message)}
         </div>
       ) : false}
     </>
   );
 };
+
+
+export const Reasoning = ({ reasoning }: { reasoning: string }) => {
+  return (
+    <div className="mt-1">
+      <div className="bg-muted/50 rounded-md p-3 text-xs font-mono">
+        <div className="text-xs text-muted-foreground mb-1 font-sans">Reasoning:</div>
+        <pre className="whitespace-pre-wrap">{reasoning}</pre>
+      </div>
+    </div>
+  )
+}

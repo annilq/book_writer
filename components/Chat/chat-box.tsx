@@ -1,6 +1,6 @@
 "use client";
 
-import Spinner from "@/components/Spinner";
+import { Spinner } from "@/components/spinner";
 import { useEffect, useRef } from "react";
 import { CreateMessage } from "ai";
 import { ArrowRight, Pen, X } from "lucide-react";
@@ -56,7 +56,7 @@ export default function ChatBox({
 
   return (
     <div className="mb-4 flex shrink-0 px-4">
-      <div className="relative w-full rounded-2xl overflow-hidden border border-gray-300 bg-muted p-2">
+      <div className="relative w-full rounded-2xl overflow-hidden border border-gray-300 bg-secondary p-2">
         {message ? (
           <div className="font-bold p-2 text-xs bg-background rounded mb-2 flex justify-between items-center">
             <div className="flex  items-center gap-2"><Pen className="h-4 w-4" />{t("editTip")}</div>

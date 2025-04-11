@@ -1,12 +1,12 @@
 "use client";
 
 import { Chapter } from "@prisma/client";
-import { ForwardRefEditor } from "@/components/Editor/ForwardRefEditor";
+import Markdown from 'react-markdown'
 
 export default function Content({ chapter }: { chapter: Chapter }) {
   return (
     <div className="px-4" id={`chapter-${chapter.id}`}>
-      <ForwardRefEditor markdown={chapter.content} readOnly />
+      <Markdown>{chapter.content}</Markdown>
     </div>
   );
 }

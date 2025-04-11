@@ -103,7 +103,7 @@ export function getOutlinePrompt(book: Book) {
   const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
     id: z.string().min(5),
     title: z.string().min(3),
-    content: z.string().min(20),
+    description: z.string().min(20),
     children: z.array(ChapterModel)
   }));
 
