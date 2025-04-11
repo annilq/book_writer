@@ -3,13 +3,14 @@
 import { Fragment, useState } from "react";
 import { StickToBottom } from "use-stick-to-bottom";
 import { useClipboard } from 'use-clipboard-copy';
-import { CopyCheck, Copy, FilePenLine, Save } from "lucide-react";
+import { CopyCheck, Copy, FilePenLine, Save, ChevronDown, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { RefreashMessage } from "@/components/Refreash";
 import { UIMessage } from "ai";
 import { Message } from "@prisma/client";
 import Markdown from 'react-markdown'
+import { cn } from "@/utils";
 
 export interface ToolbarActions {
   onRefresh: (message: Pick<Message, "id" | "content" | "model">) => void
@@ -187,11 +188,17 @@ export const TextRender = ({ data, message, toolConfig }: {
 
 
 export const Reasoning = ({ reasoning }: { reasoning: string }) => {
+  const [visible, setVisible] = useState(false)
   return (
     <div className="mt-1">
       <div className="bg-muted/50 rounded-md p-3 text-xs font-mono">
-        <div className="text-xs text-muted-foreground mb-1 font-sans">Reasoning:</div>
-        <pre className="whitespace-pre-wrap">{reasoning}</pre>
+        <div
+          className="text-xs text-muted-foreground font-sans flex justify-between items-center"
+          onClick={() => setVisible(!visible)}
+        >Reasoning:
+          {visible ? <ChevronDown className="w-4 h-4 cursor-pointer" /> : <ChevronRight className="w-4 h-4 cursor-pointer" />}
+        </div>
+        <pre className={cn("whitespace-pre-wrap mt-2", !visible && "hidden")}>{reasoning}</pre>
       </div>
     </div>
   )

@@ -82,7 +82,14 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
         title: t("congratulationsTitle"),
         description: t("congratulationsDesc"),
         action: (
-          <ToastAction altText="Goto read book">Okay!</ToastAction>
+          <ToastAction
+            altText="Goto read book"
+            onClick={() => {
+              router.replace(`/books/${chat.id}`)
+            }}
+          >
+            Okay!
+          </ToastAction>
         ),
       })
     } else {
