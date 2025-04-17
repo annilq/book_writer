@@ -31,6 +31,7 @@ import useSWR from "swr"
 import { Model } from "@/app/api/model/models"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Markdown from 'react-markdown'
+import remarkGfm from "remark-gfm"
 
 export function SettingsModal({ book }: { book: Book }) {
   const [open, setOpen] = useState(false)
@@ -161,7 +162,7 @@ export function SettingsModal({ book }: { book: Book }) {
             </Form>
           </TabsContent>
           <TabsContent value="prompt">
-            <Markdown >{book.prompt}</Markdown>
+            <Markdown remarkPlugins={[remarkGfm]} >{book.prompt}</Markdown>
           </TabsContent>
         </Tabs>
       </SheetContent>

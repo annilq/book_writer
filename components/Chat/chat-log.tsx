@@ -4,6 +4,7 @@ import { Fragment, useState } from "react";
 import { StickToBottom } from "use-stick-to-bottom";
 import { useClipboard } from 'use-clipboard-copy';
 import { CopyCheck, Copy, FilePenLine, Save, ChevronDown, ChevronRight } from "lucide-react";
+import remarkGfm from 'remark-gfm'
 
 import { Button } from "@/components/ui/button";
 import { RefreashMessage } from "@/components/Refreash";
@@ -138,7 +139,7 @@ export const TextRender = ({ data, message, toolConfig }: {
 
   return (
     <>
-      <Markdown>{data}</Markdown>
+      <Markdown remarkPlugins={[remarkGfm]}>{data}</Markdown>
       {toolConfig ? (
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => clipboard.copy(data)}>
