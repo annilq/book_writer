@@ -38,12 +38,12 @@ export default function SidebarPreview({ onRequestFix }: { onRequestFix: (messag
         const newdata = JSON.parse(app.code)
         setTreeData(newdata)
         setError()
-      } catch (e: Error) {
+      } catch (e: any) {
         setError(e.message)
       }
 
     }
-  }, [message])
+  }, [message, setError])
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -53,9 +53,18 @@ export default function SidebarPreview({ onRequestFix }: { onRequestFix: (messag
     },
   })
 
+  const mapTreeDataToChapterInput = (data: TreeData[]): any[] => {
+    return data.map(node => ({
+      title: node.title,
+      description: node.description,
+      position: node.id,
+      children: node.children ? mapTreeDataToChapterInput(node.children) : undefined
+    }))
+  }
+
   async function onSubmit(values: z.infer<typeof FormSchema>) {
     const updateData = updateNode(treeData, { ...chapter!, ...values })
-    const content = getOutlineMessage(updateData)
+    const content = getOutlineMessage(mapTreeDataToChapterInput(updateData))
     const newMessage = await updateMessage(message!.id, content)
     if (newMessage) {
       setActiveMessage(newMessage)
@@ -73,6 +82,7 @@ export default function SidebarPreview({ onRequestFix }: { onRequestFix: (messag
             const updateData = moveNode(treeData, data)
             setTreeData(updateData)
           }}
+          renderSuffix={() => null}
         />
       ) : false}
       <div className="flex-1">

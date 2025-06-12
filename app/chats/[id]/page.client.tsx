@@ -89,7 +89,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
 
   React.useEffect(() => {
     setActiveBook(chat)
-  }, [chat.id, setActiveBook])
+  }, [chat, chat.id, setActiveBook])
 
   React.useEffect(() => {
     setActiveMessage()
@@ -150,10 +150,10 @@ export default function PageClient({ chat }: { chat: Chat }) {
             </div>
           </div>
           <OutlineViewerLayout
-            chat={{ ...chat, messages }}
+            chat={{ ...chat, messages: chat.messages }}
             onMessageChange={setActiveMessage}
             isShowing={!!activeMessage}
-            message={activeMessage as Message}
+            message={activeMessage as any}
             onRequestFix={(error: string) => {
               startTransition(async () => {
                 let newMessageText = `The outline json can't be parse. Can you fix it? Here's the error:\n\n`;

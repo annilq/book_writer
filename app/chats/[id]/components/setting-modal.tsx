@@ -33,7 +33,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Markdown from 'react-markdown'
 import remarkGfm from "remark-gfm"
 
-export function SettingsModal({ book }: { book: Book }) {
+type BookWithCategories = Book & {
+  categories: Category[]
+}
+
+export function SettingsModal({ book }: { book: BookWithCategories }) {
   const [open, setOpen] = useState(false)
 
   const { t, i18n } = useTranslation()
@@ -103,7 +107,7 @@ export function SettingsModal({ book }: { book: Book }) {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {categories.map(cate => <SelectItem key={cate.id} value={cate.name}>{t(cate.name)}</SelectItem>)}
+                              {categories?.map(cate => <SelectItem key={cate.id} value={cate.name}>{t(cate.name)}</SelectItem>)}
                             </SelectContent>
                           </Select>
                         </FormControl>
