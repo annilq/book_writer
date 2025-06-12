@@ -3,7 +3,7 @@
 import { ChevronLeftIcon, ChevronRightIcon, SaveIcon } from "lucide-react";
 import { cn, extractFirstCodeBlock } from "@/utils";
 import { Button } from "@/components/ui/button";
-import { Chat, Message } from "../../../books/[id]/page";
+import { Chat, Message } from "../page";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { useTranslation } from "react-i18next"
 import { createBookOutline } from "@/app/api/chat/actions";
@@ -24,10 +24,10 @@ export default function ChapterContent({
 
   const router = useRouter();
 
-  const assistantMessages = chat.messages.filter((m) => m.role === "assistant");
+  const assistantMessages = chat.messages.filter((m: Message) => m.role === "assistant");
   const currentVersion =
     message
-      ? assistantMessages.map((m) => m.id).indexOf(message.id)
+      ? assistantMessages.map((m: Message) => m.id).indexOf(message.id)
       : 1;
   const previousMessage =
     currentVersion !== 0 ? assistantMessages.at(currentVersion - 1) : undefined;
