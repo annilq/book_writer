@@ -98,7 +98,7 @@ export function AssistantMessage({
               />)
             break;
           case "reasoning":
-            contentCom = <Reasoning reasoning={part.reasoning || part.text} />
+            contentCom = <Reasoning reasoning={part.reasoning || (part as any).text} />
             break;
           case "tool-invocation":
             const { toolName, toolCallId, state } = part.toolInvocation;
