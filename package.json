@@ -1,5 +1,5 @@
 {
-  "name": "langchain-nextjs-template",
+  "name": "book_writer",
   "version": "0.0.0",
   "private": true,
   "packageManager": "yarn@3.5.1",

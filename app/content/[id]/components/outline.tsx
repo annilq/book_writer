@@ -15,7 +15,11 @@ import { useChaperStore } from "@/store/chapter";
 export default function Outline({ book, isStreaming, handleSubmit, setMessages }: { book: Book & { chapters: Chapter[] }, isStreaming: boolean, setMessages: (message: Message[]) => void, handleSubmit: (chapterId: number, message: CreateMessage) => void }) {
 
   const treeData = React.useMemo(() => {
-    return arrayToTree(book?.chapters)
+    return arrayToTree(book?.chapters).map(chapter => ({
+      ...chapter,
+      id: chapter.id.toString(),
+      content: chapter.content || ""
+    }))
   }, [book?.chapters])
 
   const { t } = useTranslation()
@@ -37,7 +41,11 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
             const isCurrentChapter = chapterId === book.currentChapterId
             if (isCurrentChapter || chapterId < book.currentChapterId!) {
               const messages = await getMessageOfChapter(chapterId)
-              setMessages(messages)
+              setMessages(messages.map(msg => ({
+                id: msg.id,
+                role: msg.role as "data" | "system" | "user" | "assistant",
+                content: msg.content
+              })))
               setChapter(node.data as unknown as Chapter)
             } else {
               setMessages([])
