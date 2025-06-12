@@ -197,10 +197,10 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
             </div>
             {!!activeMessage && (
               <ChapterContent
-                chat={{ ...chat, messages }}
+                chat={{ ...chat, messages:(messages as unknown as MessageClient[])  }}
                 onMessageChange={setActiveMessage}
                 isShowing={!!activeMessage}
-                message={activeMessage as Message}
+                message={activeMessage as MessageClient}
               />
             )}
           </div>
