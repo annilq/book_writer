@@ -9,7 +9,11 @@ import { Chapter } from "@prisma/client";
 export default function Outline({ book,onSelect }: { book: BookWithChapters,onSelect: (node: Chapter) => void  }) {
 
   const treeData = React.useMemo(() => {
-    return arrayToTree(book?.chapters)
+    return arrayToTree(book?.chapters).map(chapter => ({
+      ...chapter,
+      id: chapter.id.toString(),
+      content: chapter.content || ""
+    }))
   }, [book?.chapters])
 
   return (
@@ -22,9 +26,10 @@ export default function Outline({ book,onSelect }: { book: BookWithChapters,onSe
         }}
         onSelect={([node]) => {
           if (node) {
-            onSelect(node.data)
+            onSelect(node.data as unknown as Chapter)
           }
         }}
+        renderSuffix={() => null}
       />
     ) : false
   )

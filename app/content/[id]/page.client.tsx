@@ -38,7 +38,11 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
   const { messages, status, append, reload, setMessages } = useChat({
     api: "/api/chapter",
     id: chat.id,
-    initialMessages,
+    initialMessages: initialMessages.map(msg => ({
+      id: msg.id,
+      role: msg.role as "data" | "system" | "user" | "assistant",
+      content: msg.content
+    })),
     async onFinish(message, options) {
       router.refresh();
     },
@@ -47,7 +51,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
     }
   });
 
-  const refresh = async (message: Pick<MessageClient, "id" | "content" | "model" | "chapterId">, updateCurrentMessage: boolean = false) => {
+  const refresh = async (message: Pick<MessageClient, "id" | "content" | "model">, updateCurrentMessage: boolean = false) => {
     const currentMessageIndex = messages.findIndex(msg => msg.id === message.id)
     let updateMessages = messages.slice(0, currentMessageIndex + 1)
     if (updateCurrentMessage) {
@@ -65,7 +69,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
         book: chat,
         messages,
         messageId: message.id,
-        chapterId: message.chapterId
+        chapterId: chapter?.id
       }
     })
     if (updateCurrentMessage) {
@@ -74,9 +78,9 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
     removeChapterMessagesAfterMessageId(chapter?.id!, message.id)
   };
 
-  const onSave = async (message: Message) => {
-
-    const book = await saveChapterContent(chapter?.id!, message.content)
+  const onSave = async (message: Message | MessageClient) => {
+    const content = message.content;
+    const book = await saveChapterContent(chapter?.id!, content)
     if (book?.step === "COMPLETE") {
       toast({
         title: t("congratulationsTitle"),
@@ -107,7 +111,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
 
   React.useEffect(() => {
     setActiveBook(chat)
-  }, [chat.id, setActiveBook])
+  }, [chat, chat.id, setActiveBook])
 
   if (!book) {
     return
@@ -193,10 +197,10 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
             </div>
             {!!activeMessage && (
               <ChapterContent
-                chat={{ ...chat, messages }}
+                chat={{ ...chat, messages:(messages as unknown as MessageClient[])  }}
                 onMessageChange={setActiveMessage}
                 isShowing={!!activeMessage}
-                message={activeMessage as Message}
+                message={activeMessage as MessageClient}
               />
             )}
           </div>

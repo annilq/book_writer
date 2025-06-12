@@ -103,7 +103,11 @@ export function BookOutlineForm() {
     setLoading(false)
 
     if (chat) {
-      setMessages(chat.messages || [])
+      setMessages((chat.messages || []).map(msg => ({
+        id: msg.id,
+        role: msg.role as "data" | "system" | "user" | "assistant",
+        content: msg.content
+      })))
       reload({
         body: {
           chat,
@@ -166,7 +170,7 @@ export function BookOutlineForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {categories.map(cate => <SelectItem key={cate.id} value={cate.name}>{t(cate.name)}</SelectItem>)}
+                        {categories?.map(cate => <SelectItem key={cate.id} value={cate.name}>{t(cate.name)}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </FormControl>

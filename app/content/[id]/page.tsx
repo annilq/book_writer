@@ -14,7 +14,7 @@ export default async function Page({
 
   if (!book) notFound();
 
-  return <PageClient chat={book} messages={messages} />;
+  return <PageClient chat={book} messages={messages as any} />;
 }
 
 export type Chat = NonNullable<Awaited<ReturnType<typeof getBookById>>>;
