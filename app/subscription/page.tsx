@@ -12,8 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Check, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -40,8 +38,6 @@ export default function SubscriptionPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
-  const [redeemCode, setRedeemCode] = useState("");
-  const [redeeming, setRedeeming] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -71,33 +67,6 @@ export default function SubscriptionPage() {
       console.error("Error fetching data", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleRedeem = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!redeemCode) return;
-
-    try {
-      setRedeeming(true);
-      const res = await fetch("/api/subscription/redeem", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: redeemCode }),
-      });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || "Redemption failed");
-      }
-
-      toast.success("Code redeemed successfully!");
-      setRedeemCode("");
-      await fetchData(); // Refresh status
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
-      setRedeeming(false);
     }
   };
 
@@ -148,74 +117,41 @@ export default function SubscriptionPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-        {/* Plans */}
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {plans.map((plan) => (
-            <Card key={plan.id} className="flex flex-col border-2 hover:border-blue-500 transition-colors">
-                <CardHeader>
-                <CardTitle>{plan.name}</CardTitle>
-                <CardDescription>{plan.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1">
-                <div className="text-3xl font-bold mb-4">
-                    ${Number(plan.price).toFixed(2)}
-                    <span className="text-base font-normal text-muted-foreground">
-                    / {plan.duration} days
-                    </span>
-                </div>
-                <ul className="space-y-2">
-                    {plan.features?.split(",").map((feature, i) => (
-                    <li key={i} className="flex items-center text-sm">
-                        <Check className="w-4 h-4 mr-2 text-green-500" />
-                        {feature.trim()}
-                    </li>
-                    ))}
-                </ul>
-                </CardContent>
-                <CardFooter>
-                <Button className="w-full">
-                    {Number(plan.price) === 0 ? "Get Started" : "Subscribe"}
-                </Button>
-                </CardFooter>
-            </Card>
-            ))}
-            {plans.length === 0 && (
-                <div className="col-span-2 text-center text-muted-foreground p-8 border border-dashed rounded-lg">
-                    No plans available at the moment.
-                </div>
-            )}
-        </div>
-
-        {/* Redemption Code */}
-        <div className="lg:col-span-1">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Redeem Code</CardTitle>
-                    <CardDescription>
-                        Have a promo code? Enter it below to activate your subscription.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleRedeem} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="code">Enter Code</Label>
-                            <Input 
-                                id="code" 
-                                placeholder="XXXX-XXXX-XXXX" 
-                                value={redeemCode}
-                                onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
-                                required
-                            />
-                        </div>
-                        <Button type="submit" className="w-full" disabled={redeeming || !redeemCode}>
-                            {redeeming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Redeem
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        {plans.map((plan) => (
+          <Card key={plan.id} className="flex flex-col border-2 hover:border-blue-500 transition-colors">
+            <CardHeader>
+              <CardTitle>{plan.name}</CardTitle>
+              <CardDescription>{plan.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1">
+              <div className="text-3xl font-bold mb-4">
+                ${Number(plan.price).toFixed(2)}
+                <span className="text-base font-normal text-muted-foreground">
+                  / {plan.duration} days
+                </span>
+              </div>
+              <ul className="space-y-2">
+                {plan.features?.split(",").map((feature, i) => (
+                  <li key={i} className="flex items-center text-sm">
+                    <Check className="w-4 h-4 mr-2 text-green-500" />
+                    {feature.trim()}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Button className="w-full">
+                {Number(plan.price) === 0 ? "Get Started" : "Subscribe"}
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+        {plans.length === 0 && (
+          <div className="col-span-full text-center text-muted-foreground p-8 border border-dashed rounded-lg">
+            No plans available at the moment.
+          </div>
+        )}
       </div>
     </div>
   );
