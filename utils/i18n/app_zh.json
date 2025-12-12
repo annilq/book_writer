@@ -52,5 +52,15 @@
   "booklineConfirmTip": "是否使用此版本大纲作为此书大纲？",
   "booklineConfirmContent": "此操作不可逆，这会使用此大纲从新开始创建书籍内容。",
   "congratulationsTitle": "恭喜!",
-  "congratulationsDesc": "恭喜完成本书的创作，去看一看吧!"
+  "congratulationsDesc": "恭喜完成本书的创作，去看一看吧!",
+  "profile": "个人资料",
+  "displayName": "显示名称",
+  "email": "邮箱",
+  "userId": "用户ID",
+  "saveChanges": "保存修改",
+  "saving": "保存中...",
+  "role": "角色",
+  "status": "状态",
+  "profileUpdated": "个人资料已更新",
+  "errorUpdatingProfile": "更新个人资料失败"
 }

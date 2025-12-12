@@ -51,5 +51,15 @@
   "booklineConfirmTip": "Use this version Outline as Book Outline?",
   "booklineConfirmContent": "This action cannot be undone,It will use this outline to start creating the book content from scratch",
   "congratulationsTitle": "Congratulations!",
-  "congratulationsDesc": "Congratulations on completing the creation of this book! Go take a look!"
+  "congratulationsDesc": "Congratulations on completing the creation of this book! Go take a look!",
+  "profile": "Profile",
+  "displayName": "Display Name",
+  "email": "Email",
+  "userId": "User ID",
+  "saveChanges": "Save Changes",
+  "saving": "Saving...",
+  "role": "Role",
+  "status": "Status",
+  "profileUpdated": "Profile updated",
+  "errorUpdatingProfile": "Error updating profile"
 }

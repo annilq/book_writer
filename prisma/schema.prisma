@@ -20,6 +20,8 @@ model User {
   Authenticator Authenticator[]
   books         Book[]          @relation("BookAuthors")
   tags          Tag[]           @relation("UserTags")
+  role          Role            @default(USER)
+  status        UserStatus      @default(ACTIVE)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 }
@@ -120,6 +122,16 @@ model Book {
   step             STEP       @default(INIT)
   isPublic         Boolean    @default(false)
   createdAt        DateTime   @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BANNED
 }
 
 model Chapter {
