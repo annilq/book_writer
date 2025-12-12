@@ -24,6 +24,11 @@ model User {
   status        UserStatus      @default(ACTIVE)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  
+  // Subscription relations
+  subscription  UserSubscription?
+  orders        SubscriptionOrder[]
+  redeemedCodes RedemptionCode[]
 }
 
 model Account {
@@ -211,3 +216,72 @@ model Category {
   description String?
   books       Book[]  @relation("BookCategories")
 }
+
+// Subscription System
+
+model SubscriptionPlan {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Decimal  @db.Decimal(10, 2)
+  duration    Int      // Duration in days
+  features    String?  // JSON string or comma-separated list of features
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  codes       RedemptionCode[]
+  subscriptions UserSubscription[]
+  orders      SubscriptionOrder[]
+}
+
+model RedemptionCode {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  planId       String
+  plan         SubscriptionPlan @relation(fields: [planId], references: [id])
+  isUsed       Boolean  @default(false)
+  usedByUserId String?
+  usedByUser   User?    @relation(fields: [usedByUserId], references: [id])
+  usedAt       DateTime?
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model UserSubscription {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  planId    String
+  plan      SubscriptionPlan @relation(fields: [planId], references: [id])
+  startDate DateTime @default(now())
+  endDate   DateTime
+  status    SubscriptionStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model SubscriptionOrder {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  planId        String
+  plan          SubscriptionPlan @relation(fields: [planId], references: [id])
+  amount        Decimal  @db.Decimal(10, 2)
+  status        OrderStatus @default(PENDING)
+  paymentMethod String   // "REDEMPTION_CODE", "STRIPE", etc.
+  createdAt     DateTime @default(now())
+}
+

@@ -36,7 +36,15 @@ export default function Header({ className, children = false }: { className?: st
       <div className="flex justify-between gap-4 px-4 py-2">
         <nav className="flex gap-1 flex-col md:flex-row">
           <ActiveLink href="/">{t("home")}</ActiveLink>
-          {session.data?.user ? <ActiveLink href="/books">{t("bookshelf")}</ActiveLink> : false}
+          {session.data?.user ? (
+            <>
+              <ActiveLink href="/books">{t("bookshelf")}</ActiveLink>
+              <ActiveLink href="/subscription">Subscription</ActiveLink>
+              {session.data.user.role === "ADMIN" && (
+                <ActiveLink href="/admin/subscriptions/plans">Admin</ActiveLink>
+              )}
+            </>
+          ) : false}
           <ActiveLink href="/explore">{t("explore")}</ActiveLink>
         </nav>
         {children}
