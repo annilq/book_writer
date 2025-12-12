@@ -8,9 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from "react-i18next";
-import type { User } from "@prisma/client";
+import type { User, UserSubscription, SubscriptionPlan } from "@prisma/client";
 
-export function ProfileForm({ user }: { user: Partial<User> }) {
+type SubscriptionWithPlan = UserSubscription & { 
+  plan: Omit<SubscriptionPlan, "price"> & { price: string | number } 
+};
+
+export function ProfileForm({ user, subscription }: { user: Partial<User>; subscription?: SubscriptionWithPlan | null }) {
   const { t } = useTranslation();
   const [name, setName] = useState(user.name || "");
   const [loading, setLoading] = useState(false);
@@ -44,13 +48,18 @@ export function ProfileForm({ user }: { user: Partial<User> }) {
           <div>
             <h2 className="text-xl font-semibold">{user.name}</h2>
             <p className="text-gray-500">{user.email}</p>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-2 flex gap-2 flex-wrap">
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                     {user.role || 'USER'}
                 </span>
                 <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
                     {user.status || 'ACTIVE'}
                 </span>
+                {subscription && subscription.status === 'ACTIVE' && (
+                    <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full border border-purple-200">
+                        {subscription.plan.name} • {new Date(subscription.endDate).toLocaleDateString()}
+                    </span>
+                )}
             </div>
           </div>
         </div>

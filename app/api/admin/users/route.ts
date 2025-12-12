@@ -20,6 +20,11 @@ export async function GET() {
         role: true,
         status: true,
         createdAt: true,
+        subscription: {
+          include: {
+            plan: true
+          }
+        }
     }
   });
 
