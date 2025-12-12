@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import Header from "@/components/Header";
 
 export default async function AdminLayout({
   children,
@@ -13,5 +14,10 @@ export default async function AdminLayout({
     redirect("/");
   }
 
-  return <>{children}</>;
+  return (
+    <div className="flex flex-col h-screen bg-background">
+      <Header className="border-b" />
+      {children}
+    </div>
+  );
 }

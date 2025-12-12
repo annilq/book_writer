@@ -38,13 +38,6 @@ export default function Header({ className, children = false }: { className?: st
           <ActiveLink href="/">{t("home")}</ActiveLink>
           {session.data?.user ? <ActiveLink href="/books">{t("bookshelf")}</ActiveLink> : false}
           <ActiveLink href="/explore">{t("explore")}</ActiveLink>
-          {session.data?.user && (
-            <ActiveLink href="/profile">{t("Profile") || "Profile"}</ActiveLink>
-          )}
-          {/* @ts-ignore */}
-          {session.data?.user?.role === "ADMIN" && (
-            <ActiveLink href="/admin/users">Admin</ActiveLink>
-          )}
         </nav>
         {children}
         <div className="flex justify-center gap-4">
