@@ -74,7 +74,7 @@ export function SubscriptionPlans() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Link href="/subscription" className="w-full">
+              <Link href="/user/subscription" className="w-full">
                 <Button className="w-full bg-white text-purple-600 hover:bg-gray-100">
                   {Number(plan.price) === 0 ? "Get Started" : "Subscribe Now"}
                 </Button>
