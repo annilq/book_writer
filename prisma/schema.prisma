@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -284,4 +283,3 @@ model SubscriptionOrder {
   paymentMethod String   // "REDEMPTION_CODE", "STRIPE", etc.
   createdAt     DateTime @default(now())
 }
-
