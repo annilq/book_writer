@@ -65,7 +65,7 @@ export function BookOutlineCard() {
     <Card className="mx-auto xs:w-full lg:w-[560px] min-w-fit mt-8 relative" >
       <CardHeader>
         <CardTitle className="text-3xl font-bold text-center">{t("appName")}</CardTitle>
-        <CardDescription className="font-bold text-center mb-8">{t("appTip")}</CardDescription>
+        <CardDescription className="font-bold text-center">{t("appTip")}</CardDescription>
       </CardHeader>
       <BookOutlineForm />
     </Card>
