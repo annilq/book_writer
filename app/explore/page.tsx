@@ -15,7 +15,7 @@ export default function BookManager() {
   return (
     <div className="flex flex-col gap-4 h-screen bg-background">
       <Header className="border-b" />
-      <div className="flex flex-1 flex-col gap-4 w-[1000px] mx-auto">
+      <div className="flex flex-1 flex-col gap-4 px-4">
         <div className="flex items-center justify-between">
           <div className="w-96">
             <div className="relative">
