@@ -961,6 +961,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fidm/asn1@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@fidm/asn1@npm:1.0.4"
+  checksum: cc228cb7d396b2c038311da799bc32c52157772628ca1a25de25d5897420738d96dd72a5effa2241f438a99fc5cc998e1a9240b4ee746b45d474ef879352309a
+  languageName: node
+  linkType: hard
+
+"@fidm/x509@npm:1.2.1":
+  version: 1.2.1
+  resolution: "@fidm/x509@npm:1.2.1"
+  dependencies:
+    "@fidm/asn1": ^1.0.4
+    tweetnacl: ^1.0.1
+  checksum: e38d75111928974e886c5bf438c31165d3e177f96b5f84aa02d5d38cc6e4ab6bced6b590cb438f0ab8f7a2e14d68dea24fc57115b064dda4b0a96da659a86758
+  languageName: node
+  linkType: hard
+
 "@floating-ui/core@npm:^1.7.3":
   version: 1.7.3
   resolution: "@floating-ui/core@npm:1.7.3"
@@ -2521,6 +2538,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@noble/hashes@npm:^1.1.5":
+  version: 1.8.0
+  resolution: "@noble/hashes@npm:1.8.0"
+  checksum: c94e98b941963676feaba62475b1ccfa8341e3f572adbb3b684ee38b658df44100187fa0ef4220da580b13f8d27e87d5492623c8a02ecc61f23fb9960c7918f5
+  languageName: node
+  linkType: hard
+
 "@nodelib/fs.scandir@npm:2.1.5":
   version: 2.1.5
   resolution: "@nodelib/fs.scandir@npm:2.1.5"
@@ -2595,6 +2619,15 @@ __metadata:
   version: 1.2.1
   resolution: "@panva/hkdf@npm:1.2.1"
   checksum: a4a9d1812f88f02bc163b365524bbaa5239cc4711e5e7be1bda68dabae1c896cf1cd12520949b0925a6910733d1afcb25ab51fd3cf06f0f69aee988fffebf56e
+  languageName: node
+  linkType: hard
+
+"@paralleldrive/cuid2@npm:^2.2.2":
+  version: 2.3.1
+  resolution: "@paralleldrive/cuid2@npm:2.3.1"
+  dependencies:
+    "@noble/hashes": ^1.1.5
+  checksum: 1310abcdf8f50721725bf7394f89cb6e704308cdfb62da6a251d93c036d4c4ae45987ed10dcf58d0ccdd1e8fdf0b860351306f582457b5146154cb1e660bbd39
   languageName: node
   linkType: hard
 
@@ -5282,6 +5315,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"asap@npm:^2.0.0":
+  version: 2.0.6
+  resolution: "asap@npm:2.0.6"
+  checksum: b296c92c4b969e973260e47523207cd5769abd27c245a68c26dc7a0fe8053c55bb04360237cb51cab1df52be939da77150ace99ad331fb7fb13b3423ed73ff3d
+  languageName: node
+  linkType: hard
+
 "ast-types-flow@npm:^0.0.8":
   version: 0.0.8
   resolution: "ast-types-flow@npm:0.0.8"
@@ -5424,6 +5464,7 @@ __metadata:
     postcss: ^8.5.2
     prettier: ^3.4.2
     prisma: 6.4.1
+    qrcode.react: ^4.2.0
     react: ^18.3.1
     react-arborist: ^3.4.3
     react-dom: ^18.3.1
@@ -5435,6 +5476,7 @@ __metadata:
     slate: ^0.112.0
     slate-react: ^0.112.1
     sonner: ^1.7.2
+    stripe: ^20.0.0
     swr: ^2.3.2
     tailwind-merge: ^2.6.0
     tailwind-scrollbar: ^4.0.2
@@ -5447,6 +5489,7 @@ __metadata:
     use-stick-to-bottom: ^1.0.44
     uuid: ^11.1.0
     vaul: ^1.1.2
+    wechatpay-node-v3: ^2.2.1
     zod: ^3.24.2
     zod-to-json-schema: ^3.23.2
     zustand: ^5.0.3
@@ -5741,6 +5784,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"component-emitter@npm:^1.3.0":
+  version: 1.3.1
+  resolution: "component-emitter@npm:1.3.1"
+  checksum: 94550aa462c7bd5a61c1bc480e28554aa306066930152d1b1844a0dd3845d4e5db7e261ddec62ae184913b3e59b55a2ad84093b9d3596a8f17c341514d6c483d
+  languageName: node
+  linkType: hard
+
 "compute-scroll-into-view@npm:^2.0.4":
   version: 2.0.4
   resolution: "compute-scroll-into-view@npm:2.0.4"
@@ -5768,6 +5818,13 @@ __metadata:
   dependencies:
     simple-wcswidth: ^1.1.2
   checksum: a878e446303eabaa86a2fd7f0d956d24252e0837be23249e7ad24daf3f304ce7bf155ca79b25ccd4f380f31fa35e427adc762e49ff29236f82a96c4b1d88551e
+  languageName: node
+  linkType: hard
+
+"cookiejar@npm:^2.1.3":
+  version: 2.1.4
+  resolution: "cookiejar@npm:2.1.4"
+  checksum: c4442111963077dc0e5672359956d6556a195d31cbb35b528356ce5f184922b99ac48245ac05ed86cf993f7df157c56da10ab3efdadfed79778a0d9b1b092d5b
   languageName: node
   linkType: hard
 
@@ -5983,6 +6040,16 @@ __metadata:
   dependencies:
     dequal: ^2.0.0
   checksum: d2ff650bac0bb6ef08c48f3ba98640bb5fec5cce81e9957eb620408d1bab1204d382a45b785c6b3314dc867bb0684936b84c6867820da6db97cbb5d3c15dd185
+  languageName: node
+  linkType: hard
+
+"dezalgo@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "dezalgo@npm:1.0.4"
+  dependencies:
+    asap: ^2.0.0
+    wrappy: 1
+  checksum: 895389c6aead740d2ab5da4d3466d20fa30f738010a4d3f4dcccc9fc645ca31c9d10b7e1804ae489b1eb02c7986f9f1f34ba132d409b043082a86d9a4e745624
   languageName: node
   linkType: hard
 
@@ -6845,6 +6912,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fast-safe-stringify@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "fast-safe-stringify@npm:2.1.1"
+  checksum: a851cbddc451745662f8f00ddb622d6766f9bd97642dabfd9a405fb0d646d69fc0b9a1243cbf67f5f18a39f40f6fa821737651ff1bceeba06c9992ca2dc5bd3d
+  languageName: node
+  linkType: hard
+
 "fastq@npm:^1.6.0":
   version: 1.19.1
   resolution: "fastq@npm:1.19.1"
@@ -6946,7 +7020,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data@npm:^4.0.4":
+"form-data@npm:^4.0.0, form-data@npm:^4.0.4":
   version: 4.0.5
   resolution: "form-data@npm:4.0.5"
   dependencies:
@@ -6973,6 +7047,18 @@ __metadata:
     node-domexception: 1.0.0
     web-streams-polyfill: 4.0.0-beta.3
   checksum: d91d4f667cfed74827fc281594102c0dabddd03c9f8b426fc97123eedbf73f5060ee43205d89284d6854e2fc5827e030cd352ef68b93beda8decc2d72128c576
+  languageName: node
+  linkType: hard
+
+"formidable@npm:^2.1.1":
+  version: 2.1.5
+  resolution: "formidable@npm:2.1.5"
+  dependencies:
+    "@paralleldrive/cuid2": ^2.2.2
+    dezalgo: ^1.0.4
+    once: ^1.4.0
+    qs: ^6.11.0
+  checksum: b7a38dbf3f2d32858e9199f9e1597038d22854dc7f3120e30a05097fd538c3a5ebdfcb1b14ed3d68139f592176e64a3544aa14b5be624e26fe5b383a5c096a74
   languageName: node
   linkType: hard
 
@@ -8679,6 +8765,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"methods@npm:^1.1.2":
+  version: 1.1.2
+  resolution: "methods@npm:1.1.2"
+  checksum: 0917ff4041fa8e2f2fda5425a955fe16ca411591fbd123c0d722fcf02b73971ed6f764d85f0a6f547ce49ee0221ce2c19a5fa692157931cecb422984f1dcd13a
+  languageName: node
+  linkType: hard
+
 "micromark-core-commonmark@npm:^2.0.0":
   version: 2.0.3
   resolution: "micromark-core-commonmark@npm:2.0.3"
@@ -9178,6 +9271,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mime@npm:2.6.0":
+  version: 2.6.0
+  resolution: "mime@npm:2.6.0"
+  bin:
+    mime: cli.js
+  checksum: 1497ba7b9f6960694268a557eae24b743fd2923da46ec392b042469f4b901721ba0adcf8b0d3c2677839d0e243b209d76e5edcbd09cfdeffa2dfb6bb4df4b862
+  languageName: node
+  linkType: hard
+
 "minimatch@npm:^10.1.1":
   version: 10.1.1
   resolution: "minimatch@npm:10.1.1"
@@ -9672,7 +9774,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"once@npm:^1.3.0":
+"once@npm:^1.3.0, once@npm:^1.4.0":
   version: 1.4.0
   resolution: "once@npm:1.4.0"
   dependencies:
@@ -10100,6 +10202,24 @@ __metadata:
   version: 2.3.1
   resolution: "punycode@npm:2.3.1"
   checksum: bb0a0ceedca4c3c57a9b981b90601579058903c62be23c5e8e843d2c2d4148a3ecf029d5133486fb0e1822b098ba8bba09e89d6b21742d02fa26bda6441a6fb2
+  languageName: node
+  linkType: hard
+
+"qrcode.react@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "qrcode.react@npm:4.2.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: fe7f496bb3696eedf4113390c6feda386e7a5e5d69d12fcc2489c55ecec467f682dc99b0d8085afbeb8ed3962c1f7554b26225cd78b72e78416f9506abbebd5d
+  languageName: node
+  linkType: hard
+
+"qs@npm:^6.11.0":
+  version: 6.14.0
+  resolution: "qs@npm:6.14.0"
+  dependencies:
+    side-channel: ^1.1.0
+  checksum: 189b52ad4e9a0da1a16aff4c58b2a554a8dad9bd7e287c7da7446059b49ca2e33a49e570480e8be406b87fccebf134f51c373cbce36c8c83859efa0c9b71d635
   languageName: node
   linkType: hard
 
@@ -10628,7 +10748,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.6.3, semver@npm:^7.7.1, semver@npm:^7.7.3":
+"semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.3.8, semver@npm:^7.6.3, semver@npm:^7.7.1, semver@npm:^7.7.3":
   version: 7.7.3
   resolution: "semver@npm:7.7.3"
   bin:
@@ -11099,6 +11219,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"stripe@npm:^20.0.0":
+  version: 20.0.0
+  resolution: "stripe@npm:20.0.0"
+  dependencies:
+    qs: ^6.11.0
+  peerDependencies:
+    "@types/node": ">=16"
+  peerDependenciesMeta:
+    "@types/node":
+      optional: true
+  checksum: 9981ff78a868c81dbdd074be1e30ea7dec84c059260637ab1e877e85da95f2b0371052fb2e4b49556d687946a2254531632f3ae466cdef27450593e30a41395a
+  languageName: node
+  linkType: hard
+
 "style-mod@npm:^4.0.0, style-mod@npm:^4.1.0":
   version: 4.1.2
   resolution: "style-mod@npm:4.1.2"
@@ -11137,6 +11271,24 @@ __metadata:
     babel-plugin-macros:
       optional: true
   checksum: 879ad68e3e81adcf4373038aaafe55f968294955593660e173fbf679204aff158c59966716a60b29af72dc88795cfb2c479b6d2c3c87b2b2d282f3e27cc66461
+  languageName: node
+  linkType: hard
+
+"superagent@npm:8.0.6":
+  version: 8.0.6
+  resolution: "superagent@npm:8.0.6"
+  dependencies:
+    component-emitter: ^1.3.0
+    cookiejar: ^2.1.3
+    debug: ^4.3.4
+    fast-safe-stringify: ^2.1.1
+    form-data: ^4.0.0
+    formidable: ^2.1.1
+    methods: ^1.1.2
+    mime: 2.6.0
+    qs: ^6.11.0
+    semver: ^7.3.8
+  checksum: 2dfe44b74acd37da34cb44617919927ebf689570f46f89234be3a0b8e89cae5afca8e28adae6b6be77a3cd06661f47cf5c4c872e9d98ba184e8f12fcb041a29d
   languageName: node
   linkType: hard
 
@@ -11376,6 +11528,13 @@ __metadata:
   peerDependencies:
     typescript: ">=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta"
   checksum: 1843f4c1b2e0f975e08c4c21caa4af4f7f65a12ac1b81b3b8489366826259323feb3fc7a243123453d2d1a02314205a7634e048d4a8009921da19f99755cdc48
+  languageName: node
+  linkType: hard
+
+"tweetnacl@npm:^1.0.1":
+  version: 1.0.3
+  resolution: "tweetnacl@npm:1.0.3"
+  checksum: e4a57cac188f0c53f24c7a33279e223618a2bfb5fea426231991652a13247bea06b081fd745d71291fcae0f4428d29beba1b984b1f1ce6f66b06a6d1ab90645c
   languageName: node
   linkType: hard
 
@@ -11881,6 +12040,16 @@ __metadata:
   bin:
     webpack-bundle-analyzer: lib/bin/analyzer.js
   checksum: 4ce3b379c61ce16b2219756843407cc99f2b82cd191f653043f1b705a3e32b3af03834af0dfded98ab852313a892a148bed1a8effaacd6440f028c19f41581f3
+  languageName: node
+  linkType: hard
+
+"wechatpay-node-v3@npm:^2.2.1":
+  version: 2.2.1
+  resolution: "wechatpay-node-v3@npm:2.2.1"
+  dependencies:
+    "@fidm/x509": 1.2.1
+    superagent: 8.0.6
+  checksum: ecfa6f6723b2183241e17d583eb6b8a069ee0e5dae5fc1604fde0a8385c245649d6eeb4db12e8d18f47402ddb948f6334f33603ff12ec8baa9b106df327b3368
   languageName: node
   linkType: hard
 

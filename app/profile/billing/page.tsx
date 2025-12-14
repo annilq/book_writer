@@ -12,7 +12,7 @@ export default async function BillingPage() {
   const session = await auth();
   if (!session?.user) redirect("/");
 
-  const userSubscription = await prisma.userSubscription.findUnique({
+  const userSubscription = await prisma.subscription.findUnique({
     where: { userId: session.user.id },
     include: { plan: true },
   });

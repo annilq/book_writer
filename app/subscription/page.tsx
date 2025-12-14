@@ -13,7 +13,10 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { QRCodeSVG } from 'qrcode.react';
 
 interface Plan {
   id: string;
@@ -35,9 +38,16 @@ interface Subscription {
 export default function SubscriptionPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const [provider, setProvider] = useState<"STRIPE" | "WECHAT">("STRIPE");
+  const [showWechatQR, setShowWechatQR] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [currentOrderNo, setCurrentOrderNo] = useState("");
+  const [subscribingId, setSubscribingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -47,6 +57,39 @@ export default function SubscriptionPage() {
         fetchData();
     }
   }, [status, router]);
+
+  useEffect(() => {
+    if (searchParams.get("success")) {
+        toast.success("Subscription successful!");
+    }
+    if (searchParams.get("canceled")) {
+        toast.info("Subscription canceled.");
+    }
+  }, [searchParams]);
+
+  // Polling for WeChat Payment Status
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (showWechatQR && currentOrderNo) {
+        interval = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/payment/check?orderNo=${currentOrderNo}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status === 'COMPLETED') {
+                        setShowWechatQR(false);
+                        toast.success("Payment Successful!");
+                        fetchData(); // Reload data
+                        clearInterval(interval);
+                    }
+                }
+            } catch (e) {
+                console.error("Polling error", e);
+            }
+        }, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [showWechatQR, currentOrderNo]);
 
   const fetchData = async () => {
     try {
@@ -70,6 +113,36 @@ export default function SubscriptionPage() {
     }
   };
 
+  const handleSubscribe = async (plan: Plan) => {
+      try {
+          setSubscribingId(plan.id);
+          const res = await fetch("/api/subscription/checkout", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ planId: plan.id, provider }),
+          });
+          
+          if (!res.ok) {
+              const text = await res.text();
+              throw new Error(text || "Checkout failed");
+          }
+          
+          const data = await res.json();
+          
+          if (provider === "STRIPE" && data.payUrl) {
+              window.location.href = data.payUrl;
+          } else if (provider === "WECHAT" && data.qrCode) {
+              setQrCodeUrl(data.qrCode);
+              setCurrentOrderNo(data.orderNo);
+              setShowWechatQR(true);
+          }
+      } catch (error: any) {
+          toast.error(error.message || "Failed to start checkout");
+      } finally {
+          setSubscribingId(null);
+      }
+  };
+
   if (status === "loading" || loading) {
       return (
           <div className="flex h-screen items-center justify-center">
@@ -80,7 +153,7 @@ export default function SubscriptionPage() {
 
   return (
     <div className="container mx-auto py-12 px-4 max-w-6xl">
-      <div className="text-center mb-12">
+      <div className="text-center mb-8">
         <h1 className="text-4xl font-bold tracking-tight mb-4 bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
           Unlock Pro Features
         </h1>
@@ -117,6 +190,16 @@ export default function SubscriptionPage() {
         </Card>
       )}
 
+      {/* Payment Method Selector */}
+      <div className="flex justify-center mb-8">
+        <Tabs value={provider} onValueChange={(v) => setProvider(v as any)} className="w-[400px]">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="STRIPE">Card (Stripe)</TabsTrigger>
+                <TabsTrigger value="WECHAT">WeChat Pay</TabsTrigger>
+            </TabsList>
+        </Tabs>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
         {plans.map((plan) => (
           <Card key={plan.id} className="flex flex-col border-2 hover:border-blue-500 transition-colors">
@@ -141,8 +224,13 @@ export default function SubscriptionPage() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Button className="w-full">
-                {Number(plan.price) === 0 ? "Get Started" : "Subscribe"}
+              <Button 
+                className="w-full" 
+                onClick={() => handleSubscribe(plan)} 
+                disabled={!!subscribingId && subscribingId !== plan.id}
+              >
+                {subscribingId === plan.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {Number(plan.price) === 0 ? "Get Started" : `Subscribe with ${provider === 'STRIPE' ? 'Card' : 'WeChat'}`}
               </Button>
             </CardFooter>
           </Card>
@@ -153,6 +241,28 @@ export default function SubscriptionPage() {
           </div>
         )}
       </div>
+
+      <Dialog open={showWechatQR} onOpenChange={setShowWechatQR}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>WeChat Pay</DialogTitle>
+                <DialogDescription>
+                    Scan the QR code with WeChat to complete payment.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col items-center justify-center p-6 space-y-4">
+                {qrCodeUrl && (
+                    <QRCodeSVG value={qrCodeUrl} size={200} />
+                )}
+                <div className="text-center text-sm text-muted-foreground">
+                    Order No: {currentOrderNo}
+                </div>
+            </div>
+            <div className="text-center text-sm text-muted-foreground">
+                Waiting for payment...
+            </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

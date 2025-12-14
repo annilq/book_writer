@@ -8,9 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
-import type { User, UserSubscription, SubscriptionPlan } from "@prisma/client";
+import type { User, Subscription, SubscriptionPlan } from "@prisma/client";
 
-type SubscriptionWithPlan = UserSubscription & { 
+type SubscriptionWithPlan = Subscription & { 
   plan: Omit<SubscriptionPlan, "price"> & { price: string | number } 
 };
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/utils";
-import { User, CreditCard, Bell, LayoutDashboard, Settings } from "lucide-react";
+import { User, CreditCard, Bell, LayoutDashboard, Settings, FileText } from "lucide-react";
 
 const sidebarItems = [
   {
@@ -18,6 +18,11 @@ const sidebarItems = [
         title: "Billing",
         href: "/profile/billing",
         icon: CreditCard,
+      },
+      {
+        title: "Order History",
+        href: "/profile/orders",
+        icon: FileText,
       },
       {
         title: "Notifications",

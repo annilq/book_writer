@@ -51,53 +51,62 @@ export async function POST(req: Request) {
         const endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + redemptionCode.plan.duration);
 
-        // Create or Update User Subscription
+        // Create or Update Subscription
         // Check if user already has a subscription
-        const existingSub = await tx.userSubscription.findUnique({
+        const existingSub = await tx.subscription.findUnique({
             where: { userId: session.user?.id! }
         });
+
+        let subscriptionId: string;
 
         if (existingSub) {
              // If active, extend? Or overwrite? Let's overwrite/extend based on current status.
              // For simplicity, if active, we extend from the current end date.
-             let newStartDate = startDate;
              let newEndDate = endDate;
              
              if (existingSub.status === 'ACTIVE' && existingSub.endDate > new Date()) {
-                 newStartDate = existingSub.endDate;
-                 newEndDate = new Date(newStartDate);
-                 newEndDate.setDate(newEndDate.getDate() + redemptionCode.plan.duration);
+                 const currentEndDate = new Date(existingSub.endDate);
+                 currentEndDate.setDate(currentEndDate.getDate() + redemptionCode.plan.duration);
+                 newEndDate = currentEndDate;
              }
 
-             await tx.userSubscription.update({
+             const updatedSub = await tx.subscription.update({
                  where: { userId: session.user?.id! },
                  data: {
                      planId: redemptionCode.planId,
-                     startDate: existingSub.startDate, // Keep original start date or update? Maybe keep original.
                      endDate: newEndDate,
-                     status: 'ACTIVE'
+                     status: 'ACTIVE',
+                     paymentProvider: 'REDEMPTION',
+                     renewMode: 'MANUAL'
                  }
              });
+             subscriptionId = updatedSub.id;
         } else {
-            await tx.userSubscription.create({
+            const newSub = await tx.subscription.create({
                 data: {
                     userId: session.user?.id!,
                     planId: redemptionCode.planId,
                     startDate: startDate,
                     endDate: endDate,
-                    status: 'ACTIVE'
+                    status: 'ACTIVE',
+                    paymentProvider: 'REDEMPTION',
+                    renewMode: 'MANUAL'
                 }
             });
+            subscriptionId = newSub.id;
         }
 
-        // Create Order Record
-        await tx.subscriptionOrder.create({
+        // Create Payment Order Record
+        await tx.paymentOrder.create({
             data: {
                 userId: session.user?.id!,
                 planId: redemptionCode.planId,
+                subscriptionId: subscriptionId,
                 amount: 0,
                 status: 'COMPLETED',
-                paymentMethod: 'REDEMPTION_CODE'
+                provider: 'REDEMPTION',
+                orderNo: `REDEMPTION-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                paidAt: new Date()
             }
         });
     });

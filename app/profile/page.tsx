@@ -13,7 +13,7 @@ export default async function ProfilePage() {
   // or we can remove it from ProfileForm if we want strict separation.
   // The original ProfileForm uses subscription to show a badge. 
   // I will keep it for now as it's nice to have status in profile.
-  const userSubscription = await prisma.userSubscription.findUnique({
+  const userSubscription = await prisma.subscription.findUnique({
     where: { userId: session.user.id },
     include: { plan: true },
   });

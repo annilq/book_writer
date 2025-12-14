@@ -26,8 +26,8 @@ model User {
   updatedAt     DateTime        @updatedAt
   
   // Subscription relations
-  subscription  UserSubscription?
-  orders        SubscriptionOrder[]
+  subscription  Subscription?
+  orders        PaymentOrder[]
   redeemedCodes RedemptionCode[]
 }
 
@@ -231,8 +231,8 @@ model SubscriptionPlan {
   updatedAt   DateTime @updatedAt
 
   codes       RedemptionCode[]
-  subscriptions UserSubscription[]
-  orders      SubscriptionOrder[]
+  subscriptions Subscription[]
+  orders        PaymentOrder[]
 }
 
 model RedemptionCode {
@@ -249,39 +249,74 @@ model RedemptionCode {
 }
 
 enum SubscriptionStatus {
+  PENDING
   ACTIVE
   EXPIRED
   CANCELLED
 }
 
-model UserSubscription {
+enum PaymentProvider {
+  STRIPE
+  WECHAT
+  REDEMPTION
+}
+
+enum RenewMode {
+  AUTO
+  MANUAL
+}
+
+// Renamed from UserSubscription
+model Subscription {
   id        String   @id @default(cuid())
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id])
   planId    String
   plan      SubscriptionPlan @relation(fields: [planId], references: [id])
+  
   startDate DateTime @default(now())
   endDate   DateTime
-  status    SubscriptionStatus @default(ACTIVE)
+  status    SubscriptionStatus @default(PENDING)
+  
+  renewMode       RenewMode        @default(MANUAL)
+  paymentProvider PaymentProvider?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  orders    PaymentOrder[]
 }
 
 enum OrderStatus {
   PENDING
   COMPLETED
   FAILED
+  REFUNDED
+  CANCELLED
 }
 
-model SubscriptionOrder {
+// Renamed from SubscriptionOrder
+model PaymentOrder {
   id            String   @id @default(cuid())
+  orderNo       String   @unique // Global unique order number
   userId        String
   user          User     @relation(fields: [userId], references: [id])
-  planId        String
-  plan          SubscriptionPlan @relation(fields: [planId], references: [id])
+  
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  
+  planId        String? // Optional if tied to subscription
+  plan          SubscriptionPlan? @relation(fields: [planId], references: [id])
+  // We keep planId for historical record or simple purchases
+  
   amount        Decimal  @db.Decimal(10, 2)
+  currency      String   @default("USD")
   status        OrderStatus @default(PENDING)
-  paymentMethod String   // "REDEMPTION_CODE", "STRIPE", etc.
+  
+  provider      PaymentProvider
+  providerOrderId String? // stripe_payment_intent_id / wechat_transaction_id
+  providerPayload Json?   // Raw callback data
+  
   createdAt     DateTime @default(now())
+  paidAt        DateTime?
 }
-
