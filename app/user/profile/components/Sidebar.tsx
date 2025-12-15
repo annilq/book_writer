@@ -3,56 +3,45 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/utils";
-import { Users, CreditCard, Ticket, LayoutDashboard, FileText } from "lucide-react";
+import { User, CreditCard, Bell, LayoutDashboard, Settings, FileText } from "lucide-react";
 
 const sidebarItems = [
   {
-    title: "Personnel Management",
+    title: "Account",
     items: [
       {
-        title: "Users",
-        href: "/admin/users",
-        icon: Users,
+        title: "General",
+        href: "/user/profile",
+        icon: User,
       },
-    ],
-  },
-  {
-    title: "Subscription Management",
-    items: [
       {
-        title: "Plans",
-        href: "/admin/subscriptions/plans",
+        title: "Billing",
+        href: "/user/billing",
         icon: CreditCard,
       },
       {
-        title: "Codes",
-        href: "/admin/subscriptions/codes",
-        icon: Ticket,
+        title: "Order History",
+        href: "/user/orders",
+        icon: FileText,
       },
       {
-        title: "Orders",
-        href: "/admin/subscriptions/orders",
-        icon: FileText,
+        title: "Notifications",
+        href: "/user/notifications",
+        icon: Bell,
       },
     ],
   },
 ];
 
-export function AdminSidebar() {
+export function ProfileSidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-64 border-r bg-muted/20 h-full flex-shrink-0">
-      <div className="p-6 border-b">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <LayoutDashboard className="w-5 h-5" />
-          Admin Portal
-        </h2>
-      </div>
+    <div className="w-64 border-r bg-muted/10 h-full flex-shrink-0 hidden md:block">
       <nav className="p-4 space-y-8">
         {sidebarItems.map((group, index) => (
           <div key={index}>
-            <h3 className="mb-2 px-2 text-sm font-semibold text-muted-foreground tracking-wider uppercase">
+            <h3 className="mb-2 px-2 text-xs font-semibold text-muted-foreground tracking-wider uppercase">
               {group.title}
             </h3>
             <div className="space-y-1">
@@ -65,8 +54,8 @@ export function AdminSidebar() {
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
                       isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted text-foreground"
+                        ? "bg-secondary text-secondary-foreground"
+                        : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <item.icon className="w-4 h-4" />

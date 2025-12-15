@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Header from "@/components/Header";
-import { UserSidebar } from "./components/Sidebar";
+import { ProfileSidebar } from "./profile/components/Sidebar";
 
 export default async function UserLayout({
   children,
@@ -18,7 +18,7 @@ export default async function UserLayout({
     <div className="flex flex-col h-screen bg-background">
       <Header className="border-b" />
       <div className="flex flex-1 overflow-hidden">
-        <UserSidebar />
+        <ProfileSidebar />
         <main className="flex-1 overflow-y-auto p-8">
           {children}
         </main>

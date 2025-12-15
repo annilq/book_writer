@@ -9,7 +9,7 @@ export async function GET() {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const subscription = await prisma.userSubscription.findUnique({
+  const subscription = await prisma.subscription.findUnique({
     where: { userId: session.user.id },
     include: { plan: true },
   });
@@ -17,7 +17,7 @@ export async function GET() {
   // Check if expired
   if (subscription && subscription.status === 'ACTIVE' && subscription.endDate < new Date()) {
       // Update to expired
-      await prisma.userSubscription.update({
+      await prisma.subscription.update({
           where: { id: subscription.id },
           data: { status: 'EXPIRED' }
       });

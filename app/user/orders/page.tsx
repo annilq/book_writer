@@ -1,63 +1,83 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
-import { prisma } from "@/utils/prisma";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+"use client";
 
-export default async function OrdersPage() {
-  const session = await auth();
-  if (!session?.user) redirect("/");
+import { useEffect, useState } from "react";
+import { OrderList } from "@/components/OrderList";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 
-  const orders = await prisma.subscriptionOrder.findMany({
-    where: { userId: session.user.id },
-    include: { plan: true },
-    orderBy: { createdAt: 'desc' }
-  });
+import { toast } from "sonner";
+
+export default function UserOrdersPage() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("ALL");
+
+  useEffect(() => {
+    fetchOrders();
+  }, [statusFilter]);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (statusFilter !== "ALL") {
+        params.append("status", statusFilter);
+      }
+      const res = await fetch(`/api/user/orders?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setOrders(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch orders", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async (orderNo: string) => {
+    try {
+      const res = await fetch("/api/user/orders/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderNo }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to cancel order");
+      }
+
+      toast.success("Order canceled successfully");
+      fetchOrders();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Order History</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Transactions</CardTitle>
-        </CardHeader>
-        <CardContent>
-            {orders.length === 0 ? (
-                <p className="text-muted-foreground">No orders found.</p>
-            ) : (
-              <div className="w-full overflow-auto">
-                <table className="w-full caption-bottom text-sm">
-                  <thead className="[&_tr]:border-b">
-                    <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Date</th>
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Plan</th>
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Amount</th>
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Payment Method</th>
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="[&_tr:last-child]:border-0">
-                    {orders.map((order) => (
-                      <tr key={order.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                        <td className="p-4 align-middle">{order.createdAt.toLocaleDateString()} {order.createdAt.toLocaleTimeString()}</td>
-                        <td className="p-4 align-middle">{order.plan.name}</td>
-                        <td className="p-4 align-middle">${Number(order.amount).toFixed(2)}</td>
-                        <td className="p-4 align-middle">
-                            <Badge variant="outline">{order.paymentMethod}</Badge>
-                        </td>
-                        <td className="p-4 align-middle">
-                            <Badge variant={order.status === 'COMPLETED' ? 'default' : 'secondary'}>
-                                {order.status}
-                            </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-        </CardContent>
-      </Card>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Order History</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          View your past transactions and order status.
+        </p>
+      </div>
+      <Separator />
+
+      <div className="flex flex-col gap-4">
+        <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
+          <TabsList>
+            <TabsTrigger value="ALL">All</TabsTrigger>
+            <TabsTrigger value="COMPLETED">Completed</TabsTrigger>
+            <TabsTrigger value="PENDING">Pending</TabsTrigger>
+            <TabsTrigger value="FAILED">Failed</TabsTrigger>
+            <TabsTrigger value="CANCELLED">Cancelled</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <OrderList orders={orders} loading={loading} onCancelOrder={handleCancelOrder} />
+      </div>
     </div>
   );
 }

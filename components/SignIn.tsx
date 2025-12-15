@@ -37,8 +37,8 @@ export default function SignIn() {
               <AvatarFallback>{session.data?.user?.name?.[0]}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col space-y-0.5">
-              <p className="text-sm font-semibold leading-none">{session.data?.user?.name}</p>
-              <p className="text-xs text-muted-foreground truncate w-[140px]">{session.data?.user?.email}</p>
+              <div className="text-sm font-semibold leading-none">{session.data?.user?.name}</div>
+              <div className="text-xs text-muted-foreground truncate w-[140px]">{session.data?.user?.email}</div>
             </div>
           </div>
           
