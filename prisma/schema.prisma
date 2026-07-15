@@ -103,6 +103,24 @@ enum STEP {
   COMPLETE
 }
 
+enum AgentRunStatus {
+  RUNNING
+  DONE
+  FAILED
+}
+
+model AgentRun {
+  id          String         @id @default(nanoid(16))
+  bookId      String         @unique
+  book        Book           @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  status      AgentRunStatus @default(RUNNING)
+  currentStep String         @default("PROMPT")
+  log         Json?
+  error       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
 model Book {
   id               String     @id @default(nanoid(16))
   title            String
