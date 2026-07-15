@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { createBook } from "@/app/api/chat/actions";
 import { Spinner } from "@/components/spinner";
+import { Switch } from "@/components/ui/switch";
 
 export const FormSchema = z.object({
   title: z.string().min(2, {
@@ -76,6 +77,7 @@ export function BookOutlineCard() {
 export function BookOutlineForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [autonomous, setAutonomous] = useState(false)
   const { id, setMessages, reload } = useChat({
     api: "/api/chat",
   });
@@ -84,41 +86,69 @@ export function BookOutlineForm() {
   const { data: categories = [] } = useSWR<Category[]>('/api/categories')
   const { data: models = [] } = useSWR<Model[]>('/api/model')
 
-  const handleSubmit = async (data: z.infer<typeof FormSchema>) => {
-    // This would call an API route to generate the outline using the AI SDK
-    // For now, we'll just set a dummy outline
+  const handleSubmit = async (
+    data: z.infer<typeof FormSchema>,
+    autonomousFlag = false
+  ) => {
     setLoading(true)
     const { model, categories, description, title } = data;
 
-    const chat = await createBook(
-      {
-        id,
-        title,
-        model,
-        description,
-        categories,
-        language: i18n.language
-      }
-    );
-    setLoading(false)
-
-    if (chat) {
-      setMessages((chat.messages || []).map(msg => ({
-        id: msg.id,
-        role: msg.role as "data" | "system" | "user" | "assistant",
-        content: msg.content
-      })))
-      reload({
-        body: {
-          chat,
-          model: chat.model,
-          chatId: chat.id,
-          book: chat,
+    try {
+      if (autonomousFlag) {
+        const newId = crypto.randomUUID();
+        const book = await createBook({
+          id: newId,
+          title,
+          model,
+          description,
+          language: i18n.language,
+          categories,
+        });
+        if (!book) {
+          setLoading(false);
+          return;
         }
-      })
-      startTransition(() => {
-        router.push(`/chats/${chat?.id}`);
-      });
+        await fetch(`/api/book/${book.id}/agent`, { method: "POST" });
+        setLoading(false);
+        startTransition(() => {
+          router.push(`/books/${book.id}/agent`);
+        });
+        return;
+      }
+
+      const chat = await createBook(
+        {
+          id,
+          title,
+          model,
+          description,
+          categories,
+          language: i18n.language
+        }
+      );
+      setLoading(false)
+
+      if (chat) {
+        setMessages((chat.messages || []).map(msg => ({
+          id: msg.id,
+          role: msg.role as "data" | "system" | "user" | "assistant",
+          content: msg.content
+        })))
+        reload({
+          body: {
+            chat,
+            model: chat.model,
+            chatId: chat.id,
+            book: chat,
+          }
+        })
+        startTransition(() => {
+          router.push(`/chats/${chat?.id}`);
+        });
+      }
+    } catch (e) {
+      setLoading(false);
+      console.error(e);
     }
   }
 
@@ -135,13 +165,17 @@ export function BookOutlineForm() {
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     toast({
-      title: "Generating book info ,this will speend some time , please wait a moment",
+      title: autonomous ? "Generating book autonomously, please wait..." : "Generating book info ,this will speend some time , please wait a moment",
     })
-    await handleSubmit(data)
+    await handleSubmit(data, autonomous)
   }
 
   return (
     <div className="w-full">
+      <div className="flex items-center justify-between px-6 pb-2">
+        <span className="text-sm font-medium">{t("autonomous")}</span>
+        <Switch checked={autonomous} onCheckedChange={setAutonomous} />
+      </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-2xl mx-auto space-y-4 px-6 pb-6">
           <div className="flex items-center w-full justify-between gap-2">
