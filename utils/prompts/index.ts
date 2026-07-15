@@ -3,6 +3,7 @@ import { FormSchema } from "@/app/(main)/components/BookOutlineForm";
 import { z } from "zod";
 import { StructuredOutputParser } from "@langchain/core/output_parsers";
 import { Book } from "@prisma/client";
+import { ChaptersSchema } from "@/utils/agent/outline";
 
 export function chapterPrompt(curChapter: string, preChapter?: string) {
   if (preChapter) {
@@ -100,21 +101,12 @@ export function getStandardBookPrompt(book: z.infer<typeof FormSchema>) {
 }
 
 export function getOutlinePrompt(book: Book) {
-  const ChapterModel: z.ZodType<any> = z.lazy(() => z.object({
-    id: z.string().min(5),
-    title: z.string().min(3),
-    description: z.string().min(20),
-    children: z.array(ChapterModel)
-  }));
-
-  const ChaptersSchema = z.array(ChapterModel);
-  const parser = StructuredOutputParser.fromZodSchema(ChaptersSchema);
   const systemPrompt = dedent`
  You are now a professional writer. You can create a book outline based on the information the user provides.
       # General Instructions
         ${book.prompt}
       # Format Instructions:
-        ${parser.getFormatInstructions()}
+        ${StructuredOutputParser.fromZodSchema(ChaptersSchema).getFormatInstructions()}
       # Write with Language: ${book.language}
     `;
   return systemPrompt
