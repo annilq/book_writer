@@ -22,6 +22,12 @@ export async function POST(
     if (existing) {
       await prisma.chapter.deleteMany({ where: { bookId } });
       await prisma.agentRun.delete({ where: { bookId } });
+      // Reset book state so the re-run starts clean (createBookOutline will
+      // re-set step/currentChapterId); avoids stale ids from the failed run.
+      await prisma.book.update({
+        where: { id: bookId },
+        data: { step: "INIT", currentChapterId: null },
+      });
     }
 
     const run = await prisma.agentRun.create({

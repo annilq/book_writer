@@ -73,6 +73,9 @@ export async function runAutonomousBook(bookId: string) {
     await createBookOutline(bookId, chapterInputs);
 
     // CHAPTER stage
+    // leafChapters is ordered by position asc. createBookOutline inserts
+    // via createMany in array order, so position order == autoincrement id
+    // order; saveChapterContent advances currentChapterId by id, staying in sync.
     const leafChapters = await prisma.chapter.findMany({
       where: { bookId, leaf: true },
       orderBy: { position: "asc" },

@@ -26,17 +26,24 @@ export default function AgentProgress({ bookId }: { bookId: string }) {
   const router = useRouter();
   const [progress, setProgress] = useState<Progress | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<RunStatus | null> => {
     const res = await fetch(`/api/book/${bookId}/agent`);
     const json = await res.json();
-    if (json.code === 0) setProgress(json.data as Progress);
+    if (json.code === 0) {
+      setProgress(json.data as Progress);
+      return (json.data as Progress)?.run?.status ?? null;
+    }
+    return null;
   }, [bookId]);
 
   useEffect(() => {
     let active = true;
     const tick = async () => {
-      await load();
-      if (active) setTimeout(tick, 2000);
+      const status = await load();
+      // Stop polling once the run reaches a terminal state.
+      if (active && status !== "DONE" && status !== "FAILED") {
+        setTimeout(tick, 2000);
+      }
     };
     tick();
     return () => {

@@ -165,7 +165,7 @@ export function BookOutlineForm() {
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     toast({
-      title: autonomous ? "Generating book autonomously, please wait..." : "Generating book info ,this will speend some time , please wait a moment",
+      title: autonomous ? "Generating book autonomously, please wait..." : "Generating book info ,this will spend some time , please wait a moment",
     })
     await handleSubmit(data, autonomous)
   }
