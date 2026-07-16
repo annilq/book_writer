@@ -96,7 +96,6 @@ export function BookOutlineForm() {
     try {
       if (autonomousFlag) {
         const book = await createBook({
-          id,
           title,
           model,
           description,

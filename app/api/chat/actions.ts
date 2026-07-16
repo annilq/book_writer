@@ -12,7 +12,7 @@ import { CoreMessage, CreateMessage, generateText, streamText } from "ai";
 import { getAIModel } from "@/utils/ai_providers";
 
 export async function createBook(
-  book: z.infer<typeof FormSchema> & { id: string }
+  book: z.infer<typeof FormSchema> & { id?: string }
 ) {
   const {
     id,
@@ -34,7 +34,7 @@ export async function createBook(
 
     const bookdata = await prisma.book.create({
       data: {
-        id,
+        ...(id ? { id } : {}),
         model,
         title,
         language,
