@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "packageManager": "yarn@3.5.1",
-
   "scripts": {
     "dev": "next dev",
     "build": "npx prisma generate && npx prisma db push --force-reset && npm run seed && next build",
@@ -18,7 +17,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@ai-sdk/deepseek": "^0.1.15",
+    "@ai-sdk/deepseek": "^3.0.11",
     "@ai-sdk/openai": "^1.2.5",
     "@ai-sdk/openai-compatible": "^0.1.15",
     "@ai-sdk/react": "^2.0.115",
