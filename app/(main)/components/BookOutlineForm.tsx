@@ -95,9 +95,8 @@ export function BookOutlineForm() {
 
     try {
       if (autonomousFlag) {
-        const newId = crypto.randomUUID();
         const book = await createBook({
-          id: newId,
+          id,
           title,
           model,
           description,
