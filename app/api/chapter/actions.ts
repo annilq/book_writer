@@ -30,11 +30,12 @@ export async function fetchChapterContent(
       # Write with Language: ${book.language}
     `;
 
+  const modelMessages = await convertToModelMessages(messages);
   const eventStream = streamText({
     model: getAIModel(provider, modelName),
     messages: [
       { role: 'system' as const, content: systemPrompt },
-      ...convertToModelMessages(messages)
+      ...modelMessages
     ],
     maxSteps: 5,
     temperature: 0,
