@@ -143,6 +143,7 @@ model Book {
   status           BookStatus @default(DRAFT)
   step             STEP       @default(INIT)
   isPublic         Boolean    @default(false)
+  agentRun         AgentRun?
   createdAt        DateTime   @default(now())
 }
 
