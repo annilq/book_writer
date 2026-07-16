@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { RefreashMessage } from "@/components/Refreash";
 import { UIMessage } from "ai";
 import { Message } from "@prisma/client";
+import { getMessageText } from "@/utils";
 import Markdown from 'react-markdown'
 import { cn } from "@/utils";
 
@@ -64,7 +65,7 @@ export function UserMessage({ message, toolConfig }: { message: UIMessage, toolC
     <div className="self-end  max-w-[80%]">
       <TextRender
         message={message}
-        data={message.content}
+        data={getMessageText(message)}
         toolConfig={toolConfig}
       />
     </div>

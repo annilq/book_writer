@@ -1,7 +1,7 @@
 "use client";
 
 import { produce } from "immer";
-import { CreateMessage, Message, useChat } from "@ai-sdk/react";
+import { UIMessage, useChat } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
 import React, { startTransition } from "react";
 
@@ -28,15 +28,18 @@ export default function PageClient({ chat }: { chat: Chat }) {
 
   const { message: activeMessage, setActiveMessage, setEditMessage } = useMessageStore()
 
-  const { messages, status, append, reload, setMessages } = useChat({
+  const { messages, status, sendMessage, regenerate, setMessages } = useChat({
     id: chat.id,
     api: "/api/chat",
-    initialMessages: chat.messages as Message[],
+    messages: chat.messages.map(msg => ({
+      id: msg.id,
+      role: msg.role as "data" | "system" | "user" | "assistant",
+      parts: [{ type: "text", text: msg.content }]
+    })) as UIMessage[],
     body: {
       model: chat.model,
       chatId: chat.id,
     },
-    maxSteps: 5,
     async onToolCall({ toolCall, }) {
       if (toolCall.toolName === "parseBookOutline") {
         const input = toolCall.args
@@ -44,7 +47,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
         return input
       }
     },
-    async onFinish(message, options) {
+    async onFinish() {
       router.refresh();
     },
     onError: (e) => {
@@ -59,13 +62,13 @@ export default function PageClient({ chat }: { chat: Chat }) {
     let updateMessages = messages.slice(0, currentMessageIndex + 1)
     if (updateCurrentMessage) {
       updateMessages = produce(updateMessages, draft => {
-        draft[currentMessageIndex].content = message.content
+        draft[currentMessageIndex].parts = [{ type: "text", text: message.content }]
       })
     }
 
     setMessages(updateMessages)
 
-    reload({
+    regenerate({
       body: {
         model: message.model,
         chatId: chat.id,
@@ -80,9 +83,16 @@ export default function PageClient({ chat }: { chat: Chat }) {
     removeMessagesAfterMessageId(chat.id, message.id)
   };
 
-  const appendMessage = async (message: CreateMessage) => {
-    const updateMessage = await createMessage(chat.id, message) as Message
-    append(updateMessage, { body: { model: chat.model, chatId: chat.id, book: chat } })
+  const appendMessage = async (message: UIMessage) => {
+    const updateMessage = await createMessage(chat.id, message) as MessageClient
+    sendMessage(
+      {
+        id: updateMessage.id,
+        role: updateMessage.role as "user" | "assistant" | "system",
+        parts: [{ type: "text", text: updateMessage.content }]
+      },
+      { body: { model: chat.model, chatId: chat.id, book: chat } }
+    );
   };
 
   const { book, setActiveBook } = useBookStore()
@@ -138,11 +148,11 @@ export default function PageClient({ chat }: { chat: Chat }) {
                 }}
               />
               <ChatBox
-                onInputMessage={(message: CreateMessage | MessageClient) => {
+                onInputMessage={(message: UIMessage | MessageClient) => {
                   if (message.id) {
                     refresh(message as MessageClient, true)
                   } else {
-                    appendMessage(message as CreateMessage)
+                    appendMessage(message as UIMessage)
                   }
                 }}
                 isStreaming={status === "streaming"}
@@ -158,7 +168,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
               startTransition(async () => {
                 let newMessageText = `The outline json can't be parse. Can you fix it? Here's the error:\n\n`;
                 newMessageText += error.trimStart();
-                appendMessage({ content: newMessageText, role: 'user' });
+                appendMessage({ role: 'user', parts: [{ type: "text", text: newMessageText }] } as UIMessage);
               });
             }}
           />

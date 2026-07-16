@@ -7,12 +7,12 @@ import { arrayToTree, cn } from "@/utils";
 import { Loader, Play, RefreshCw } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useTranslation } from "react-i18next";
-import { CreateMessage, Message } from "ai";
+import { UIMessage } from "ai";
 import { Button } from "@/components/ui/button";
 import { clearMessageOfChapter, getMessageOfChapter } from "@/app/api/chapter/actions";
 import { useChaperStore } from "@/store/chapter";
 
-export default function Outline({ book, isStreaming, handleSubmit, setMessages }: { book: Book & { chapters: Chapter[] }, isStreaming: boolean, setMessages: (message: Message[]) => void, handleSubmit: (chapterId: number, message: CreateMessage) => void }) {
+export default function Outline({ book, isStreaming, handleSubmit, setMessages }: { book: Book & { chapters: Chapter[] }, isStreaming: boolean, setMessages: (message: UIMessage[]) => void, handleSubmit: (chapterId: number, message: UIMessage) => void }) {
 
   const treeData = React.useMemo(() => {
     return arrayToTree(book?.chapters).map(chapter => ({
@@ -44,7 +44,7 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
               setMessages(messages.map(msg => ({
                 id: msg.id,
                 role: msg.role as "data" | "system" | "user" | "assistant",
-                content: msg.content
+                parts: [{ type: "text", text: msg.content }]
               })))
               setChapter(node.data as unknown as Chapter)
             } else {
@@ -68,7 +68,7 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
                     e.stopPropagation()
                     await clearMessageOfChapter(chapterId)
                     setMessages([])
-                    handleSubmit(chapterId, { role: "user", content: node.data.title + node.data.description })
+                    handleSubmit(chapterId, { role: "user", parts: [{ type: "text", text: node.data.title + node.data.description }] })
                     setChapter(node.data as unknown as Chapter)
                   }}
                   className={cn("rounded-full h-6 w-6 p-0 hover:scale-105", node.isSelected && " bg-card text-card-foreground hover:bg-card hover:text-card-foreground")}

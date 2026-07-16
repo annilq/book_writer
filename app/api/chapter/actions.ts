@@ -1,12 +1,13 @@
 "use server";
 
 import { getI18n } from "@/utils/i18n/server";
-import { CoreMessage, CreateMessage, streamText } from "ai";
+import { streamText, convertToModelMessages, UIMessage } from "ai";
 import { getAIModel } from "@/utils/ai_providers";
 import { getPrisma } from "@/utils/prisma";
 import { cache } from "react";
 import { BookWithChapters } from "@/app/books/[id]/page.client";
 import { Message, Prisma } from "@prisma/client";
+import { getMessageText, uiMessagePartsToPrismaParts } from "@/utils";
 
 export type MessageWithParts = Message & {
   parts: Prisma.MessagePartCreateInput[];
@@ -16,7 +17,7 @@ export async function fetchChapterContent(
   chapterId: number,
   model: string,
   book: BookWithChapters,
-  messages: CoreMessage[] = []
+  messages: UIMessage[] = []
 ) {
   const i18n = getI18n(book.language);
   const [provider, modelName] = model.split("/");
@@ -33,15 +34,18 @@ export async function fetchChapterContent(
     model: getAIModel(provider, modelName),
     messages: [
       { role: 'system' as const, content: systemPrompt },
-      ...messages
+      ...convertToModelMessages(messages)
     ],
     maxSteps: 5,
     temperature: 0,
     onFinish(result) {
       if (result.text) {
         const content = result.text;
-        const parts = result.response.messages[0].content
-        createChapterMessage(chapterId, { role: "assistant", content: content, parts } as CreateMessage);
+        createChapterMessage(chapterId, {
+          role: "assistant",
+          content,
+          parts: [{ type: "text", text: content }]
+        });
       }
     },
   });
@@ -50,7 +54,7 @@ export async function fetchChapterContent(
 
 export async function createChapterMessage(
   chapterId: number,
-  message: CreateMessage
+  message: UIMessage
 ) {
   const prisma = getPrisma();
   const chapter = await prisma.chapter.findUnique({
@@ -64,12 +68,12 @@ export async function createChapterMessage(
   const newMessage = await prisma.message.create({
     data: {
       role: message.role,
-      content: message.content,
+      content: getMessageText(message),
       position: maxPosition + 1,
       chapterId,
       parts: {
         createMany: {
-          data: (message.parts ? message.parts : [{ type: "text", text: message.content }])! as unknown as Prisma.MessagePartCreateInput[]
+          data: uiMessagePartsToPrismaParts(message.parts)
         }
       }
     },

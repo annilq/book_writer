@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { model, messages, book, chapterId } = body;
   const result = await fetchChapterContent(chapterId, model, book, messages);
-  return result.toDataStreamResponse({
+  return result.toUIMessageStreamResponse({
     sendReasoning: true
   })
 }

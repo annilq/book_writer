@@ -2,7 +2,7 @@
 
 import { Spinner } from "@/components/spinner";
 import { useEffect, useRef } from "react";
-import { CreateMessage } from "ai";
+import { UIMessage } from "ai";
 import { ArrowRight, Pen, X } from "lucide-react";
 import { useTranslation } from "react-i18next"
 
@@ -25,7 +25,7 @@ export default function ChatBox({
   onInputMessage,
   isStreaming,
 }: {
-  onInputMessage: (v: CreateMessage | Message) => void;
+  onInputMessage: (v: UIMessage | Message) => void;
   isStreaming: boolean;
 }) {
   const { t } = useTranslation()
@@ -42,7 +42,7 @@ export default function ChatBox({
   })
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    onInputMessage({ content: data.prompt, role: "user", id: message?.id });
+    onInputMessage({ id: message?.id, role: "user", parts: [{ type: "text", text: data.prompt }] });
     setEditMessage()
   }
 

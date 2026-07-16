@@ -78,7 +78,7 @@ export function BookOutlineForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [autonomous, setAutonomous] = useState(false)
-  const { id, setMessages, reload } = useChat({
+  const { setMessages, regenerate } = useChat({
     api: "/api/chat",
   });
 
@@ -116,7 +116,6 @@ export function BookOutlineForm() {
 
       const chat = await createBook(
         {
-          id,
           title,
           model,
           description,
@@ -130,9 +129,9 @@ export function BookOutlineForm() {
         setMessages((chat.messages || []).map(msg => ({
           id: msg.id,
           role: msg.role as "data" | "system" | "user" | "assistant",
-          content: msg.content
+          parts: [{ type: "text", text: msg.content }]
         })))
-        reload({
+        regenerate({
           body: {
             chat,
             model: chat.model,

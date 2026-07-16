@@ -1,8 +1,24 @@
 import { HumanMessage, AIMessage, ChatMessage } from "@langchain/core/messages";
-import { Chapter } from "@prisma/client";
-import { Message } from "ai";
+import { Chapter, Message } from "@prisma/client";
+import { UIMessage } from "ai";
 
 export * from "./cn"
+
+// Extract the concatenated text from a v7 UI message's parts.
+export function getMessageText(message: UIMessage): string {
+  return message.parts
+    .filter((part): part is { type: "text"; text: string } => part.type === "text")
+    .map((part) => part.text)
+    .join("");
+}
+
+// Map v7 UI message parts to Prisma MessagePart create inputs.
+export function uiMessagePartsToPrismaParts(parts: UIMessage["parts"]) {
+  return parts.map((part) => ({
+    type: part.type,
+    text: (part as { text?: string }).text ?? "",
+  }));
+}
 
 
 export const convertVercelMessageToLangChainMessage = (message: Message) => {

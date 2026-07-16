@@ -1,7 +1,7 @@
 "use client";
 
 import { produce } from "immer";
-import { CreateMessage, Message, useChat } from "@ai-sdk/react";
+import { UIMessage, useChat } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
 
 import { removeChapterMessagesAfterMessageId, updateMessage } from "@/app/api/chat/actions";
@@ -35,15 +35,15 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
   const { message: activeMessage, setActiveMessage, setEditMessage } = useMessageStore()
   const { chapter } = useChaperStore()
 
-  const { messages, status, append, reload, setMessages } = useChat({
+  const { messages, status, sendMessage, regenerate, setMessages } = useChat({
     api: "/api/chapter",
     id: chat.id,
-    initialMessages: initialMessages.map(msg => ({
+    messages: initialMessages.map(msg => ({
       id: msg.id,
       role: msg.role as "data" | "system" | "user" | "assistant",
-      content: msg.content
-    })),
-    async onFinish(message, options) {
+      parts: [{ type: "text", text: msg.content }]
+    })) as UIMessage[],
+    async onFinish() {
       router.refresh();
     },
     onError: (e) => {
@@ -56,13 +56,13 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
     let updateMessages = messages.slice(0, currentMessageIndex + 1)
     if (updateCurrentMessage) {
       updateMessages = produce(updateMessages, draft => {
-        draft[currentMessageIndex].content = message.content
+        draft[currentMessageIndex].parts = [{ type: "text", text: message.content }]
       })
     }
 
     setMessages(updateMessages)
 
-    reload({
+    regenerate({
       body: {
         model: message.model,
         chatId: chat.id,
@@ -78,7 +78,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
     removeChapterMessagesAfterMessageId(chapter?.id!, message.id)
   };
 
-  const onSave = async (message: Message | MessageClient) => {
+  const onSave = async (message: MessageClient) => {
     const content = message.content;
     const book = await saveChapterContent(chapter?.id!, content)
     if (book?.step === "COMPLETE") {
@@ -102,9 +102,16 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
     }
   };
 
-  const appendMessage = async (chapterId: number, message: CreateMessage) => {
-    const updateMessage = await createChapterMessage(chapterId, message) as Message
-    append(updateMessage, { body: { model: chat.model, book: chat, chapterId: chapter?.id } })
+  const appendMessage = async (chapterId: number, message: UIMessage) => {
+    const updateMessage = await createChapterMessage(chapterId, message) as MessageClient
+    sendMessage(
+      {
+        id: updateMessage.id,
+        role: updateMessage.role as "user" | "assistant" | "system",
+        parts: [{ type: "text", text: updateMessage.content }]
+      },
+      { body: { model: chat.model, book: chat, chapterId: chapter?.id } }
+    )
   };
 
   const { book, setActiveBook } = useBookStore()
@@ -184,13 +191,13 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
 
                 />
                 <ChatBox
-                  onInputMessage={(message: CreateMessage | MessageClient) => {
-                    if (message.id) {
-                      refresh(message as MessageClient, true)
-                    } else {
-                      appendMessage(chapter?.id!, message as CreateMessage)
-                    }
-                  }}
+                onInputMessage={(message: UIMessage | MessageClient) => {
+                  if (message.id) {
+                    refresh(message as MessageClient, true)
+                  } else {
+                    appendMessage(chapter?.id!, message as UIMessage)
+                  }
+                }}
                   isStreaming={status === "streaming"}
                 />
               </div>

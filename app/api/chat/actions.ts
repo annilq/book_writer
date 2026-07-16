@@ -8,8 +8,9 @@ import { ChapterInput, flattenChaptersWithPosition } from "@/utils";
 import { FormSchema } from "@/app/(main)/components/BookOutlineForm";
 import { Book, Prisma } from "@prisma/client";
 import { getI18n } from "@/utils/i18n/server";
-import { CoreMessage, CreateMessage, generateText, streamText } from "ai";
+import { generateText, streamText, convertToModelMessages, UIMessage } from "ai";
 import { getAIModel } from "@/utils/ai_providers";
+import { getMessageText, uiMessagePartsToPrismaParts } from "@/utils";
 
 export async function createBook(
   book: z.infer<typeof FormSchema> & { id?: string }
@@ -98,7 +99,7 @@ export async function fetchBookPrompt(
 export async function fetchBookOutline(
   model: string,
   book: Book,
-  messages: CoreMessage[] = []
+  messages: UIMessage[] = []
 ) {
 
   const [provider, modelName] = model.split("/");
@@ -108,7 +109,7 @@ export async function fetchBookOutline(
     model: getAIModel(provider, modelName),
     messages: [
       { role: 'system' as const, content: outlinePrompt },
-      ...messages
+      ...convertToModelMessages(messages)
     ],
     temperature: 0,
     // tools: {
@@ -121,8 +122,11 @@ export async function fetchBookOutline(
     onFinish(result) {
       if (result.text) {
         const content = result.text;
-        const parts = result.response.messages[0].content
-        createMessage(book.id!, { role: "assistant", content: content, parts } as CreateMessage);
+        createMessage(book.id!, {
+          role: "assistant",
+          content,
+          parts: [{ type: "text", text: content }]
+        });
       }
     },
   });
@@ -131,7 +135,7 @@ export async function fetchBookOutline(
 
 export async function createMessage(
   bookId: string,
-  message: CreateMessage
+  message: UIMessage
 ) {
   const prisma = getPrisma();
   const book = await prisma.book.findUnique({
@@ -146,12 +150,12 @@ export async function createMessage(
   const newMessage = await prisma.message.create({
     data: {
       role: message.role,
-      content: message.content,
+      content: getMessageText(message),
       position: maxPosition + 1,
       bookId,
       parts: {
         createMany: {
-          data: (message.parts ? message.parts : [{ type: "text", text: message.content }])! as unknown as Prisma.MessagePartCreateInput[]
+          data: uiMessagePartsToPrismaParts(message.parts)
         }
       }
     },
