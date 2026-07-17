@@ -106,7 +106,18 @@ export function BookOutlineForm() {
           setLoading(false);
           return;
         }
-        await fetch(`/api/book/${book.id}/agent`, { method: "POST" });
+        try {
+          const res = await fetch(`/api/book/${book.id}/agent`, { method: "POST" });
+          const json = await res.json().catch(() => null);
+          if (!res.ok || (json && json.code !== 0)) {
+            throw new Error(json?.info || `启动失败 (${res.status})`);
+          }
+        } catch (e) {
+          setLoading(false);
+          const msg = e instanceof Error ? e.message : "自主生成启动失败";
+          toast({ title: msg });
+          return;
+        }
         setLoading(false);
         startTransition(() => {
           router.push(`/books/${book.id}/agent`);

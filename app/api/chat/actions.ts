@@ -108,10 +108,8 @@ export async function fetchBookOutline(
   const modelMessages = await convertToModelMessages(messages);
   const eventStream = streamText({
     model: getAIModel(provider, modelName),
-    messages: [
-      { role: 'system' as const, content: outlinePrompt },
-      ...modelMessages
-    ],
+    system: outlinePrompt,
+    messages: modelMessages,
     temperature: 0,
     // tools: {
     //   parseBookOutline

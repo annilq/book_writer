@@ -40,12 +40,22 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
             // only the current chapter and previous chapters have history messages
             const isCurrentChapter = chapterId === book.currentChapterId
             if (isCurrentChapter || chapterId < book.currentChapterId!) {
-              const messages = await getMessageOfChapter(chapterId)
-              setMessages(messages.map(msg => ({
-                id: msg.id,
-                role: msg.role as "data" | "system" | "user" | "assistant",
-                parts: [{ type: "text", text: msg.content }]
-              })))
+              const msgs = await getMessageOfChapter(chapterId)
+              // Autonomous runs store content on the chapter, not as messages,
+              // so fall back to chapter.content when there are no messages.
+              if (msgs.length === 0 && node.data.content) {
+                setMessages([{
+                  id: `chapter-${chapterId}`,
+                  role: "assistant",
+                  parts: [{ type: "text", text: node.data.content }],
+                } as unknown as UIMessage])
+              } else {
+                setMessages(msgs.map(msg => ({
+                  id: msg.id,
+                  role: msg.role as "data" | "system" | "user" | "assistant",
+                  parts: [{ type: "text", text: msg.content }]
+                })))
+              }
               setChapter(node.data as unknown as Chapter)
             } else {
               setMessages([])

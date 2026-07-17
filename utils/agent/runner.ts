@@ -28,16 +28,26 @@ export async function generateChapterContent(
 ) {
   const [provider, modelName] = model.split("/");
   const i18n = getI18n(book.language);
+  // The specific chapter we are writing — without injecting it, the model only
+  // sees the whole outline and produces identical content for every chapter.
+  const target = book.chapters.find((c) => c.id === chapterId) ?? book.chapters[0];
   const systemPrompt = `${i18n.t("bookChapterPrompt")}
       # General Instructions
         ${book.prompt}
       # Outline
         ${JSON.stringify(book.chapters)}
+      # Chapter to write now
+        Title: ${target?.title ?? ""}
+        Description: ${target?.description ?? ""}
       # Write with Language: ${book.language}
     `;
   const result = await generateText({
     model: getAIModel(provider, modelName),
-    messages: [{ role: "system", content: systemPrompt }],
+    system: systemPrompt,
+    messages: [{
+      role: "user",
+      content: `请撰写以下章节的内容：\n标题：${target?.title ?? ""}\n简介：${target?.description ?? ""}`,
+    }],
     temperature: 0,
   });
   await saveChapterContent(chapterId, result.text);
@@ -66,7 +76,8 @@ export async function runAutonomousBook(bookId: string) {
     const [pProvider, pModel] = book.model.split("/");
     const outlineResult = await generateText({
       model: getAIModel(pProvider, pModel),
-      messages: [{ role: "system", content: getOutlinePrompt(book) }],
+      system: getOutlinePrompt(book),
+      messages: [{ role: "user", content: "请按照以上要求生成书籍大纲。" }],
       temperature: 0,
     });
     const chapterInputs = parseOutlineToChapterInputs(outlineResult.text);

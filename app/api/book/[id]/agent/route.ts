@@ -14,11 +14,10 @@ export async function POST(
     if (!session?.user) throw new Error("Unauthorized");
 
     const prisma = getPrisma();
+    // Clear any previous run (including a stuck RUNNING one) and its chapters,
+    // then re-run from scratch. This keeps the endpoint idempotent so the
+    // UI "retry" button always works instead of getting blocked forever.
     const existing = await prisma.agentRun.findUnique({ where: { bookId } });
-    if (existing && existing.status !== "FAILED") {
-      throw new Error("Agent run already in progress for this book");
-    }
-    // Retry: clear previous run and its chapters, then re-run from scratch.
     if (existing) {
       await prisma.chapter.deleteMany({ where: { bookId } });
       await prisma.agentRun.delete({ where: { bookId } });

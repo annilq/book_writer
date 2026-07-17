@@ -63,5 +63,20 @@
   "role": "角色",
   "status": "状态",
   "profileUpdated": "个人资料已更新",
-  "errorUpdatingProfile": "更新个人资料失败"
+  "errorUpdatingProfile": "更新个人资料失败",
+  "loading": "加载中…",
+  "agentTitle": "自主生成进度",
+  "agentStepPrompt": "准备",
+  "agentStepOutline": "大纲",
+  "agentStepChapter": "章节",
+  "agentStepComplete": "完成",
+  "agentChapterProgress": "章节完成度",
+  "agentStatusRunning": "正在生成",
+  "agentStatusDone": "生成完成！",
+  "agentStatusFailed": "生成失败",
+  "agentNotStarted": "生成任务未启动或启动失败，请重试",
+  "agentViewBook": "查看书籍",
+  "agentDefaultError": "生成失败",
+  "agentLogTitle": "生成日志",
+  "agentLogEmpty": "暂无日志"
 }

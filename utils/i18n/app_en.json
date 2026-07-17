@@ -62,5 +62,20 @@
   "role": "Role",
   "status": "Status",
   "profileUpdated": "Profile updated",
-  "errorUpdatingProfile": "Error updating profile"
+  "errorUpdatingProfile": "Error updating profile",
+  "loading": "Loading...",
+  "agentTitle": "Autonomous Generation",
+  "agentStepPrompt": "Prepare",
+  "agentStepOutline": "Outline",
+  "agentStepChapter": "Chapters",
+  "agentStepComplete": "Complete",
+  "agentChapterProgress": "Chapter progress",
+  "agentStatusRunning": "Generating",
+  "agentStatusDone": "Generation complete!",
+  "agentStatusFailed": "Generation failed",
+  "agentNotStarted": "Generation task not started or failed. Please retry.",
+  "agentViewBook": "View book",
+  "agentDefaultError": "Generation failed",
+  "agentLogTitle": "Activity log",
+  "agentLogEmpty": "No log yet."
 }

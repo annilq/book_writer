@@ -10,9 +10,20 @@ export default async function Page({
 }) {
   const id = (await params).id;
   const book = await getBookById(id);
-  const messages = await getMessageOfChapter(book?.currentChapterId!);
 
   if (!book) notFound();
+
+  let messages = await getMessageOfChapter(book.currentChapterId!);
+  // Autonomous runs persist content on the chapter, not as messages.
+  const currentChapter = book.chapters?.find((c) => c.id === book.currentChapterId);
+  if (messages.length === 0 && currentChapter?.content) {
+    messages = [{
+      id: `chapter-${currentChapter.id}`,
+      role: "assistant",
+      content: currentChapter.content,
+      parts: [{ type: "text", text: currentChapter.content }],
+    } as any];
+  }
 
   return <PageClient chat={book} messages={messages as any} />;
 }
