@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { removeChapterMessagesAfterMessageId, updateMessage } from "@/app/api/chat/actions";
 
-import BookHeader from "@/app/chats/[id]/components/chat-header";
+import Header from "@/components/Header";
 import Outline from "./components/outline";
 import { SettingsModal } from "@/app/chats/[id]/components/setting-modal";
 import ChatBox from "@/components/Chat/chat-box";
@@ -16,27 +16,24 @@ import { cn } from "@/utils";
 import { Message as MessageClient } from '@prisma/client'
 import { useMessageStore } from "@/store/message";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronLeft, ChevronsRight, Loader, Sparkles, BookOpen, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronsRight, Loader } from "lucide-react";
 import ChapterContent from "./components/chapter-content";
 import { createChapterMessage, MessageWithParts, saveChapterContent } from "@/app/api/chapter/actions";
 import { useBookStore } from "@/store/book";
 import React, { startTransition } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next"
 import ChatLog from "@/components/Chat/chat-log";
 import { useChaperStore } from "@/store/chapter";
+import { toast } from "sonner";
 
 export default function PageClient({ chat, messages: initialMessages }: { chat: Chat, messages: MessageWithParts[] }) {
 
-  const { toast } = useToast()
   const router = useRouter();
   const { t } = useTranslation()
-  const [celebrate, setCelebrate] = React.useState(false)
-  const celebrateDialogRef = React.useRef<HTMLDivElement>(null)
   const { message: activeMessage, setActiveMessage, setEditMessage } = useMessageStore()
-  const { chapter, setChapter } = useChaperStore()
+  const { chapter } = useChaperStore()
 
-  const { messages, status, sendMessage, regenerate, setMessages, stop } = useChat({
+  const { messages, status, sendMessage, regenerate, setMessages } = useChat({
     api: "/api/chapter",
     id: chat.id,
     messages: initialMessages.map(msg => ({
@@ -48,14 +45,7 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
       router.refresh();
     },
     onError: (e) => {
-      // A swallowed failure leaves the author staring at a stuck screen,
-      // so always say something out loud.
-      console.error(e);
-      toast({
-        variant: "destructive",
-        title: t("generationFailed"),
-        description: e instanceof Error && e.message ? e.message : undefined,
-      });
+      console.log(e);
     }
   });
 
@@ -90,12 +80,15 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
     const content = message.content;
     const book = await saveChapterContent(chapter?.id!, content)
     if (book?.step === "COMPLETE") {
-      setCelebrate(true)
+      toast.success(t("congratulationsTitle"), {
+        description: t("congratulationsDesc"),
+        action: {
+          label: "Okay!",
+          onClick: () => router.replace(`/books/${chat.id}`),
+        },
+      })
     } else {
-      toast({ title: t("chapterSaved") })
-      // Return to the conversation instead of blanking the screen, so the
-      // author can immediately prompt the next chapter.
-      setActiveMessage(undefined)
+      setMessages([])
       router.refresh()
     }
   };
@@ -118,80 +111,30 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
     setActiveBook(chat)
   }, [chat, chat.id, setActiveBook])
 
-  // Restore the current chapter from the Book on mount so a mid-edit refresh
-  // doesn't drop the author into a broken empty state (the chapter store
-  // starts null, which would make appendMessage/save pass an undefined id).
-  React.useEffect(() => {
-    if (!chapter && book.currentChapterId) {
-      const current = book.chapters.find((c) => c.id === book.currentChapterId);
-      if (current) setChapter(current);
-    }
-  }, [book, book.currentChapterId, chapter, setChapter])
-
-  // Celebration modal: trap focus inside, close on Escape, and return focus to
-  // the trigger when dismissed — so the author is never trapped in an overlay.
-  React.useEffect(() => {
-    if (!celebrate) return;
-    const dialog = celebrateDialogRef.current;
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    const focusables = () =>
-      dialog
-        ? Array.from(
-            dialog.querySelectorAll<HTMLElement>(
-              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            )
-          ).filter((el) => !el.hasAttribute("disabled"))
-        : [];
-    focusables()[0]?.focus();
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        setCelebrate(false);
-        return;
-      }
-      if (e.key === "Tab") {
-        const items = focusables();
-        if (items.length === 0) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      previouslyFocused?.focus?.();
-    };
-  }, [celebrate])
-
   if (!book) {
     return
   }
 
   return (
     <div className="flex flex-col h-screen">
-      <BookHeader className="px-4">
-        <div className="flex items-center flex-1 gap-2">
-            <Button size="icon" variant="ghost" aria-label={t("back")} onClick={() => router.back()}>
+      <Header>
+        <div className="flex flex-1 items-center justify-between gap-2 pl-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <Button size="icon" variant="ghost" onClick={() => router.back()}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-          {chat.title}
+            <span className="truncate text-sm font-medium">{chat.title}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <SettingsModal book={chat} />
+            {!!activeMessage && (
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setActiveMessage(undefined)}>
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
-        <div className="flex items-center">
-          <SettingsModal book={chat} />
-          {!!activeMessage && (
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setActiveMessage(undefined)}>
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </BookHeader>
+      </Header>
       <div className="flex flex-1 bg-background text-foreground overflow-hidden">
         <Outline book={chat} handleSubmit={appendMessage} setMessages={setMessages} isStreaming={status === "streaming"} />
         <main className="flex flex-1 flex-col">
@@ -249,7 +192,6 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
                   }
                 }}
                   isStreaming={status === "streaming"}
-                  onStop={stop}
                 />
               </div>
             </div>
@@ -264,40 +206,6 @@ export default function PageClient({ chat, messages: initialMessages }: { chat: 
           </div>
         </main>
       </div>
-
-      {celebrate && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in-0"
-          onClick={() => setCelebrate(false)}
-        >
-          <div
-            ref={celebrateDialogRef}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="book-complete-title"
-            className="relative mx-4 max-w-md w-full rounded-2xl border border-brand/30 bg-background p-8 text-center shadow-xl animate-in fade-in-0 zoom-in-95 space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              aria-label={t("close")}
-              onClick={() => setCelebrate(false)}
-              className="absolute right-3 top-3 rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
-            >
-              <X className="size-4" />
-            </button>
-            <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-brand/10 text-brand">
-              <Sparkles className="size-8" />
-            </div>
-            <h2 id="book-complete-title" className="text-2xl font-bold">{t("bookCompleteTitle")}</h2>
-            <p className="text-muted-foreground">{t("bookCompleteDesc")}</p>
-            <Button className="w-full" onClick={() => router.replace(`/books/${chat.id}`)}>
-              <BookOpen className="mr-2 size-4" />
-              {t("readBook")}
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

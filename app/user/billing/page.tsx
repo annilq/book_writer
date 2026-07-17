@@ -58,7 +58,7 @@ export default async function BillingPage() {
                      </CardHeader>
                      <CardFooter>
                          <Button asChild>
-                             <a href="/subscription">Upgrade Plan</a>
+                             <a href="/user/subscription">Upgrade Plan</a>
                          </Button>
                      </CardFooter>
                  </Card>

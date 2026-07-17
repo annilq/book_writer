@@ -6,7 +6,6 @@ import { SessionProvider } from "next-auth/react"
 import { SWRConfig } from 'swr'
 
 import "@/utils/i18n";
-import { Toaster } from "./ui/toaster";
 
 const ClientContext = ({ children }: { children: React.ReactNode }) => {
 
@@ -46,7 +45,6 @@ const ClientContext = ({ children }: { children: React.ReactNode }) => {
                 >
                     <SessionProvider>
                         {children}
-                        <Toaster />
                     </SessionProvider>
                 </ThemeProvider>
             </SWRConfig>

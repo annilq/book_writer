@@ -15,7 +15,7 @@ export default function Home() {
   return (
     <div className="flex grow flex-col">
       <div className="flex min-h-screen flex-col bg-brand">
-        <Header className="border-transparent bg-transparent text-brand-foreground" />
+        <Header className="border-transparent bg-transparent supports-[backdrop-filter]:bg-transparent text-brand-foreground" />
         <main className="flex flex-1 flex-col items-center justify-center w-full text-center px-4 py-16">
           <h1 className="text-4xl font-bold tracking-tight text-brand-foreground sm:text-6xl">
             {t("welcome")} BookCraft

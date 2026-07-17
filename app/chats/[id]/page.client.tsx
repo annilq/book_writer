@@ -7,7 +7,7 @@ import React, { startTransition } from "react";
 
 import { createMessage, removeMessagesAfterMessageId, updateMessage } from "@/app/api/chat/actions";
 
-import BookHeader from "@/app/chats/[id]/components/chat-header";
+import Header from "@/components/Header";
 import { SettingsModal } from "@/app/chats/[id]/components/setting-modal";
 import ChatBox from "@/components/Chat/chat-box";
 import ChatLog from "@/components/Chat/chat-log";
@@ -21,18 +21,14 @@ import { Button } from "@/components/ui/button";
 import { ChevronsRight, ChevronLeft } from "lucide-react";
 import { useBookStore } from "@/store/book";
 import { AssistantText } from "./components/assistant-text-render";
-import { useToast } from "@/hooks/use-toast";
-import { useTranslation } from "react-i18next";
 
 export default function PageClient({ chat }: { chat: Chat }) {
 
   const router = useRouter();
-  const { toast } = useToast()
-  const { t } = useTranslation()
 
   const { message: activeMessage, setActiveMessage, setEditMessage } = useMessageStore()
 
-  const { messages, status, sendMessage, regenerate, setMessages, stop } = useChat({
+  const { messages, status, sendMessage, regenerate, setMessages } = useChat({
     id: chat.id,
     api: "/api/chat",
     messages: chat.messages.map(msg => ({
@@ -55,14 +51,8 @@ export default function PageClient({ chat }: { chat: Chat }) {
       router.refresh();
     },
     onError: (e) => {
-      // A swallowed failure leaves the author staring at a stuck screen,
-      // so always say something out loud.
-      console.error(e);
-      toast({
-        variant: "destructive",
-        title: t("generationFailed"),
-        description: e instanceof Error && e.message ? e.message : undefined,
-      });
+      console.log(e);
+
     }
   });
 
@@ -121,21 +111,24 @@ export default function PageClient({ chat }: { chat: Chat }) {
   return (
     <div className="flex bg-background text-foreground h-screen">
       <main className="flex flex-1 flex-col">
-        <BookHeader>
-          <div className="flex items-center flex-1 gap-2">
-            <Button variant={"ghost"} size={"icon"} aria-label={t("back")} onClick={() => {
-              router.back()
-            }}> <ChevronLeft /> </Button>  {chat.title}
-          </div>
-          <div className="flex items-center">
-            <SettingsModal book={chat} />
-            {!!activeMessage && (
-              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t("close")} onClick={() => setActiveMessage(undefined)}>
-                <ChevronsRight className="h-4 w-4" />
+        <Header>
+          <div className="flex flex-1 items-center justify-between gap-2 pl-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                <ChevronLeft />
               </Button>
-            )}
+              <span className="truncate text-sm font-medium">{chat.title}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <SettingsModal book={chat} />
+              {!!activeMessage && (
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setActiveMessage(undefined)}>
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
-        </BookHeader>
+        </Header>
         <div className="flex flex-1 overflow-auto">
           <div className="flex flex-col flex-1  w-full shrink-0 overflow-hidden lg:w-2/5">
             <div className={cn("flex flex-col flex-1 overflow-auto min-w-min", !activeMessage && "max-w-3xl mx-auto")}>
@@ -166,7 +159,6 @@ export default function PageClient({ chat }: { chat: Chat }) {
                   }
                 }}
                 isStreaming={status === "streaming"}
-                onStop={stop}
               />
             </div>
           </div>
