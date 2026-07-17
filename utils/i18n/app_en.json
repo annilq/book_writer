@@ -77,5 +77,13 @@
   "agentViewBook": "View book",
   "agentDefaultError": "Generation failed",
   "agentLogTitle": "Activity log",
-  "agentLogEmpty": "No log yet."
+  "agentLogEmpty": "No log yet.",
+  "subscription": "Subscription",
+  "modeChat": "Guided (Chat)",
+  "modeChatDesc": "Build the outline & chapters step by step through conversation",
+  "modeAuto": "Autonomous",
+  "modeAutoDesc": "One click to auto-generate the full book in the background",
+  "generateAuto": "Generate Book Automatically",
+  "generateChat": "Start Writing in Chat",
+  "demoFilled": "Example loaded — edit it or generate directly"
 }

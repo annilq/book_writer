@@ -40,7 +40,7 @@ export default async function BillingPage() {
                                     Renews on {new Date(userSubscription.endDate).toLocaleDateString()}
                                 </CardDescription>
                             </div>
-                            <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20">Active</Badge>
+                            <Badge className="bg-success/10 text-success hover:bg-success/20 border-success/20">Active</Badge>
                         </div>
                     </CardHeader>
                     <CardContent>

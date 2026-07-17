@@ -27,7 +27,7 @@ export default function SignIn() {
               <AvatarImage src={session.data?.user?.image!} alt={session.data?.user?.name!} />
               <AvatarFallback>{session.data?.user?.name?.[0]}</AvatarFallback>
             </Avatar>
-            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-background"></span>
+            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success border-2 border-background"></span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-64 p-2" align="end">

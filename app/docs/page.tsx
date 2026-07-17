@@ -1,161 +1,138 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { cn } from "@/utils/cn"
-import { Bell, Grid, LayoutGrid, Plus, Search } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
-import type React from "react" // Import React
-import BookList from "./components/Books"
-import Tags from "./components/Tags"
+import type React from "react"
+import { BookOpen, ListTree, PenLine, Sparkles } from "lucide-react"
+import Header from "@/components/Header"
+import Footer from "@/components/Footer"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
-interface NavItemProps {
-  href: string
+interface Step {
   icon: React.ReactNode
-  children: React.ReactNode
-  active?: boolean
+  title: string
+  description: string
 }
 
-function NavItem({ href, icon, children, active }: NavItemProps) {
+const steps: Step[] = [
+  {
+    icon: <PenLine className="h-5 w-5" />,
+    title: "1. Describe your book",
+    description:
+      "Provide a title, category and a short description. Pick a model and let BookCraft draft a structured outline for you.",
+  },
+  {
+    icon: <ListTree className="h-5 w-5" />,
+    title: "2. Refine the outline",
+    description:
+      "Review the generated chapters, edit or reorder them, and chat with the AI to shape the structure until it fits your vision.",
+  },
+  {
+    icon: <Sparkles className="h-5 w-5" />,
+    title: "3. Generate chapters",
+    description:
+      "Write each chapter with AI assistance, iterate on the content, and save the versions you are happy with.",
+  },
+  {
+    icon: <BookOpen className="h-5 w-5" />,
+    title: "4. Read & publish",
+    description:
+      "Once every chapter is complete, read the finished book in a clean reading view and share your masterpiece.",
+  },
+]
+
+const faqs = [
+  {
+    question: "What is BookCraft?",
+    answer:
+      "BookCraft is an AI-assisted writing tool that helps you go from an idea to a fully structured book — outline, chapters and final draft — with the help of large language models.",
+  },
+  {
+    question: "Which AI models can I use?",
+    answer:
+      "You can choose from the models configured for your account when creating a book. Different providers may be available depending on your setup.",
+  },
+  {
+    question: "Can I edit the AI-generated content?",
+    answer:
+      "Yes. Every outline and chapter is fully editable. You can rewrite, regenerate or manually adjust any part of your book at any time.",
+  },
+  {
+    question: "How do subscriptions work?",
+    answer:
+      "Free accounts can try the core features. Pro plans unlock additional capacity and features — visit the Subscription page to compare plans or redeem a code.",
+  },
+]
+
+export default function DocsPage() {
   return (
-    <Link
-      href={href}
-      className={cn("flex items-center gap-2 px-3 py-2 text-sm text-foreground rounded", active && "bg-gray-100")}
-    >
-      {icon}
-      <span>{children}</span>
-    </Link>
-  )
-}
+    <div className="flex flex-col h-screen bg-background overflow-y-auto">
+      <Header className="bg-background border-b" />
 
-export default function BookManager() {
-  return (
-    <div className="h-full flex bg-background">
-      {/* Sidebar */}
-      <div className="w-64 border-r bg-background">
-        <div className="p-4">
-          <h1 className="text-xl font-bold text-foreground">Showpad</h1>
-        </div>
-        <nav className="space-y-1 px-2">
-          <NavItem href="#" icon={<LayoutGrid className="h-4 w-4" />} active>
-            All content
-          </NavItem>
-          <NavItem
-            href="#"
-            icon={
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  d="M15 3v18M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            }
-          >
-            Presentations
-          </NavItem>
-          <NavItem
-            href="#"
-            icon={
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6m-3 4v6m-3-3h6"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            }
-          >
-            Analytics
-          </NavItem>
-          <Tags />
-        </nav>
-      </div>
+      <main className="flex-1">
+        <div className="container mx-auto max-w-4xl px-4 py-12 space-y-12">
+          <div className="text-center space-y-3">
+            <h1 className="tracking-tight">Documentation</h1>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Learn how to create your next book with BookCraft — from the first
+              idea to a finished, publishable draft.
+            </p>
+          </div>
 
-      {/* Main content */}
-      <div className="flex-1">
-        <header className="flex items-center justify-between border-b px-6 py-4">
-          <div className="w-96">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-              <Input type="search" placeholder="Search books..." className="pl-9" />
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold tracking-tight">
+              How it works
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {steps.map((step) => (
+                <Card key={step.title}>
+                  <CardHeader>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand/10 text-brand mb-2">
+                      {step.icon}
+                    </div>
+                    <CardTitle className="text-lg">{step.title}</CardTitle>
+                    <CardDescription>{step.description}</CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon">
-              <Grid className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Bell className="h-4 w-4" />
-            </Button>
-            <div className="h-8 w-8 overflow-hidden rounded-full">
-              <Image
-                src="/placeholder.svg"
-                alt="Avatar"
-                width={32}
-                height={32}
-                className="h-full w-full object-cover"
-              />
-            </div>
-          </div>
-        </header>
+          </section>
 
-        <div className="p-6">
-          <div className="mb-6 flex items-center gap-4">
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Create
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Upload
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Create folder
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  d="M12 18.5a6.5 6.5 0 100-13 6.5 6.5 0 000 13zM12 14a2 2 0 100-4 2 2 0 000 4z"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Record
-            </Button>
-          </div>
-
-          <div className="mb-6">
-            <Tabs defaultValue="recent">
-              <TabsList>
-                <TabsTrigger value="recent">Recent</TabsTrigger>
-                <TabsTrigger value="starred">Starred</TabsTrigger>
-                <TabsTrigger value="shared">Shared</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-          <BookList />
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold tracking-tight">
+              Frequently asked questions
+            </h2>
+            <Card>
+              <CardContent className="pt-6">
+                <Accordion type="single" collapsible className="w-full">
+                  {faqs.map((faq, i) => (
+                    <AccordionItem key={i} value={`item-${i}`}>
+                      <AccordionTrigger className="text-left">
+                        {faq.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground">
+                        {faq.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
+          </section>
         </div>
-      </div>
+      </main>
+
+      <Footer />
     </div>
   )
 }

@@ -121,7 +121,7 @@ export default function AgentProgress({
                     isActive
                       ? "bg-primary text-primary-foreground border-primary"
                       : isFinished
-                      ? "bg-green-500 text-white border-green-500"
+                      ? "bg-success text-success-foreground border-success"
                       : "bg-muted text-muted-foreground border-border"
                   }`}
                 >
@@ -146,7 +146,7 @@ export default function AgentProgress({
               {i < STEP_KEYS.length - 1 && (
                 <div
                   className={`flex-1 h-0.5 mx-2 mb-5 ${
-                    isFinished ? "bg-green-500" : "bg-border"
+                    isFinished ? "bg-success" : "bg-border"
                   }`}
                 />
               )}
@@ -175,7 +175,7 @@ export default function AgentProgress({
 
       {/* Status banners */}
       {status === "FAILED" && (
-        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/30 p-4 text-red-700 dark:text-red-300">
+        <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
           <XCircle className="w-5 h-5 mt-0.5 shrink-0" />
           <div className="flex-1 space-y-1">
             <p className="font-medium">{t("agentStatusFailed")}</p>
@@ -190,7 +190,7 @@ export default function AgentProgress({
       )}
 
       {status === "DONE" && (
-        <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 dark:bg-green-950/30 p-4 text-green-700 dark:text-green-300">
+        <div className="flex items-center gap-3 rounded-xl border border-success/30 bg-success/10 p-4 text-success">
           <CheckCircle2 className="w-6 h-6 shrink-0" />
           <div className="flex-1 font-medium">{t("agentStatusDone")}</div>
           <Button onClick={() => router.push(`/content/${bookId}`)}>
@@ -213,7 +213,7 @@ export default function AgentProgress({
       )}
 
       {!progress?.run && (
-        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/30 p-4 text-red-700 dark:text-red-300">
+        <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
           <XCircle className="w-5 h-5 mt-0.5 shrink-0" />
           <div className="flex-1">
             <p className="font-medium">{t("agentNotStarted")}</p>

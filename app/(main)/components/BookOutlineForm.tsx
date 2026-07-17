@@ -23,8 +23,8 @@ import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { createBook } from "@/app/api/chat/actions";
-import { Spinner } from "@/components/spinner";
-import { Switch } from "@/components/ui/switch";
+import { cn } from "@/utils/cn";
+import { MessageSquare, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
 
 export const FormSchema = z.object({
   title: z.string().min(2, {
@@ -78,6 +78,7 @@ export function BookOutlineForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [autonomous, setAutonomous] = useState(false)
+  const [filledDemo, setFilledDemo] = useState(false)
   const { setMessages, regenerate } = useChat({
     api: "/api/chat",
   });
@@ -180,9 +181,37 @@ export function BookOutlineForm() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between px-6 pb-2">
-        <span className="text-sm font-medium">{t("autonomous")}</span>
-        <Switch checked={autonomous} onCheckedChange={setAutonomous} />
+      <div className="px-6 pb-2">
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => setAutonomous(false)}
+            className={cn(
+              "rounded-lg border p-3 text-left transition-all",
+              !autonomous ? "border-brand bg-brand/5" : "border-border hover:border-foreground/20"
+            )}
+          >
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <MessageSquare className="h-4 w-4 text-brand" />
+              {t("modeChat")}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{t("modeChatDesc")}</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => setAutonomous(true)}
+            className={cn(
+              "rounded-lg border p-3 text-left transition-all",
+              autonomous ? "border-brand bg-brand/5" : "border-border hover:border-foreground/20"
+            )}
+          >
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Sparkles className="h-4 w-4 text-brand" />
+              {t("modeAuto")}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{t("modeAutoDesc")}</p>
+          </button>
+        </div>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-2xl mx-auto space-y-4 px-6 pb-6">
@@ -259,14 +288,20 @@ export function BookOutlineForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              {t("generateButton")}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {autonomous ? t("generateAuto") : t("generateChat")}
             </Button>
           </div>
         </form>
       </Form>
-      <Example handleSubmit={(data) => { form.reset(data) }} />
-      {loading && <Spinner />}
+      <Example handleSubmit={(data) => { form.reset(data); setFilledDemo(true); }} />
+      {filledDemo && (
+        <p className="mx-6 mb-4 flex items-center justify-center gap-1 text-xs text-brand">
+          <CheckCircle2 className="h-3.5 w-3.5" />
+          {t("demoFilled")}
+        </p>
+      )}
     </div>
   )
 }

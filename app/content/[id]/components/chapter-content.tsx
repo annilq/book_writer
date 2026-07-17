@@ -40,7 +40,7 @@ export default function ChapterContent({
     <div
       className={cn(`h-full hidden overflow-hidden transition-[width] lg:flex bg-secondary relative flex-col`, isShowing ? "w-3/5 border-l" : "w-0", chat.step === "CHAPTER" ? "flex-1" : "")}
     >
-      <div className="flex items-center justify-between border-t border-gray-300 px-4 py-4 h-10 w-full bg-background">
+      <div className="flex items-center justify-between border-t px-4 py-4 h-10 w-full bg-background">
         <div className="flex items-center justify-end gap-3">
           {previousMessage ? (
             <button
@@ -57,7 +57,7 @@ export default function ChapterContent({
 
           <p className="text-sm">
             Version <span className="tabular-nums">{currentVersion + 1}</span>{" "}
-            <span className="text-gray-400">of</span>{" "}
+            <span className="text-muted-foreground">of</span>{" "}
             <span className="tabular-nums">
               {Math.max(currentVersion + 1, assistantMessages.length)}
             </span>

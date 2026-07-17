@@ -54,7 +54,7 @@ export function ProfileForm({ user, subscription }: { user: Partial<User>; subsc
                     {user.role || 'USER'}
                 </Badge>
                 {user.status === 'ACTIVE' ? (
-                     <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50 text-xs font-normal">Active</Badge>
+                     <Badge variant="outline" className="border-success/30 text-success bg-success/10 text-xs font-normal">Active</Badge>
                 ) : (
                      <Badge variant="destructive" className="text-xs font-normal">Banned</Badge>
                 )}

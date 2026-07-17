@@ -31,20 +31,25 @@ export default function Header({ className, children = false }: { className?: st
 
   return (
     <header
-      className={cn("sticky w-full top-0 z-50 transition-all duration-300 bg-linear-to-r", isScrolled && "shadow-md", className)}
+      className={cn(
+        "sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300",
+        isScrolled && "shadow-sm",
+        className
+      )}
     >
-      <div className="flex justify-between gap-4 px-4 py-2">
-        <nav className="flex gap-1 flex-col md:flex-row">
+      <div className="flex items-center justify-between gap-4 px-4 py-2">
+        <nav className="flex items-center gap-1 overflow-x-auto">
           <ActiveLink href="/">{t("home")}</ActiveLink>
-          {session.data?.user ? (
-            <>
-              <ActiveLink href="/books">{t("bookshelf")}</ActiveLink>
-            </>
-          ) : false}
+          {session.data?.user && (
+            <ActiveLink href="/books">{t("bookshelf")}</ActiveLink>
+          )}
           <ActiveLink href="/explore">{t("explore")}</ActiveLink>
+          {session.data?.user && (
+            <ActiveLink href="/user/subscription">{t("subscription")}</ActiveLink>
+          )}
         </nav>
         {children}
-        <div className="flex justify-center gap-4">
+        <div className="flex shrink-0 items-center justify-center gap-2">
           <SignIn />
           <ThemeToggle />
         </div>

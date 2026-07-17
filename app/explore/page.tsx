@@ -19,7 +19,7 @@ export default function BookManager() {
         <div className="flex items-center justify-between">
           <div className="w-96">
             <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input type="search" placeholder="Search books..." className="pl-9" />
             </div>
           </div>

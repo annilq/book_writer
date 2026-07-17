@@ -36,6 +36,16 @@
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
 
+  /* Brand accent (single source of truth for brand color) */
+  --color-brand: hsl(var(--brand));
+  --color-brand-foreground: hsl(var(--brand-foreground));
+
+  /* Semantic status colors */
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
@@ -102,6 +112,18 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
+    /* Brand: Indigo 500 (single unified accent) */
+    --brand: 243 75% 59%;
+    --brand-foreground: 0 0% 100%;
+
+    /* Success: Emerald 600 */
+    --success: 142 71% 40%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning: Amber 500 */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
     /* Border: Neutral 200 (Structural definition) */
     --border: 0 0% 89.8%;
     /* Input: Neutral 200 */
@@ -146,6 +168,18 @@
     /* Destructive: Red 900 */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
+
+    /* Brand: Indigo 400 (brighter for dark bg) */
+    --brand: 243 75% 68%;
+    --brand-foreground: 0 0% 100%;
+
+    /* Success: Emerald 400 */
+    --success: 142 69% 58%;
+    --success-foreground: 0 0% 10%;
+
+    /* Warning: Amber 400 */
+    --warning: 38 92% 60%;
+    --warning-foreground: 0 0% 10%;
 
     /* Border: Neutral 800 (Subtle definition in dark mode) */
     --border: 0 0% 16%;

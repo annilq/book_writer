@@ -23,11 +23,11 @@ export default async function UserSubscriptionPage() {
 
   return (
       <div className="space-y-8 max-w-5xl">
-          <h1 className="text-3xl font-bold">Subscription Management</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Subscription Management</h1>
           
           {/* Active Subscription */}
           {userSubscription && userSubscription.status === 'ACTIVE' ? (
-              <Card className="border-primary/50 bg-primary/5">
+              <Card className="border-brand/30 bg-brand/5">
                   <CardHeader>
                       <CardTitle>Active Subscription</CardTitle>
                       <CardDescription>
@@ -38,7 +38,7 @@ export default async function UserSubscriptionPage() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                           <div>
                               <span className="text-muted-foreground">Status:</span>
-                              <span className="ml-2 font-semibold text-green-600">Active</span>
+                              <span className="ml-2 font-semibold text-success">Active</span>
                           </div>
                           <div>
                               <span className="text-muted-foreground">Start Date:</span>
@@ -80,7 +80,7 @@ export default async function UserSubscriptionPage() {
                               <ul className="space-y-2">
                                 {plan.features?.split(",").map((feature, i) => (
                                   <li key={i} className="flex items-center text-sm">
-                                    <Check className="w-4 h-4 mr-2 text-green-500" />
+                                    <Check className="w-4 h-4 mr-2 text-success" />
                                     {feature.trim()}
                                   </li>
                                 ))}

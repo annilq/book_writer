@@ -1,5 +1,6 @@
 import { Spinner } from "@/components/spinner";
 import { Book, STEP } from "@prisma/client";
+import { BookOpen, Plus } from "lucide-react";
 import Image from "next/image"
 import Link from "next/link";
 import type React from "react"
@@ -86,9 +87,24 @@ export default function Books() {
 
   if (!books || books.length === 0) {
     return (
-        <div className="flex flex-col items-center justify-center h-64 bg-muted/50">
-            <p className="text-muted-foreground text-sm">No books created yet.</p>
+      <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-muted/30 py-20 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-background shadow-sm">
+          <BookOpen className="h-7 w-7 text-muted-foreground" />
         </div>
+        <div className="space-y-1">
+          <p className="text-base font-medium">No books yet</p>
+          <p className="mx-auto max-w-xs text-sm text-muted-foreground">
+            Create your first AI-generated book — just give it a title and a short idea.
+          </p>
+        </div>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          <Plus className="h-4 w-4" />
+          Create your first book
+        </Link>
+      </div>
     )
   }
 

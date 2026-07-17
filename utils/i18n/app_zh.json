@@ -78,5 +78,13 @@
   "agentViewBook": "查看书籍",
   "agentDefaultError": "生成失败",
   "agentLogTitle": "生成日志",
-  "agentLogEmpty": "暂无日志"
+  "agentLogEmpty": "暂无日志",
+  "subscription": "订阅",
+  "modeChat": "对话式创作",
+  "modeChatDesc": "通过对话逐步生成大纲与章节内容",
+  "modeAuto": "自主生成",
+  "modeAutoDesc": "一键在后台自动完成整本书的生成",
+  "generateAuto": "一键生成全书",
+  "generateChat": "开始对话创作",
+  "demoFilled": "已载入示例，可直接生成或继续编辑"
 }

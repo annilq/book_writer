@@ -21,8 +21,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Copy } from "lucide-react";
+import { Plus, Copy, Loader2 } from "lucide-react";
 import { useClipboard } from 'use-clipboard-copy';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface Code {
   id: string;
@@ -108,12 +116,16 @@ export default function CodesPage() {
       toast.success("Code copied");
   }
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center h-full text-muted-foreground">
+      <Loader2 className="h-6 w-6 animate-spin" />
+    </div>
+  );
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Redemption Codes</h2>
+        <h1 className="text-2xl font-semibold tracking-tight">Redemption Codes</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="w-4 h-4 mr-2" /> Generate Codes</Button>
@@ -174,56 +186,59 @@ export default function CodesPage() {
         </Dialog>
       </div>
 
-      <div className="border rounded-md">
-        <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                        <th className="px-6 py-3">Code</th>
-                        <th className="px-6 py-3">Plan</th>
-                        <th className="px-6 py-3">Status</th>
-                        <th className="px-6 py-3">Used By</th>
-                        <th className="px-6 py-3">Created At</th>
-                        <th className="px-6 py-3">Expires At</th>
-                        <th className="px-6 py-3">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {codes.map((code) => (
-                        <tr key={code.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                            <td className="px-6 py-4 font-mono font-medium">{code.code}</td>
-                            <td className="px-6 py-4">{code.plan.name}</td>
-                            <td className="px-6 py-4">
-                                {code.isUsed ? (
-                                    <span className="text-red-600">Used</span>
-                                ) : (
-                                    <span className="text-green-600">Available</span>
-                                )}
-                            </td>
-                            <td className="px-6 py-4">
-                                {code.usedByUser ? (
-                                    <div>
-                                        <div>{code.usedByUser.name}</div>
-                                        <div className="text-xs text-gray-500">{code.usedByUser.email}</div>
-                                    </div>
-                                ) : "-"}
-                            </td>
-                            <td className="px-6 py-4">
-                                {new Date(code.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4">
-                                {code.expiresAt ? new Date(code.expiresAt).toLocaleDateString() : "Never"}
-                            </td>
-                            <td className="px-6 py-4">
-                                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(code.code)}>
-                                    <Copy className="w-4 h-4" />
-                                </Button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+      <div className="rounded-md border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>Code</TableHead>
+              <TableHead>Plan</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Used By</TableHead>
+              <TableHead>Created At</TableHead>
+              <TableHead>Expires At</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {codes.map((code) => (
+              <TableRow key={code.id}>
+                <TableCell className="font-mono font-medium">{code.code}</TableCell>
+                <TableCell>{code.plan.name}</TableCell>
+                <TableCell>
+                  {code.isUsed ? (
+                    <span className="text-destructive">Used</span>
+                  ) : (
+                    <span className="text-success">Available</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {code.usedByUser ? (
+                    <div>
+                      <div>{code.usedByUser.name}</div>
+                      <div className="text-xs text-muted-foreground">{code.usedByUser.email}</div>
+                    </div>
+                  ) : "—"}
+                </TableCell>
+                <TableCell>{new Date(code.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  {code.expiresAt ? new Date(code.expiresAt).toLocaleDateString() : "Never"}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(code.code)}>
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+            {codes.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                  No codes generated yet.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

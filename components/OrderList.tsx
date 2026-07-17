@@ -48,9 +48,9 @@ export function OrderList({ orders, loading, isAdmin = false, onCancelOrder }: O
   const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
       case "COMPLETED":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400">Completed</Badge>;
+        return <Badge className="bg-success/10 text-success hover:bg-success/10 border-success/20">Completed</Badge>;
       case "PENDING":
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400">Pending</Badge>;
+        return <Badge variant="secondary" className="bg-warning/10 text-warning hover:bg-warning/10 border-warning/20">Pending</Badge>;
       case "FAILED":
         return <Badge variant="destructive">Failed</Badge>;
       case "REFUNDED":
@@ -65,11 +65,11 @@ export function OrderList({ orders, loading, isAdmin = false, onCancelOrder }: O
   const getProviderBadge = (provider: PaymentProvider) => {
       switch (provider) {
           case "STRIPE":
-              return <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">Stripe</Badge>;
+              return <Badge variant="outline" className="border-brand/30 text-brand bg-brand/10">Stripe</Badge>;
           case "WECHAT":
-              return <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50">WeChat</Badge>;
+              return <Badge variant="outline" className="border-success/30 text-success bg-success/10">WeChat</Badge>;
           case "REDEMPTION":
-              return <Badge variant="outline" className="border-purple-200 text-purple-700 bg-purple-50">Redeem</Badge>;
+              return <Badge variant="secondary">Redeem</Badge>;
           default:
               return <span className="text-muted-foreground text-xs">{provider}</span>;
       }
@@ -123,7 +123,7 @@ export function OrderList({ orders, loading, isAdmin = false, onCancelOrder }: O
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             onClick={() => onCancelOrder(order.orderNo)}
                           >
                               Cancel

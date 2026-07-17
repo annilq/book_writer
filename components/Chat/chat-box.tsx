@@ -56,7 +56,7 @@ export default function ChatBox({
 
   return (
     <div className="mb-4 flex shrink-0 px-4">
-      <div className="relative w-full rounded-2xl overflow-hidden border border-gray-300 bg-secondary p-2">
+      <div className="relative w-full rounded-2xl overflow-hidden border bg-secondary p-2">
         {message ? (
           <div className="font-bold p-2 text-xs bg-background rounded mb-2 flex justify-between items-center">
             <div className="flex  items-center gap-2"><Pen className="h-4 w-4" />{t("editTip")}</div>
@@ -79,7 +79,7 @@ export default function ChatBox({
                         placeholder="Follow up"
                         ref={textareaRef}
                         disabled={isStreaming}
-                        className="absolute shadow-none border-none inset-0 w-full resize-none placeholder-gray-500 disabled:opacity-50 focus-visible:ring-0 p-0"
+                        className="absolute shadow-none border-none inset-0 w-full resize-none placeholder:text-muted-foreground disabled:opacity-50 focus-visible:ring-0 p-0"
                         onKeyDown={(event) => {
                           if (event.key === "Enter" && !event.shiftKey) {
                             event.preventDefault();
@@ -93,12 +93,11 @@ export default function ChatBox({
                 )}
               />
               <div className="absolute bottom-1.5 right-1.5 flex has-disabled:opacity-50">
-                <div className="pointer-events-none absolute inset-0 -bottom-[1px] rounded bg-blue-700" />
                 <button
-                  className="relative w-full inline-flex size-6 items-center justify-center rounded bg-blue-500 font-medium text-white shadow-lg outline-blue-300 hover:bg-blue-500/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="relative inline-flex size-6 items-center justify-center rounded-md bg-primary font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                   type="submit"
                 >
-                  {isStreaming ? <Spinner /> : <ArrowRight />}
+                  {isStreaming ? <Spinner /> : <ArrowRight className="size-4" />}
                 </button>
               </div>
             </form>

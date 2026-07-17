@@ -154,7 +154,7 @@ export default function SubscriptionPage() {
   return (
     <div className="container mx-auto py-12 px-4 max-w-6xl">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold tracking-tight mb-4 bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+        <h1 className="mb-4 tracking-tight">
           Unlock Pro Features
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -164,9 +164,9 @@ export default function SubscriptionPage() {
 
       {/* Current Subscription Status */}
       {subscription && subscription.status === 'ACTIVE' && (
-        <Card className="mb-12 border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-800">
+        <Card className="mb-12 border-brand/30 bg-brand/5">
           <CardHeader>
-            <CardTitle className="text-blue-700 dark:text-blue-300">Active Subscription</CardTitle>
+            <CardTitle className="text-brand">Active Subscription</CardTitle>
             <CardDescription>
                 You are currently subscribed to <strong>{subscription.plan.name}</strong>.
             </CardDescription>
@@ -175,7 +175,7 @@ export default function SubscriptionPage() {
              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                  <div>
                      <span className="text-muted-foreground">Status:</span>
-                     <span className="ml-2 font-semibold text-green-600">Active</span>
+                     <span className="ml-2 font-semibold text-success">Active</span>
                  </div>
                  <div>
                      <span className="text-muted-foreground">Start Date:</span>
@@ -202,7 +202,7 @@ export default function SubscriptionPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
         {plans.map((plan) => (
-          <Card key={plan.id} className="flex flex-col border-2 hover:border-blue-500 transition-colors">
+          <Card key={plan.id} className="flex flex-col border-2 hover:border-brand transition-colors">
             <CardHeader>
               <CardTitle>{plan.name}</CardTitle>
               <CardDescription>{plan.description}</CardDescription>
@@ -217,7 +217,7 @@ export default function SubscriptionPage() {
               <ul className="space-y-2">
                 {plan.features?.split(",").map((feature, i) => (
                   <li key={i} className="flex items-center text-sm">
-                    <Check className="w-4 h-4 mr-2 text-green-500" />
+                    <Check className="w-4 h-4 mr-2 text-success" />
                     {feature.trim()}
                   </li>
                 ))}

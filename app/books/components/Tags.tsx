@@ -8,8 +8,8 @@ import useSWR from "swr";
 
 function TagItem({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-gray-50">
-      <TagsIcon className="w-4 h-4 text-gray-400" />
+    <Link href={href} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent rounded-md">
+      <TagsIcon className="w-4 h-4 text-muted-foreground" />
       <span>{children}</span>
     </Link>
   )
@@ -21,7 +21,7 @@ export default function Tags({ collapse }: { collapse: boolean }) {
 
   return (
     <div className="py-3">
-      <div className="px-2 text-xs font-medium uppercase text-gray-500 flex justify-between items-center">
+      <div className="px-2 text-xs font-medium uppercase text-muted-foreground flex justify-between items-center">
         {!collapse ? t("Tags") : ""}
         <Button size="icon" variant={"link"}>
           <Plus className="h-4 w-4" />

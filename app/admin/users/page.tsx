@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -74,8 +74,8 @@ export default function AdminUsersPage() {
   );
 
   if (loading) return (
-    <div className="flex items-center justify-center h-full text-muted-foreground text-sm font-mono">
-      Loading data...
+    <div className="flex items-center justify-center h-full text-muted-foreground">
+      <Loader2 className="h-6 w-6 animate-spin" />
     </div>
   );
 
@@ -135,7 +135,7 @@ export default function AdminUsersPage() {
                 </TableCell>
                 <TableCell>
                   {user.status === 'ACTIVE' ? (
-                    <Badge variant="outline" className="border-transparent bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 font-normal">
+                    <Badge variant="outline" className="border-transparent bg-success/10 text-success hover:bg-success/20 font-normal">
                       Active
                     </Badge>
                   ) : (
