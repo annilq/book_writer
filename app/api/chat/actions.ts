@@ -239,6 +239,31 @@ export async function updateMessage(
   return mesage;
 }
 
+export async function updateBookMeta(
+  bookId: string,
+  data: {
+    title?: string;
+    description?: string;
+    model?: string;
+    prompt?: string;
+    categories?: string;
+  }
+) {
+  const prisma = getPrisma();
+  return prisma.book.update({
+    where: { id: bookId },
+    data: {
+      ...(data.title !== undefined ? { title: data.title } : {}),
+      ...(data.description !== undefined ? { description: data.description } : {}),
+      ...(data.model !== undefined ? { model: data.model } : {}),
+      ...(data.prompt !== undefined ? { prompt: data.prompt } : {}),
+      ...(data.categories !== undefined && data.categories
+        ? { categories: { set: [{ name: data.categories }] } }
+        : {}),
+    },
+  });
+}
+
 export async function removeMessagesAfterMessageId(
   bookId: string,
   messageId: string,

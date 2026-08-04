@@ -12,7 +12,6 @@ import { Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetFooter,
   SheetHeader,
@@ -20,11 +19,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
-import { FormField, FormItem, FormControl, FormMessage, Form } from "@/components/ui/form"
+import { FormField, FormItem, FormControl, FormMessage, Form, FormLabel } from "@/components/ui/form"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 
 import { FormSchema } from "@/app/(main)/components/BookOutlineForm"
+import { updateBookMeta } from "@/app/api/chat/actions"
 import { z } from "zod"
 import { Book, Category } from "@prisma/client"
 import useSWR from "swr"
@@ -32,6 +32,8 @@ import { Model } from "@/app/api/model/models"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Markdown from 'react-markdown'
 import remarkGfm from "remark-gfm"
+import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
 
 type BookWithCategories = Book & {
   categories: Category[]
@@ -39,8 +41,10 @@ type BookWithCategories = Book & {
 
 export function SettingsModal({ book }: { book: BookWithCategories }) {
   const [open, setOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const { t, i18n } = useTranslation()
+  const { toast } = useToast()
 
   const { data: categories = [] } = useSWR<Category[]>('/api/categories')
   const { data: models = [] } = useSWR<Model[]>('/api/model')
@@ -57,9 +61,24 @@ export function SettingsModal({ book }: { book: BookWithCategories }) {
   })
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-
-    console.log(data);
-    setOpen(false)
+    setSaving(true)
+    try {
+      await updateBookMeta(book.id, {
+        title: data.title,
+        description: data.description,
+        model: data.model,
+        categories: data.categories,
+      })
+      toast({ title: t("bookSaved") })
+      setOpen(false)
+    } catch (e) {
+      toast({
+        title: t("bookSaveFailed"),
+        description: e instanceof Error ? e.message : undefined,
+      })
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -87,6 +106,7 @@ export function SettingsModal({ book }: { book: BookWithCategories }) {
                     name="title"
                     render={({ field }) => (
                       <FormItem className="flex-1">
+                        <FormLabel>{t("labelTitle")}</FormLabel>
                         <FormControl>
                           <Input placeholder={t("bookName")} {...field} />
                         </FormControl>
@@ -99,8 +119,9 @@ export function SettingsModal({ book }: { book: BookWithCategories }) {
                     name="categories"
                     render={({ field }) => (
                       <FormItem>
+                        <FormLabel>{t("labelCategory")}</FormLabel>
                         <FormControl>
-                          <Select {...field} onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select {...field} onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder={t("bookCate")} />
@@ -121,6 +142,7 @@ export function SettingsModal({ book }: { book: BookWithCategories }) {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
+                      <FormLabel>{t("labelDescription")}</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder={t("bookDesc")}
@@ -137,16 +159,27 @@ export function SettingsModal({ book }: { book: BookWithCategories }) {
                     control={form.control}
                     name="model"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex-1">
+                        <FormLabel>
+                          {t("labelModel")}
+                          <span className="ml-1 text-xs font-normal text-muted-foreground">({t("modelOptional")})</span>
+                        </FormLabel>
                         <FormControl>
-                          <Select  {...field} onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select  {...field} onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder={t("bookModel")} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {models.map(model => <SelectItem key={model.name} value={`${model.provider}/${model.name}`}>{model.name}/{model.provider}</SelectItem>)}
+                              {models.map((model, i) => (
+                                <SelectItem key={model.name} value={`${model.provider}/${model.name}`}>
+                                  {model.name} · {model.provider}
+                                  {i === 0 && (
+                                    <span className="ml-2 text-xs text-brand">({t("modelRecommended")})</span>
+                                  )}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </FormControl>
@@ -155,11 +188,10 @@ export function SettingsModal({ book }: { book: BookWithCategories }) {
                     )}
                   />
                   <SheetFooter className="flex-1">
-                    <SheetClose asChild>
-                      <Button type="submit" className="w-full" >
-                        {t("save")}
-                      </Button>
-                    </SheetClose>
+                    <Button type="submit" className="w-full" disabled={saving}>
+                      {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {t("save")}
+                    </Button>
                   </SheetFooter>
                 </div>
               </form>
