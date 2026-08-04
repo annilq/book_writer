@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { getPrisma } from "@/utils/prisma";
 import { appResponse } from "@/utils/response";
 import { runAutonomousBook } from "@/utils/agent/runner";
+import { computeChapterProgress } from "@/utils/agent/progress";
 
 export async function POST(
   _req: NextRequest,
@@ -51,11 +52,14 @@ export async function GET(
     const run = await prisma.agentRun.findUnique({ where: { bookId } });
     const book = await prisma.book.findUnique({ where: { id: bookId } });
     const chapters = await prisma.chapter.findMany({ where: { bookId } });
-    const chaptersDone = chapters.filter((c) => c.content && c.content.length > 0).length;
+    // Count only leaf chapters — the runner writes content to leaves only, so a
+    // parent-inclusive denominator can never reach 100% and would contradict a
+    // DONE run. `computeChapterProgress` keeps total/done in sync with that.
+    const { total: chaptersTotal, done: chaptersDone } = computeChapterProgress(chapters);
     return {
       run,
       bookStep: book?.step,
-      chaptersTotal: chapters.length,
+      chaptersTotal,
       chaptersDone,
     };
   });

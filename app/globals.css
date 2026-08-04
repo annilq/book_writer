@@ -108,20 +108,23 @@
     --accent: 0 0% 96.1%;
     --accent-foreground: 0 0% 9%;
 
-    /* Destructive: Red 600 */
-    --destructive: 0 84.2% 60.2%;
+    /* Destructive: Red 600 — darkened so `text-destructive` clears AA on its
+       10% tint and on plain white (error messages, form validation). */
+    --destructive: 0 72% 44%;
     --destructive-foreground: 0 0% 98%;
 
     /* Brand: Indigo 500 (single unified accent) */
     --brand: 243 75% 59%;
     --brand-foreground: 0 0% 100%;
 
-    /* Success: Emerald 600 */
-    --success: 142 71% 40%;
+    /* Success: Emerald — darkened to a deep green so `text-success` clears AA
+       on its 10% tint and on plain white (green is perceptually bright). */
+    --success: 142 76% 27%;
     --success-foreground: 0 0% 100%;
 
-    /* Warning: Amber 500 */
-    --warning: 38 92% 50%;
+    /* Warning: Amber — darkened so `text-warning` clears AA on its 10% tint
+       and on plain white (amber is perceptually bright). */
+    --warning: 35 95% 31%;
     --warning-foreground: 0 0% 100%;
 
     /* Border: Neutral 200 (Structural definition) */
@@ -165,9 +168,11 @@
     --accent: 0 0% 12%;
     --accent-foreground: 0 0% 98%;
 
-    /* Destructive: Red 900 */
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    /* Destructive: bright red so `text-destructive` clears AA on its 10% tint
+       over black; foreground flipped to near-black so solid `bg-destructive`
+       (buttons / toasts) keeps readable text in dark mode. */
+    --destructive: 0 84% 53%;
+    --destructive-foreground: 0 0% 8%;
 
     /* Brand: Indigo 400 (brighter for dark bg) */
     --brand: 243 75% 68%;
@@ -214,6 +219,13 @@
 
   p {
     @apply leading-7 text-muted-foreground [&:not(:first-child)]:mt-6;
+  }
+
+  /* Keep reading surfaces high-contrast: the global `p` rule above must not
+     mute body copy inside @tailwindcss/typography prose blocks. */
+  .prose,
+  .prose p {
+    @apply text-foreground;
   }
   
   /* Link / Action styles */

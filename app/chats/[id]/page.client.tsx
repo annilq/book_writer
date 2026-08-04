@@ -21,14 +21,18 @@ import { Button } from "@/components/ui/button";
 import { ChevronsRight, ChevronLeft } from "lucide-react";
 import { useBookStore } from "@/store/book";
 import { AssistantText } from "./components/assistant-text-render";
+import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 export default function PageClient({ chat }: { chat: Chat }) {
 
   const router = useRouter();
+  const { toast } = useToast()
+  const { t } = useTranslation()
 
   const { message: activeMessage, setActiveMessage, setEditMessage } = useMessageStore()
 
-  const { messages, status, sendMessage, regenerate, setMessages } = useChat({
+  const { messages, status, sendMessage, regenerate, setMessages, stop } = useChat({
     id: chat.id,
     api: "/api/chat",
     messages: chat.messages.map(msg => ({
@@ -51,8 +55,14 @@ export default function PageClient({ chat }: { chat: Chat }) {
       router.refresh();
     },
     onError: (e) => {
-      console.log(e);
-
+      // A swallowed failure leaves the author staring at a stuck screen,
+      // so always say something out loud.
+      console.error(e);
+      toast({
+        variant: "destructive",
+        title: t("generationFailed"),
+        description: e instanceof Error && e.message ? e.message : undefined,
+      });
     }
   });
 
@@ -113,14 +123,14 @@ export default function PageClient({ chat }: { chat: Chat }) {
       <main className="flex flex-1 flex-col">
         <BookHeader>
           <div className="flex items-center flex-1 gap-2">
-            <Button variant={"ghost"} size={"icon"} onClick={() => {
+            <Button variant={"ghost"} size={"icon"} aria-label={t("back")} onClick={() => {
               router.back()
             }}> <ChevronLeft /> </Button>  {chat.title}
           </div>
           <div className="flex items-center">
             <SettingsModal book={chat} />
             {!!activeMessage && (
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setActiveMessage(undefined)}>
+              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t("close")} onClick={() => setActiveMessage(undefined)}>
                 <ChevronsRight className="h-4 w-4" />
               </Button>
             )}
@@ -156,6 +166,7 @@ export default function PageClient({ chat }: { chat: Chat }) {
                   }
                 }}
                 isStreaming={status === "streaming"}
+                onStop={stop}
               />
             </div>
           </div>

@@ -4,8 +4,8 @@ import * as React from "react"
 import { Tree } from "@/components/tree";
 import { Book, Chapter } from "@prisma/client";
 import { arrayToTree, cn } from "@/utils";
-import { Loader, Play, RefreshCw } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Loader, RotateCcw } from "lucide-react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useTranslation } from "react-i18next";
 import { UIMessage } from "ai";
 import { Button } from "@/components/ui/button";
@@ -70,24 +70,32 @@ export default function Outline({ book, isStreaming, handleSubmit, setMessages }
             return <Loader className="animate-spin w-4 h-4" />
           }
 
-          return !node.children?.length && (
-            <>
-              {isCurrentChapter || chapterId < book.currentChapterId! ? (
-                <Button
-                  onClick={async e => {
-                    e.stopPropagation()
-                    await clearMessageOfChapter(chapterId)
-                    setMessages([])
-                    handleSubmit(chapterId, { role: "user", parts: [{ type: "text", text: node.data.title + node.data.description }] })
-                    setChapter(node.data as unknown as Chapter)
-                  }}
-                  className={cn("rounded-full h-6 w-6 p-0 hover:scale-105", node.isSelected && " bg-card text-card-foreground hover:bg-card hover:text-card-foreground")}
-                >
-                  <Play className="h-4 w-4" />
-                </Button>
-              ) : false}
-            </>
-          )
+          if (!node.children?.length && (isCurrentChapter || chapterId < book.currentChapterId!)) {
+            return (
+              <ConfirmDialog
+                title={t("regenChapterTitle")}
+                description={t("regenChapterContent")}
+                actionLabel={t("regenerate")}
+                trigger={
+                  <Button
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label={t("regenerate")}
+                    className={cn("rounded-full h-6 w-6 p-0 hover:scale-105", node.isSelected && " bg-card text-card-foreground hover:bg-card hover:text-card-foreground")}
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                  </Button>
+                }
+                onConfirm={async () => {
+                  await clearMessageOfChapter(chapterId)
+                  setMessages([])
+                  handleSubmit(chapterId, { role: "user", parts: [{ type: "text", text: node.data.title + node.data.description }] })
+                  setChapter(node.data as unknown as Chapter)
+                }}
+              />
+            )
+          }
+
+          return false
         }}
         className="w-1/5 bg-secondary overflow-y-auto text-sm px-2"
       />

@@ -44,6 +44,7 @@ export default function Header({ className, children = false }: { className?: st
             <ActiveLink href="/books">{t("bookshelf")}</ActiveLink>
           )}
           <ActiveLink href="/explore">{t("explore")}</ActiveLink>
+          <ActiveLink href="/docs">{t("help")}</ActiveLink>
           {session.data?.user && (
             <ActiveLink href="/user/subscription">{t("subscription")}</ActiveLink>
           )}

@@ -3,6 +3,7 @@ import { Public_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/utils";
 import ClientContext from "@/components/ClientContext";
+import { LocaleLang } from "@/components/LocaleLang";
 
 const publicSans = Public_Sans({ subsets: ["latin"] });
 
@@ -39,6 +40,7 @@ export default function RootLayout({
         <ClientContext>
           {children}
         </ClientContext>
+        <LocaleLang />
         <Toaster />
       </body>
     </html>

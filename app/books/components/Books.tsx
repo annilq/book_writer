@@ -1,41 +1,67 @@
+"use client"
+
 import { Spinner } from "@/components/spinner";
 import { Book, STEP } from "@prisma/client";
 import { BookOpen, Plus } from "lucide-react";
 import Image from "next/image"
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import type React from "react"
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
+import { filterBooks, parseBookshelfStatus } from "@/utils/book-filters";
+
+export type BookshelfView = "grid" | "list"
+
+function bookHref(bookId: string, step: STEP) {
+  switch (step) {
+    case "OUTLINE":
+      return `/chats/${bookId}`
+    case "CHAPTER":
+      return `/content/${bookId}`
+    case "COMPLETE":
+      return `/books/${bookId}`
+    default:
+      return `/chats/${bookId}`
+  }
+}
+
+function BookRow({ bookId, title, metadata, step }: { bookId: string; step: STEP; title: string; metadata: string }) {
+  const statusLabel = useMemo(() => stepLabel(step), [step])
+
+  return (
+    <Link
+      href={bookHref(bookId, step)}
+      className="group flex items-center gap-4 rounded-lg border bg-card px-4 py-3 transition-all duration-200 hover:border-foreground/20 hover:shadow-sm"
+    >
+      <div className="min-w-0 flex-1">
+        <h3 className="truncate font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors">
+          {title}
+        </h3>
+        <p className="mt-0.5 truncate text-sm text-muted-foreground">{metadata}</p>
+      </div>
+      <Badge variant="secondary" className="shrink-0 border text-xs font-medium">
+        {statusLabel}
+      </Badge>
+    </Link>
+  )
+}
+
+function stepLabel(step: STEP) {
+  switch (step) {
+    case "OUTLINE": return "Draft";
+    case "CHAPTER": return "Writing";
+    case "COMPLETE": return "Published";
+    default: return "Unknown";
+  }
+}
 
 function BookCard({ bookId, title, metadata, step, thumbnail }: { bookId: string; step: STEP, title: string; metadata: string; thumbnail: string }) {
 
-  const url = useMemo(() => {
-    let url = `/chats/${bookId}`
-    switch (step) {
-      case "OUTLINE":
-        url = `/chats/${bookId}`
-        break;
-      case "CHAPTER":
-        url = `/content/${bookId}`
-        break;
-      case "COMPLETE":
-        url = `/books/${bookId}`
-        break;
-      default:
-        break;
-    }
-    return url
-  }, [bookId, step])
-
-  const statusLabel = useMemo(() => {
-    switch (step) {
-      case "OUTLINE": return "Draft";
-      case "CHAPTER": return "Writing";
-      case "COMPLETE": return "Published";
-      default: return "Unknown";
-    }
-  }, [step]);
+  const url = useMemo(() => bookHref(bookId, step), [bookId, step])
+  const statusLabel = useMemo(() => stepLabel(step), [step]);
 
   return (
     <Link href={url} className="group block h-full">
@@ -74,9 +100,16 @@ function BookCard({ bookId, title, metadata, step, thumbnail }: { bookId: string
   )
 }
 
-export default function Books() {
+export default function Books({ query = "", view = "grid" }: { query?: string; view?: BookshelfView }) {
   const { data: books, isLoading } = useSWR<Book[]>('/api/book')
-  
+  const { t } = useTranslation()
+  const status = parseBookshelfStatus(useSearchParams().get("status"))
+
+  const visible = useMemo(
+    () => filterBooks(books ?? [], { status, query }),
+    [books, status, query],
+  )
+
   if (isLoading) {
     return (
         <div className="flex items-center justify-center h-64">
@@ -108,9 +141,35 @@ export default function Books() {
     )
   }
 
+  // The shelf has books, but the active filter/search hides them all —
+  // say so rather than showing an empty grid.
+  if (visible.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-border bg-muted/30 py-16 text-center text-sm text-muted-foreground">
+        {t("noBooksMatch")}
+      </div>
+    )
+  }
+
+  if (view === "list") {
+    return (
+      <div className="flex flex-col gap-2">
+        {visible.map(book => (
+          <BookRow
+            key={book.id}
+            title={book.title}
+            step={book.step}
+            bookId={book.id}
+            metadata={book.description || ""}
+          />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-      {books.map(book => (
+      {visible.map(book => (
         <BookCard 
             key={book.id} 
             title={book.title} 

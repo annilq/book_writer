@@ -1,6 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { Tag } from "@prisma/client";
-import { Plus, TagsIcon } from "lucide-react";
+import { TagsIcon } from "lucide-react";
 import Link from "next/link"
 import type React from "react"
 import { useTranslation } from "react-i18next";
@@ -23,9 +22,6 @@ export default function Tags({ collapse }: { collapse: boolean }) {
     <div className="py-3">
       <div className="px-2 text-xs font-medium uppercase text-muted-foreground flex justify-between items-center">
         {!collapse ? t("Tags") : ""}
-        <Button size="icon" variant={"link"}>
-          <Plus className="h-4 w-4" />
-        </Button>
       </div>
       <div className="mt-2">
         {tags?.map(tag => <TagItem key={tag.id} href={tag.id.toString()}>{tag.name}</TagItem>)}

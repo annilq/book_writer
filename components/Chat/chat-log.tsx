@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { StickToBottom } from "use-stick-to-bottom";
 import { useClipboard } from 'use-clipboard-copy';
 import { CopyCheck, Copy, FilePenLine, Save, ChevronDown, ChevronRight } from "lucide-react";
@@ -132,6 +133,7 @@ export const TextRender = ({ data, message, toolConfig }: {
   toolConfig?: ToolbarActions
 }) => {
 
+  const { t } = useTranslation()
   const [editAble, setEditAble] = useState(false)
 
   const clipboard = useClipboard({
@@ -143,13 +145,14 @@ export const TextRender = ({ data, message, toolConfig }: {
       <Markdown remarkPlugins={[remarkGfm]}>{data}</Markdown>
       {toolConfig ? (
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => clipboard.copy(data)}>
+          <Button variant="ghost" size="icon" aria-label={t("copy")} onClick={() => clipboard.copy(data)}>
             {clipboard.copied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
           </Button>
           {editAble ? (
             <Button
               variant="ghost"
               size="icon"
+              aria-label={t("save")}
               onClick={() => {
                 toolConfig.onEdit?.(message)
                 setEditAble(!editAble)
@@ -161,6 +164,7 @@ export const TextRender = ({ data, message, toolConfig }: {
             <Button
               variant="ghost"
               size="icon"
+              aria-label={t("edit")}
               onClick={() => {
                 if (toolConfig.markdownEditable) {
                   setEditAble(!editAble)
@@ -194,12 +198,14 @@ export const Reasoning = ({ reasoning }: { reasoning: string }) => {
   return (
     <div className="mt-1">
       <div className="bg-muted/50 rounded-md p-3 text-xs font-mono">
-        <div
-          className="text-xs text-muted-foreground font-sans flex justify-between items-center"
+        <button
+          type="button"
+          aria-expanded={visible}
+          className="text-xs text-muted-foreground font-sans flex justify-between items-center w-full"
           onClick={() => setVisible(!visible)}
         >Reasoning:
           {visible ? <ChevronDown className="w-4 h-4 cursor-pointer" /> : <ChevronRight className="w-4 h-4 cursor-pointer" />}
-        </div>
+        </button>
         <pre className={cn("whitespace-pre-wrap mt-2", !visible && "hidden")}>{reasoning}</pre>
       </div>
     </div>

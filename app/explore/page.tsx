@@ -20,11 +20,11 @@ export default function BookManager() {
           <div className="w-96">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="Search books..." className="pl-9" />
+              <Input type="search" placeholder="Search books..." aria-label={t("search")} className="pl-9" />
             </div>
           </div>
           <div className="flex items-center">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label={t("gridView")}>
               <Grid className="h-4 w-4" />
             </Button>
           </div>

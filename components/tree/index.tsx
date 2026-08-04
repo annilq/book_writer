@@ -32,11 +32,33 @@ export function Tree(props: TreeProps<Data> & { renderSuffix: (node: NodeApi<Dat
 }
 
 function Node({ node, style, dragHandle, renderSuffix = (node) => false }: NodeRendererProps<Data> & { renderSuffix: (node: NodeApi<Data>) => React.ReactNode }) {
+  // react-arborist owns the structural ARIA (role="tree"/"treeitem",
+  // aria-expanded/aria-selected) and arrow-key navigation on the row. We keep
+  // the custom node click-to-toggle AND make it explicitly keyboard-operable so
+  // the same action works without a mouse, surfacing a visible focus ring.
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!node.isInternal) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      node.toggle();
+    } else if (e.key === "ArrowRight" && !node.isOpen) {
+      e.preventDefault();
+      node.toggle();
+    } else if (e.key === "ArrowLeft" && node.isOpen) {
+      e.preventDefault();
+      node.toggle();
+    }
+  };
 
   return (
     <div
       ref={dragHandle}
-      className={cn((node.level === 0) && "font-bold", !node.isInternal && node.isSelected && "rounded bg-card-foreground text-card", "h-full flex gap-2 items-center justify-between cursor-pointer hover:underline px-2 mx-2")}
+      tabIndex={0}
+      aria-label={node.data.title}
+      aria-expanded={node.isInternal ? node.isOpen : undefined}
+      aria-selected={node.isSelected}
+      onKeyDown={onKeyDown}
+      className={cn((node.level === 0) && "font-bold", !node.isInternal && node.isSelected && "rounded bg-card-foreground text-card", "h-full flex gap-2 items-center justify-between cursor-pointer hover:underline px-2 mx-2 outline-none focus-visible:ring-1 focus-visible:ring-ring")}
       style={style}
       onClick={() => node.isInternal && node.toggle()}
     >

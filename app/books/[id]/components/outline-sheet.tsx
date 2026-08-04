@@ -15,14 +15,22 @@ import {
 import Outline from "./outline"
 import { BookWithChapters } from "../page.client"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 export function OutlineSheet({ book }: { book: BookWithChapters }) {
   const [open, setOpen] = useState(false)
+  const { t } = useTranslation()
 
   return (
     <Sheet open={open} onOpenChange={setOpen} >
       <SheetTrigger asChild>
-        <Button size={"icon"} className="rounded-full" > <Menu /></Button>
+        <Button
+          size={"icon"}
+          aria-label={t("viewChapters")}
+          className="rounded-full bg-brand text-brand-foreground shadow-sm hover:bg-brand/90 focus-visible:ring-brand"
+        >
+          <Menu />
+        </Button>
       </SheetTrigger>
       <SheetContent className="w-96 overflow-auto">
         <SheetHeader className="mb-2">
@@ -30,7 +38,6 @@ export function OutlineSheet({ book }: { book: BookWithChapters }) {
         </SheetHeader>
         <Outline book={book} onSelect={(chapter) => {
           const nodeEl = document.querySelector(`#chapter-${chapter.id}`)
-          console.log(nodeEl);
           nodeEl?.scrollIntoView()
           setOpen(false)
         }} />

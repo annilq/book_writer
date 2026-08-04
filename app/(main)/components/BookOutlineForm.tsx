@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { Book, Category } from '@prisma/client';
+import { Category } from '@prisma/client';
 
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -13,18 +13,18 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { SUGGESTED_PROMPTS } from "@/utils/constants"
 import { useTranslation } from "react-i18next"
 
-import { FormField, FormItem, FormControl, FormMessage, Form } from "@/components/ui/form"
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from "@/components/ui/form"
 import { toast } from "@/hooks/use-toast"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 import useSWR from "swr";
 import { Model } from "@/app/api/model/models";
-import { startTransition, useState } from "react";
+import { startTransition, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { createBook } from "@/app/api/chat/actions";
 import { cn } from "@/utils/cn";
-import { MessageSquare, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
+import { MessageSquare, Sparkles, CheckCircle2, Loader2, ChevronDown } from "lucide-react";
 
 export const FormSchema = z.object({
   title: z.string().min(2, {
@@ -41,7 +41,28 @@ export const FormSchema = z.object({
   model: z.string().min(1),
 })
 
-function Example(props: { handleSubmit: (data: Partial<Book>) => void }) {
+export type BookOutlineFormValues = z.infer<typeof FormSchema>
+
+/**
+ * Merge a pre-filled example into the form without wiping the author's work:
+ * any field the author has already typed into wins, empty fields get filled.
+ */
+export function mergeExamplePreservingInput(
+  current: BookOutlineFormValues,
+  example: Partial<BookOutlineFormValues>,
+): BookOutlineFormValues {
+  const merged = { ...current }
+  for (const key of Object.keys(example) as (keyof BookOutlineFormValues)[]) {
+    const authored = current[key]
+    // The author's own text always wins over the example.
+    if (typeof authored === "string" && authored.trim() !== "") continue
+    const value = example[key]
+    if (value !== undefined) merged[key] = value
+  }
+  return merged
+}
+
+function Example(props: { handleSubmit: (data: Partial<BookOutlineFormValues>) => void }) {
 
   return (
     <div className="px-6 pb-6 flex w-full flex-wrap justify-center gap-3">
@@ -79,6 +100,7 @@ export function BookOutlineForm() {
   const [loading, setLoading] = useState(false)
   const [autonomous, setAutonomous] = useState(false)
   const [filledDemo, setFilledDemo] = useState(false)
+  const [advanced, setAdvanced] = useState(false)
   const { setMessages, regenerate } = useChat({
     api: "/api/chat",
   });
@@ -171,6 +193,13 @@ export function BookOutlineForm() {
     },
   })
 
+  // Pre-select a recommended model so the author is never forced to pick one.
+  // Declared after `form` — referencing it above would be a TDZ error.
+  useEffect(() => {
+    if (models.length && !form.getValues("model")) {
+      form.setValue("model", `${models[0].provider}/${models[0].name}`, { shouldValidate: false });
+    }
+  }, [models, form])
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     toast({
@@ -188,7 +217,7 @@ export function BookOutlineForm() {
             onClick={() => setAutonomous(false)}
             className={cn(
               "rounded-lg border p-3 text-left transition-all",
-              !autonomous ? "border-brand bg-brand/5" : "border-border hover:border-foreground/20"
+              !autonomous ? "border-brand bg-brand/15 ring-2 ring-brand font-semibold" : "border-border hover:border-foreground/20"
             )}
           >
             <div className="flex items-center gap-2 text-sm font-medium">
@@ -202,7 +231,7 @@ export function BookOutlineForm() {
             onClick={() => setAutonomous(true)}
             className={cn(
               "rounded-lg border p-3 text-left transition-all",
-              autonomous ? "border-brand bg-brand/5" : "border-border hover:border-foreground/20"
+              autonomous ? "border-brand bg-brand/15 ring-2 ring-brand font-semibold" : "border-border hover:border-foreground/20"
             )}
           >
             <div className="flex items-center gap-2 text-sm font-medium">
@@ -215,46 +244,47 @@ export function BookOutlineForm() {
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-2xl mx-auto space-y-4 px-6 pb-6">
-          <div className="flex items-center w-full justify-between gap-2">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormControl>
-                    <Input placeholder={t("bookName")} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="categories"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Select {...field} onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("bookCate")} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories?.map(cate => <SelectItem key={cate.id} value={cate.name}>{t(cate.name)}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("labelTitle")}</FormLabel>
+                <FormControl>
+                  <Input placeholder={t("bookName")} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="categories"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("labelCategory")}</FormLabel>
+                <FormControl>
+                  <Select {...field} onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("bookCate")} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories?.map(cate => <SelectItem key={cate.id} value={cate.name}>{t(cate.name)}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="description"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>{t("labelDescription")}</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder={t("bookDesc")}
@@ -266,36 +296,68 @@ export function BookOutlineForm() {
               </FormItem>
             )}
           />
-          <div className="flex items-center gap-4">
-            <FormField
-              control={form.control}
-              name="model"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Select  {...field} onValueChange={field.onChange} defaultValue={field.value}>
+
+          {/* Advanced options: the model is optional and pre-selected, so it is
+              tucked behind a disclosure instead of forced on first-time authors. */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setAdvanced(!advanced)}
+              className="flex items-center gap-1 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+            >
+              {t(advanced ? "advancedOptionsHide" : "advancedOptions")}
+              <ChevronDown className={cn("h-4 w-4 transition-transform", advanced && "rotate-180")} />
+            </button>
+            {advanced && (
+              <div className="mt-3">
+                <FormField
+                  control={form.control}
+                  name="model"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("labelModel")}
+                        <span className="ml-1 text-xs font-normal text-muted-foreground">({t("modelOptional")})</span>
+                      </FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("bookModel")} />
-                        </SelectTrigger>
+                        <Select {...field} onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t("bookModel")} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {models.map((model, i) => (
+                              <SelectItem key={model.name} value={`${model.provider}/${model.name}`}>
+                                {model.name} · {model.provider}
+                                {i === 0 && (
+                                  <span className="ml-2 text-xs text-brand">({t("modelRecommended")})</span>
+                                )}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </FormControl>
-                      <SelectContent>
-                        {models.map(model => <SelectItem key={model.name} value={`${model.provider}/${model.name}`}>{model.name}/{model.provider}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {autonomous ? t("generateAuto") : t("generateChat")}
-            </Button>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
           </div>
+
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {autonomous ? t("generateAuto") : t("generateChat")}
+          </Button>
         </form>
       </Form>
-      <Example handleSubmit={(data) => { form.reset(data); setFilledDemo(true); }} />
+      <Example
+        handleSubmit={(data) => {
+          form.reset(mergeExamplePreservingInput(form.getValues(), data))
+          setFilledDemo(true)
+        }}
+      />
       {filledDemo && (
         <p className="mx-6 mb-4 flex items-center justify-center gap-1 text-xs text-brand">
           <CheckCircle2 className="h-3.5 w-3.5" />

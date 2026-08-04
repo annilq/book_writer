@@ -13,10 +13,4 @@ export const SUGGESTED_PROMPTS = [
     model: "alibaba/qwq-32b",
     categories: "EDUCATION",
   },
-  {
-    title: i18n.t("bookTitle3"),
-    description: i18n.t("bookDesc3"),
-    model: "alibaba/qwq-32b",
-    categories: "BIOGRAPHY",
-  },
 ];

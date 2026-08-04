@@ -8,7 +8,9 @@ import Tags from "./Tags"
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { BookDialog } from "./BookDialog"
+import { parseBookshelfStatus } from "@/utils/book-filters"
 
 interface NavItemProps {
   href: string
@@ -33,29 +35,35 @@ function NavItem({ href, icon, children, active }: NavItemProps) {
 export default function SideBar() {
   const { t } = useTranslation()
   const [collapse, setCollapse] = useState(false)
+  // The filter lives in the URL so these entries are real, shareable routes
+  // rather than decoration.
+  const status = parseBookshelfStatus(useSearchParams().get("status"))
 
   return (
     <div className={cn("flex flex-col gap-2 p-2 w-56 transition-all duration-100 bg-background border-r", collapse && "w-12 overflow-hidden")}>
       <BookDialog collapse={collapse} />
       <nav className="flex-1 flex flex-col gap-2">
-        <NavItem href="/books" icon={<LayoutGrid className="h-4 w-4" />} active>
+        <NavItem href="/books" icon={<LayoutGrid className="h-4 w-4" />} active={status === "all"}>
           {!collapse && t("AllBooks")}
         </NavItem>
         <NavItem
-          href="#"
+          href="/books?status=draft"
           icon={<AlarmClockPlus className="h-4 w-4" />}
+          active={status === "draft"}
         >
           {!collapse && t("DRAFT")}
         </NavItem>
         <NavItem
-          href="#"
+          href="/books?status=published"
           icon={<ArchiveIcon className="h-4 w-4" />}
+          active={status === "published"}
         >
           {!collapse && t("PUBLISHED")}
         </NavItem>
         <NavItem
-          href="#"
+          href="/books?status=unpublished"
           icon={<BookAIcon className="h-4 w-4" />}
+          active={status === "unpublished"}
         >
           {!collapse && t("UNPUBLISHED")}
         </NavItem>

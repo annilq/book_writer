@@ -132,5 +132,9 @@
   "prevVersion": "上一版本",
   "nextVersion": "下一版本",
   "back": "返回",
-  "help": "帮助"
+  "help": "帮助",
+  "promptTooShort": "请至少输入 2 个字符。",
+  "bookshelfOverview": "总览",
+  "bookshelfOverviewDesc": "管理你的书籍项目并查看它们的状态。",
+  "noBooksMatch": "没有符合该筛选条件的书籍。"
 }

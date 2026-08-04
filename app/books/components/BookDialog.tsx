@@ -9,17 +9,28 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Plus } from "lucide-react"
+import type React from "react"
 import { useTranslation } from "react-i18next"
 
-export function BookDialog({ collapse }: { collapse: boolean }) {
+export function BookDialog({
+  collapse = false,
+  trigger,
+}: {
+  collapse?: boolean
+  /** Supply your own opener so other surfaces reuse this dialog rather than
+   *  growing a second, unwired "create" button. */
+  trigger?: React.ReactNode
+}) {
   const { t } = useTranslation()
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="rounded">
-          <Plus className="h-4 w-4" />
-          {!collapse && t("create")}
-        </Button>
+        {trigger ?? (
+          <Button className="rounded">
+            <Plus className="h-4 w-4" />
+            {!collapse && t("create")}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-[560px] rounded-xl px-0">
         <DialogHeader>

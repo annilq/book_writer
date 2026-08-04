@@ -4,10 +4,11 @@ import { ChevronLeftIcon, ChevronRightIcon, SaveIcon } from "lucide-react";
 import { cn, splitByFirstCodeFence, extractFirstCodeBlock } from "@/utils";
 import { Button } from "@/components/ui/button";
 import OutlinePreview from "./outline-preview";
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useTranslation } from "react-i18next"
 import { createBookOutline } from "@/app/api/chat/actions";
 import { useRouter } from "next/navigation";
+import { toast } from "@/hooks/use-toast";
 import { Chat, Message } from "../page";
 
 export default function OutlineViewerLayout({
@@ -49,12 +50,13 @@ export default function OutlineViewerLayout({
           {previousMessage ? (
             <button
               className="text-foreground"
+              aria-label={t("prevVersion")}
               onClick={() => onMessageChange(previousMessage)}
             >
               <ChevronLeftIcon className="size-4" />
             </button>
           ) : (
-            <button className="text-foreground opacity-25" disabled>
+            <button className="text-foreground opacity-25" aria-label={t("prevVersion")} disabled>
               <ChevronLeftIcon className="size-4" />
             </button>
           )}
@@ -70,40 +72,41 @@ export default function OutlineViewerLayout({
           {nextMessage ? (
             <button
               className="text-foreground"
+              aria-label={t("nextVersion")}
               onClick={() => onMessageChange(nextMessage)}
             >
               <ChevronRightIcon className="size-4" />
             </button>
           ) : (
-            <button className="text-foreground opacity-25" disabled>
+            <button className="text-foreground opacity-25" aria-label={t("nextVersion")} disabled>
               <ChevronRightIcon className="size-4" />
             </button>
           )}
         </div>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+        <ConfirmDialog
+          title={t("booklineConfirmTip")}
+          description={t("booklineConfirmContent")}
+          actionLabel={t("save")}
+          trigger={
+            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t("save")}>
               <SaveIcon className="h-4 w-4" />
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{t("booklineConfirmTip")}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {t("booklineConfirmContent")}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-              <AlertDialogAction onClick={async () => {
-                const app = extractFirstCodeBlock(message!.content)!;
-                const outline = JSON.parse(app.code)
-                const result = await createBookOutline(chat.id, outline)
-                router.replace(`/content/${chat.id}`);
-              }}>{t("save")}</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          }
+          onConfirm={async () => {
+            try {
+              const app = extractFirstCodeBlock(message!.content)!
+              if (!app?.code) {
+                throw new Error("no-outline")
+              }
+              const outline = JSON.parse(app.code)
+              await createBookOutline(chat.id, outline)
+              router.replace(`/content/${chat.id}`);
+            } catch {
+              toast({ title: t("jsonParseError") })
+              onRequestFix(message!.content)
+            }
+          }}
+        />
       </div>}
     </div>
   );
