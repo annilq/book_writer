@@ -28,42 +28,47 @@ function BookCard({ bookId, title, metadata, step, thumbnail }: { bookId: string
     return url
   }, [bookId, step])
 
-  const statusLabel = useMemo(() => {
+  const status = useMemo(() => {
     switch (step) {
-      case "OUTLINE": return "Draft";
-      case "CHAPTER": return "Writing";
-      case "COMPLETE": return "Published";
-      default: return "Unknown";
+      case "OUTLINE":
+        return { label: "Draft", cls: "bg-slate-500/10 text-slate-600 border-slate-500/20 dark:bg-slate-400/10 dark:text-slate-300 dark:border-slate-400/20" };
+      case "CHAPTER":
+        return { label: "Writing", cls: "bg-amber-500/10 text-amber-700 border-amber-500/20 dark:bg-amber-400/10 dark:text-amber-300 dark:border-amber-400/20" };
+      case "COMPLETE":
+        return { label: "Published", cls: "bg-success/10 text-success border-success/20" };
+      default:
+        return { label: "Unknown", cls: "bg-muted text-muted-foreground border-border" };
     }
   }, [step]);
 
   return (
     <Link href={url} className="group block h-full">
-      <div className="flex flex-col h-full rounded-lg border bg-card transition-all duration-200 hover:border-foreground/20 hover:shadow-sm">
+      <div className="flex flex-col h-full overflow-hidden rounded-lg border border-border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-md hover:shadow-brand/5">
         {/* Cover Image */}
-        <div className="relative aspect-[3/4] w-full overflow-hidden rounded-t-lg bg-muted border-b">
+        <div className="relative aspect-[3/4] w-full overflow-hidden rounded-t-lg bg-gradient-to-br from-brand/5 to-muted border-b">
           <Image
             src={thumbnail || "/placeholder.svg"}
             alt={title}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
           <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm border shadow-sm text-xs font-medium">
-              {statusLabel}
+            <Badge className={`backdrop-blur-sm shadow-sm text-xs font-medium ${status.cls}`}>
+              {status.label}
             </Badge>
           </div>
         </div>
 
         {/* Content */}
         <div className="flex flex-col flex-1 p-4">
-          <h3 className="font-semibold tracking-tight text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+          <h3 className="font-semibold tracking-tight text-foreground line-clamp-1 transition-colors group-hover:text-brand">
             {title}
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground line-clamp-2 h-10 leading-relaxed">
             {metadata || "No description provided."}
           </p>
-          
+
           <div className="mt-auto pt-4 flex items-center justify-between text-xs text-muted-foreground font-mono">
              <span>ID: {bookId.slice(0, 8)}</span>
              <span>{new Date().toLocaleDateString()}</span> {/* Ideally created_at */}
@@ -74,11 +79,13 @@ function BookCard({ bookId, title, metadata, step, thumbnail }: { bookId: string
   )
 }
 
-export default function Books({ publicOnly = false }: { publicOnly?: boolean }) {
+export default function Books({ publicOnly = false, step }: { publicOnly?: boolean; step?: string }) {
   const { data: books, isLoading } = useSWR<Book[]>('/api/book')
-  const visible = publicOnly
-    ? (books ?? []).filter((b) => b.step === "COMPLETE")
-    : (books ?? [])
+  const visible = (books ?? []).filter((b) => {
+    if (publicOnly && b.step !== "COMPLETE") return false
+    if (step && b.step !== step) return false
+    return true
+  })
   
   if (isLoading) {
     return (

@@ -1,49 +1,52 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { Menu } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Book, Chapter } from "@prisma/client";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { ListTree } from "lucide-react";
+import Tree from "@/components/tree";
+import { buildToc } from "./toc";
 
-import Outline from "./outline"
-import { BookWithChapters } from "../page.client"
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-
-export function OutlineSheet({ book }: { book: BookWithChapters }) {
-  const [open, setOpen] = useState(false)
-  const { t } = useTranslation()
+export default function OutlineSheet({ book }: { book: Book & { chapters: Chapter[] } }) {
+  const [open, setOpen] = useState(false);
+  const nodes = buildToc(book);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen} >
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button
-          size={"icon"}
-          aria-label={t("viewChapters")}
-          className="rounded-full bg-brand text-brand-foreground shadow-sm hover:bg-brand/90 focus-visible:ring-brand"
-        >
-          <Menu />
+        <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-brand">
+          <ListTree className="h-4 w-4" />
+          Contents
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-96 overflow-auto">
-        <SheetHeader className="mb-2">
-          <SheetTitle>{book.title}</SheetTitle>
+      <SheetContent className="w-80 p-0">
+        <SheetHeader className="border-b border-border px-5 py-4">
+          <SheetTitle className="flex items-center gap-2 text-sm">
+            <ListTree className="h-4 w-4 text-brand" />
+            Contents
+          </SheetTitle>
         </SheetHeader>
-        <Outline book={book} onSelect={(chapter) => {
-          const nodeEl = document.querySelector(`#chapter-${chapter.id}`)
-          nodeEl?.scrollIntoView()
-          setOpen(false)
-        }} />
+        <div className="overflow-y-auto p-3">
+          <Tree
+            nodes={nodes}
+            onChange={(id) => {
+              setOpen(false);
+              setTimeout(() => {
+                document
+                  .getElementById(`chapter-${id}`)
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 150);
+            }}
+          />
+        </div>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
-
-

@@ -1,11 +1,17 @@
 import "./globals.css";
-import { Public_Sans } from "next/font/google";
+import { Public_Sans, Newsreader } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/utils";
 import ClientContext from "@/components/ClientContext";
 import { LocaleLang } from "@/components/LocaleLang";
 
 const publicSans = Public_Sans({ subsets: ["latin"] });
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
+});
 
 
 export default function RootLayout({
@@ -36,7 +42,7 @@ export default function RootLayout({
         />
         <meta name="twitter:image" content="/images/og-image.png" />
       </head>
-      <body className={cn(publicSans.className, "h-screen")}>
+      <body className={cn(publicSans.className, newsreader.variable, "h-screen")}>
         <ClientContext>
           {children}
         </ClientContext>

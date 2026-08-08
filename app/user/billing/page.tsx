@@ -20,6 +20,9 @@ export default async function BillingPage() {
   return (
     <div className="space-y-6">
       <div>
+        <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
+          Account
+        </div>
         <h1 className="text-2xl font-semibold tracking-tight">Billing</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Manage your subscription plan and payment methods.

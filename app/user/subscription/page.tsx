@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { cn } from "@/utils";
 import { useSession } from "next-auth/react";
 import {
   Card,
@@ -12,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -152,10 +153,19 @@ export default function UserSubscriptionPage() {
       );
   }
 
+  // Cheapest paid plan is highlighted as "Most popular"
+  const cheapestPaidId = plans
+    .filter((p) => Number(p.price) > 0)
+    .sort((a, b) => Number(a.price) - Number(b.price))[0]?.id;
+
   return (
     <div className="container mx-auto py-12 px-4 max-w-6xl">
-      <div className="text-center mb-8">
-        <h1 className="mb-4 tracking-tight">
+      <div className="text-center mb-10">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
+          <Sparkles className="h-3.5 w-3.5" />
+          Membership
+        </div>
+        <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
           Subscription
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -165,26 +175,31 @@ export default function UserSubscriptionPage() {
 
       {/* Current Subscription Status */}
       {subscription && subscription.status === 'ACTIVE' && (
-        <Card className="mb-12 border-brand/30 bg-brand/5">
+        <Card className="mb-12 border-brand/30 bg-gradient-to-br from-brand/10 to-brand/[0.03] shadow-sm">
           <CardHeader>
-            <CardTitle className="text-brand">Active Subscription</CardTitle>
+            <div className="flex items-center gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-success/15 text-success">
+                <Check className="h-3.5 w-3.5" />
+              </span>
+              <CardTitle className="text-brand">Active Subscription</CardTitle>
+            </div>
             <CardDescription>
                 You are currently subscribed to <strong>{subscription.plan.name}</strong>.
             </CardDescription>
           </CardHeader>
           <CardContent>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                 <div>
-                     <span className="text-muted-foreground">Status:</span>
-                     <span className="ml-2 font-semibold text-success">Active</span>
+             <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
+                 <div className="rounded-lg bg-background/60 p-3">
+                     <div className="text-xs uppercase tracking-wide text-muted-foreground">Status</div>
+                     <div className="mt-1 font-semibold text-success">Active</div>
                  </div>
-                 <div>
-                     <span className="text-muted-foreground">Start Date:</span>
-                     <span className="ml-2">{new Date(subscription.startDate).toLocaleDateString()}</span>
+                 <div className="rounded-lg bg-background/60 p-3">
+                     <div className="text-xs uppercase tracking-wide text-muted-foreground">Start Date</div>
+                     <div className="mt-1">{new Date(subscription.startDate).toLocaleDateString()}</div>
                  </div>
-                 <div>
-                     <span className="text-muted-foreground">Expires On:</span>
-                     <span className="ml-2 font-semibold">{new Date(subscription.endDate).toLocaleDateString()}</span>
+                 <div className="rounded-lg bg-background/60 p-3">
+                     <div className="text-xs uppercase tracking-wide text-muted-foreground">Expires On</div>
+                     <div className="mt-1 font-semibold">{new Date(subscription.endDate).toLocaleDateString()}</div>
                  </div>
              </div>
           </CardContent>
@@ -201,43 +216,63 @@ export default function UserSubscriptionPage() {
         </Tabs>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-        {plans.map((plan) => (
-          <Card key={plan.id} className="flex flex-col border-2 hover:border-brand transition-colors">
-            <CardHeader>
-              <CardTitle>{plan.name}</CardTitle>
-              <CardDescription>{plan.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <div className="text-3xl font-bold mb-4">
-                ${Number(plan.price).toFixed(2)}
-                <span className="text-base font-normal text-muted-foreground">
-                  / {plan.duration} days
-                </span>
-              </div>
-              <ul className="space-y-2">
-                {plan.features?.split(",").map((feature, i) => (
-                  <li key={i} className="flex items-center text-sm">
-                    <Check className="w-4 h-4 mr-2 text-success" />
-                    {feature.trim()}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Button
-                className="w-full"
-                onClick={() => handleSubscribe(plan)}
-                disabled={!!subscribingId && subscribingId !== plan.id}
-              >
-                {subscribingId === plan.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {Number(plan.price) === 0 ? "Get Started" : `Subscribe with ${provider === 'STRIPE' ? 'Card' : 'WeChat'}`}
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+      <div className="flex flex-wrap justify-center items-stretch gap-6 mb-16">
+        {plans.map((plan) => {
+          const popular = plan.id === cheapestPaidId;
+          return (
+            <Card
+              key={plan.id}
+              className={cn(
+                "relative flex w-full sm:w-80 flex-col border-2 transition-all",
+                popular
+                  ? "border-brand bg-brand/[0.03] shadow-lg shadow-brand/10 hover:border-brand"
+                  : "border-border hover:border-brand/50"
+              )}
+            >
+              {popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-brand-foreground shadow-sm">
+                    <Sparkles className="h-3 w-3" />
+                    Most popular
+                  </span>
+                </div>
+              )}
+              <CardHeader>
+                <CardTitle className={popular ? "text-brand" : ""}>{plan.name}</CardTitle>
+                <CardDescription>{plan.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1">
+                <div className="mb-4 text-3xl font-bold tabular-nums">
+                  <span className="text-brand">${Number(plan.price).toFixed(2)}</span>
+                  <span className="text-base font-normal text-muted-foreground">
+                    {" "}/ {plan.duration} days
+                  </span>
+                </div>
+                <ul className="space-y-2">
+                  {plan.features?.split(",").map((feature, i) => (
+                    <li key={i} className="flex items-center text-sm">
+                      <Check className="w-4 h-4 mr-2 shrink-0 text-success" />
+                      {feature.trim()}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  className="w-full"
+                  variant={popular ? "default" : "outline"}
+                  onClick={() => handleSubscribe(plan)}
+                  disabled={!!subscribingId && subscribingId !== plan.id}
+                >
+                  {subscribingId === plan.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {Number(plan.price) === 0 ? "Get Started" : `Subscribe with ${provider === 'STRIPE' ? 'Card' : 'WeChat'}`}
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
         {plans.length === 0 && (
-          <div className="col-span-full text-center text-muted-foreground p-8 border border-dashed rounded-lg">
+          <div className="w-full text-center text-muted-foreground p-8 border border-dashed rounded-lg">
             No plans available at the moment.
           </div>
         )}

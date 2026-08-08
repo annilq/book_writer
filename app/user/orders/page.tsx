@@ -58,6 +58,9 @@ export default function UserOrdersPage() {
   return (
     <div className="space-y-6">
       <div>
+        <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
+          Account
+        </div>
         <h1 className="text-2xl font-semibold tracking-tight">Order History</h1>
         <p className="text-sm text-muted-foreground mt-1">
           View your past transactions and order status.
